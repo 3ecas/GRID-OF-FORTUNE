@@ -13,9 +13,9 @@ Game.Config = {
         seedPieces: 8, // pieces already down at the start
         handSize: 2, // either of them is yours to play
 
-        /* How many touching alike it takes to join. A group bigger than this
-           joins anyway and leaves the spares behind — three alike under the
-           two rule is a join and a leftover, not one greedy join. */
+        /* How many touching alike it takes to join. Fewer than this and
+           nothing happens; this many or more and the whole connected run
+           joins at once, however long it has grown. */
         mergeAt: 3,
 
         /* How far the hand trails the best thing you have made, and the

@@ -66,12 +66,17 @@ window.Game = window.Game || {};
     }
 
     /**
-     * Spreads outwards from a square gathering its own kind, in the order it
-     * meets them, and stops the moment it has enough. Nothing beyond that is
-     * taken: three alike touching is one join and a piece left over, not one
-     * greedy join that spends the spare for nothing extra.
+     * Everything of one kind touching this square, found by spreading
+     * outwards until there is nothing left to find.
      *
-     * Gives back null if there are not enough to join at all.
+     * The whole run goes at once, however big it is. Two here and two there
+     * with a hole between them is nothing at all — but drop the missing one
+     * into the hole and all five are one connected run, so all five join.
+     * Not three of them with a stranded pair left either side.
+     *
+     * Touching means edges. Corners are not touching.
+     *
+     * Gives back null when there are too few to join.
      */
     function reach(start, need) {
         var found = [start];
@@ -79,11 +84,9 @@ window.Game = window.Game || {};
         var queue = [start];
         seen[start.id] = true;
 
-        while (queue.length && found.length < need) {
+        while (queue.length) {
             var cell = queue.shift();
 
-            // up, then across, and only then down — the square below was
-            // already looked at on the way up, so it is never the one kept
             var around = [
                 at(cell.x, cell.y - 1),
                 at(cell.x - 1, cell.y),
@@ -91,7 +94,7 @@ window.Game = window.Game || {};
                 at(cell.x, cell.y + 1)
             ];
 
-            for (var i = 0; i < around.length && found.length < need; i++) {
+            for (var i = 0; i < around.length; i++) {
                 var other = around[i];
                 if (!other || seen[other.id]) continue;
                 if (other.piece !== start.piece) continue;
@@ -102,7 +105,7 @@ window.Game = window.Game || {};
             }
         }
 
-        return found.length === need ? found : null;
+        return found.length >= need ? found : null;
     }
 
     /**
