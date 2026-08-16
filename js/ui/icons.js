@@ -197,6 +197,16 @@ window.Game = window.Game || {};
             '<circle cx="12" cy="12" r="5.6" fill="var(--i-silver-light)"/>' +
             '<circle cx="12" cy="12" r="2.2" fill="var(--i-gold)"/>',
 
+        /* spoil: flat, broken, plainly not worth anything */
+        rubble:
+            '<path d="M2.6 19.8 5 15.4l4 1 2.2 3.4Z" fill="var(--i-rock)"/>' +
+            '<path d="M9.4 19.8 11 13.6l4.6-.8 2.2 7Z" ' +
+            'fill="var(--i-rock-deep)"/>' +
+            '<path d="M11 13.6l4.6-.8-.4 3Z" fill="var(--i-rock)"/>' +
+            '<path d="M16.4 19.8 18 15.8l3.4 1v3Z" fill="var(--i-rock)"/>' +
+            '<path d="M6.2 12.6 8.4 9.4l2.6 2-1.4 2.6Z" ' +
+            'fill="var(--i-rock-light)"/>',
+
         /* thrown about when something joins up */
         sparkle:
             '<path d="M12 2.2 14 10 21.8 12 14 14 12 21.8 10 14 2.2 12 10 10Z" ' +

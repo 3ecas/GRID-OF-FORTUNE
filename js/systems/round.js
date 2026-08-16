@@ -39,14 +39,43 @@ window.Game = window.Game || {};
     }
 
     /**
-     * A few pieces fall in on their own, into columns you did not choose.
+     * Whether what falls next is rubble.
      *
-     * They are drawn from the same rungs as your hand, so they are always
-     * something you could merge — the difficulty is where they land, not what
-     * they are.
+     * The seam is clean at first and gets dirtier the longer you work it.
+     * This is the only thing in the game that cannot merge, so it is the only
+     * thing that can eventually end a run.
+     */
+    function rubbleNow() {
+        var s = settings();
+        var into = state.placed - s.rubbleAfter;
+        if (into <= 0) return false;
+        return Math.random() < Math.min(s.rubbleMost, into / s.rubbleRamp);
+    }
+
+    /** How many drops between falls right now. It only ever tightens. */
+    function fallGap() {
+        var s = settings();
+        var tighter = Math.floor(state.placed / s.wildRamp);
+        return Math.max(s.wildTo, s.wildFrom - tighter);
+    }
+
+    /** How many pieces come down each fall. It only ever grows. */
+    function fallCount() {
+        var s = settings();
+        var heavier = Math.floor(state.placed / s.wildRamp);
+        return Math.min(s.wildMost, s.wildCount + heavier);
+    }
+
+    /**
+     * The seam gives way and pieces fall in on their own, into columns you
+     * did not choose.
+     *
+     * They are drawn from the same rungs as your hand, so what lands is
+     * always something you could merge — the difficulty is where, not what.
+     * The exception is rubble, which is the only thing here you cannot use.
      */
     function rain() {
-        var count = settings().wildCount;
+        var count = fallCount();
         var made = [];
         var steps = [];
         var points = 0;
@@ -59,7 +88,9 @@ window.Game = window.Game || {};
             if (!open.length) break;
 
             var where = open[Math.floor(Math.random() * open.length)];
-            var piece = Game.Pieces.randomFor(state.highest);
+            var piece = rubbleNow()
+                ? Game.Pieces.rubble
+                : Game.Pieces.randomFor(state.highest);
             var result = Game.Board.drop(where, piece.id);
             if (!result) continue;
 
@@ -185,6 +216,7 @@ window.Game = window.Game || {};
                 placed: 0,
                 tally: 0, // how many things joined up this game
                 highest: 1, // the best rung reached, which sets what is dealt
+                sinceFall: 0,
                 hand: [],
                 picked: 0,
                 best: save.best,
@@ -231,7 +263,11 @@ window.Game = window.Game || {};
             absorb(result, 0);
             fillHand();
 
-            if (state.placed % settings().wildEvery === 0) rain();
+            state.sinceFall += 1;
+            if (state.sinceFall >= fallGap()) {
+                state.sinceFall = 0;
+                rain();
+            }
 
             Game.Events.emit("game:placed", { result: result });
             Game.Events.emit("game:hand", {});

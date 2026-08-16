@@ -53,7 +53,27 @@ window.Game = window.Game || {};
         piece.next = above ? above.id : null;
     });
 
-    var index = {};
+    /**
+     * Rubble. Not on the ladder, and that is the whole point of it.
+     *
+     * Everything dealt from the ladder merges, which means every piece that
+     * arrives is also fuel — measured, six extra pieces every single drop
+     * could not fill the board, because they all merged away again. Nothing
+     * that can merge is ever really pressure. Rubble cannot merge with
+     * anything, so it only ever accumulates, and the one way to be rid of it
+     * is to complete the column it is sitting in.
+     */
+    var rubble = {
+        id: "rubble",
+        name: "Rubble",
+        icon: "rubble",
+        tint: "tint-rock",
+        tier: 0,
+        next: null,
+        points: 0
+    };
+
+    var index = { rubble: rubble };
     ladder.forEach(function (piece) {
         index[piece.id] = piece;
     });
@@ -84,6 +104,7 @@ window.Game = window.Game || {};
         list: ladder,
         made: made,
         top: ladder[ladder.length - 1],
+        rubble: rubble,
 
         byId: function (id) {
             return index[id] || null;

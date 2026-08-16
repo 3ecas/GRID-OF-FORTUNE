@@ -24,6 +24,7 @@ window.Game = window.Game || {};
 
     var FALL_MS = 190;
     var MERGE_MS = 175;
+    var CLEAR_MS = 330;
 
     /* --------------------------------------------------------------- build */
 
@@ -188,6 +189,39 @@ window.Game = window.Game || {};
         }
     }
 
+    /** A whole line cashed in: the squares flash and the points fly off. */
+    function playClear(step) {
+        var middle = tiles[step.cells[Math.floor(step.cells.length / 2)]];
+
+        step.cells.forEach(function (id, i) {
+            var tile = tiles[id];
+            if (!tile) return;
+            tile.classList.remove("is-cleared");
+            void tile.offsetWidth;
+            tile.style.setProperty("--wait", i * 40 + "ms");
+            tile.classList.add("is-cleared");
+
+            var box = tile.getBoundingClientRect();
+            Game.Sparks.burst(
+                box.left + box.width / 2,
+                box.top + box.height / 2,
+                5
+            );
+        });
+
+        Game.Effects.shake(host, 8, 0);
+        Game.Effects.flash(8);
+        if (middle) {
+            Game.Toast.float(
+                middle,
+                "+" + step.points,
+                null,
+                "tint-gold",
+                "float--big"
+            );
+        }
+    }
+
     /** Walks the sequence, one beat at a time. */
     function playSteps(steps, index, chain) {
         if (index >= steps.length) {
@@ -203,6 +237,15 @@ window.Game = window.Game || {};
             window.setTimeout(function () {
                 playSteps(steps, index + 1, chain);
             }, FALL_MS);
+            return;
+        }
+
+        if (step.type === "clear" || step.type === "cash") {
+            playClear(step);
+            Game.Events.emit("board:merged", { step: step, chain: chain });
+            window.setTimeout(function () {
+                playSteps(steps, index + 1, chain);
+            }, CLEAR_MS);
             return;
         }
 

@@ -66,10 +66,55 @@ window.Game = window.Game || {};
     }
 
     /**
-     * The next pair to join, searched from the ground up so the settlement
-     * resolves from the bottom like it would if you were building it.
+     * Spreads outwards from a square gathering its own kind, in the order it
+     * meets them, and stops the moment it has enough. Nothing beyond that is
+     * taken: three alike touching is one join and a piece left over, not one
+     * greedy join that spends the spare for nothing extra.
+     *
+     * Gives back null if there are not enough to join at all.
      */
-    function nextPair() {
+    function reach(start, need) {
+        var found = [start];
+        var seen = {};
+        var queue = [start];
+        seen[start.id] = true;
+
+        while (queue.length && found.length < need) {
+            var cell = queue.shift();
+
+            // up, then across, and only then down — the square below was
+            // already looked at on the way up, so it is never the one kept
+            var around = [
+                at(cell.x, cell.y - 1),
+                at(cell.x - 1, cell.y),
+                at(cell.x + 1, cell.y),
+                at(cell.x, cell.y + 1)
+            ];
+
+            for (var i = 0; i < around.length && found.length < need; i++) {
+                var other = around[i];
+                if (!other || seen[other.id]) continue;
+                if (other.piece !== start.piece) continue;
+
+                seen[other.id] = true;
+                found.push(other);
+                queue.push(other);
+            }
+        }
+
+        return found.length === need ? found : null;
+    }
+
+    /**
+     * The next group ready to join, searched from the ground up so the
+     * settlement resolves from the bottom like it would if you were building
+     * it. The first square found is the lowest and leftmost, so that is the
+     * one left holding what they become — which is also where gravity would
+     * have put it.
+     */
+    function nextGroup() {
+        var need = Game.Config.game.mergeAt || 2;
+
         for (var y = rows - 1; y >= 0; y--) {
             for (var x = 0; x < cols; x++) {
                 var cell = at(x, y);
@@ -78,15 +123,61 @@ window.Game = window.Game || {};
                 var piece = Game.Pieces.byId(cell.piece);
                 if (!piece || !piece.next) continue;
 
-                var around = [at(x, y - 1), at(x - 1, y), at(x + 1, y)];
-                for (var i = 0; i < around.length; i++) {
-                    var other = around[i];
-                    if (other && other.piece === cell.piece) {
-                        return { keep: cell, eat: other, piece: piece };
-                    }
+                var taking = reach(cell, need);
+                if (taking) {
+                    return { keep: cell, eat: taking, piece: piece };
                 }
             }
         }
+        return null;
+    }
+
+    /**
+     * A row or column with nothing missing.
+     *
+     * Columns are the interesting one: gravity packs the bottom, so a full
+     * row turns up on its own, but a full column means you stacked all the
+     * way to the ceiling — one square from being unable to drop there at all.
+     * Paying out for that is paying out for the risk.
+     */
+    function fullLine() {
+        var settings = Game.Config.game;
+        var x, y, line, full;
+
+        if (settings.clearColumns) {
+            for (x = 0; x < cols; x++) {
+                line = [];
+                full = true;
+                for (y = 0; y < rows; y++) {
+                    var down = at(x, y);
+                    // rubble spoils the column it lands in: it cannot merge
+                    // and it cannot be cashed, so the square is gone for good.
+                    // Without this the clear sweeps rubble away too, and a
+                    // valve that opens whenever the board is full can never
+                    // be overwhelmed — no run would ever end.
+                    if (!down.piece || down.piece === "rubble") {
+                        full = false;
+                        break;
+                    }
+                    line.push(down);
+                }
+                if (full) return line;
+            }
+        }
+
+        if (settings.clearRows) {
+            for (y = 0; y < rows; y++) {
+                line = [];
+                full = true;
+                for (x = 0; x < cols; x++) {
+                    var across = at(x, y);
+                    if (!across.piece) { full = false; break; }
+                    line.push(across);
+                }
+                if (full) return line;
+            }
+        }
+
         return null;
     }
 
@@ -99,22 +190,63 @@ window.Game = window.Game || {};
             steps.push({ type: "fall", moves: first, board: snapshot() });
         }
 
-        while (guard++ < 120) {
-            var pair = nextPair();
-            if (!pair) break;
+        while (guard++ < 200) {
+            var pair = nextGroup();
 
-            pair.eat.piece = null;
-            pair.keep.piece = pair.piece.next;
+            if (pair) {
+                pair.eat.forEach(function (cell) {
+                    if (cell !== pair.keep) cell.piece = null;
+                });
+                pair.keep.piece = pair.piece.next;
 
-            var grown = Game.Pieces.byId(pair.piece.next);
-            steps.push({
-                type: "merge",
-                cell: pair.keep,
-                piece: grown.id,
-                from: pair.piece.id,
-                points: grown.points || 0,
-                board: snapshot()
-            });
+                var grown = Game.Pieces.byId(pair.piece.next);
+                steps.push({
+                    type: "merge",
+                    cell: pair.keep,
+                    piece: grown.id,
+                    from: pair.piece.id,
+                    took: pair.eat.length,
+                    points: grown.points || 0,
+                    board: snapshot()
+                });
+
+                /* The top of the ladder has nothing above it, so left on the
+                   board it is dead weight forever. Instead it is cashed in on
+                   the spot: paid out at a premium and carried off, freeing the
+                   square. Without this the endgame is nothing but disposing of
+                   vaults, and no amount of pressure ends a run — a full column
+                   clears, so pressure only makes clears more frequent. */
+                if (!grown.next && Game.Config.game.cashTop) {
+                    pair.keep.piece = null;
+                    steps.push({
+                        type: "cash",
+                        cells: [pair.keep.id],
+                        piece: grown.id,
+                        points: Math.round(
+                            (grown.points || 0) * Game.Config.game.cashBonus
+                        ),
+                        board: snapshot()
+                    });
+                }
+            } else {
+                var line = fullLine();
+                if (!line) break;
+
+                var worth = 0;
+                var ids = line.map(function (cell) {
+                    var piece = Game.Pieces.byId(cell.piece);
+                    worth += (piece && piece.points) || 0;
+                    cell.piece = null;
+                    return cell.id;
+                });
+
+                steps.push({
+                    type: "clear",
+                    cells: ids,
+                    points: Math.round(worth * Game.Config.game.clearBonus),
+                    board: snapshot()
+                });
+            }
 
             var after = fall();
             if (after.length) {
@@ -125,22 +257,17 @@ window.Game = window.Game || {};
         return steps;
     }
 
-    /** Pulls the merges out of a sequence, for scoring and the album. */
-    function madeIn(steps) {
-        return steps.filter(function (step) {
+    function report(steps) {
+        var made = steps.filter(function (step) {
             return step.type === "merge";
         });
-    }
 
-    function report(steps) {
-        var made = madeIn(steps);
-        return {
-            steps: steps,
-            made: made,
-            points: made.reduce(function (sum, step) {
-                return sum + step.points;
-            }, 0)
-        };
+        // clears pay too, but they make nothing, so they are not "made"
+        var points = steps.reduce(function (sum, step) {
+            return sum + (step.points || 0);
+        }, 0);
+
+        return { steps: steps, made: made, points: points };
     }
 
     Game.Board = {
