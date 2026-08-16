@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     Game.BoardView.init();
     Game.RoundView.init();
+    Game.ScoreView.init();
 
     Game.Round.start();
 });

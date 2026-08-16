@@ -42,6 +42,7 @@ window.Game = window.Game || {};
 
         var live = dealingNow();
 
+        trackHost.style.setProperty("--count", Game.Pieces.list.length);
         trackHost.innerHTML = Game.Pieces.list
             .map(function (piece) {
                 var known = piece.tier <= round.highest;
@@ -198,16 +199,14 @@ window.Game = window.Game || {};
         pendingOver = null;
         closeSheet();
 
-        var won = detail.reason === "built";
-        var top = won ? Game.Pieces.top : detail.highest;
+        var top = detail.highest;
+        var crowned = detail.crowns > 0;
 
         overHost.innerHTML =
             '<div class="over__card' +
-            (won ? " is-won" : "") +
+            (crowned ? " is-won" : "") +
             '">' +
-            '<span class="over__label">' +
-            (won ? "You built it" : "No room left") +
-            "</span>" +
+            '<span class="over__label">No room left</span>' +
             (top
                 ? '<span class="over__crown ' +
                   top.tint +
@@ -216,8 +215,11 @@ window.Game = window.Game || {};
                   "</span>"
                 : "") +
             '<span class="over__top">' +
-            (won
-                ? "A " + Game.Pieces.top.name + ", in " + detail.moves + " moves"
+            (crowned
+                ? detail.crowns +
+                  (detail.crowns === 1
+                      ? " crown, and then some"
+                      : " crowns, and then some")
                 : top
                 ? "You got as far as " + top.name
                 : "Nothing made") +
@@ -226,6 +228,8 @@ window.Game = window.Game || {};
             detail.score +
             "</span>" +
             '<span class="over__meta">' +
+            detail.moves +
+            " drops · " +
             detail.made +
             (detail.made === 1 ? " thing made" : " things made") +
             (detail.record ? " · a new best" : " · best " + detail.best) +
@@ -306,6 +310,15 @@ window.Game = window.Game || {};
                 Game.Toast.notice(
                     "Now dealing " + detail.lowest.name.toLowerCase() + "s",
                     "good"
+                );
+            });
+
+            Game.Events.on("game:rain", function (detail) {
+                Game.Toast.notice(
+                    detail.count === 1
+                        ? "A piece came loose"
+                        : detail.count + " pieces came loose",
+                    "warn"
                 );
             });
 

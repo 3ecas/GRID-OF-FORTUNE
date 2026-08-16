@@ -38,17 +38,28 @@ is — measured, across every board from 4×4 to 6×6 — and what you are left 
 is scattered pieces with a gap between each one. Falling closes those holes the
 moment they appear: the built part stays packed, the empty part stays overhead.
 
-The ladder is twelve rungs, a copper coin to the crown:
+The ladder is nineteen rungs, dug out of the ground and locked away again:
 
 ```
-copper → silver → gold → coin stack → ingot → amethyst →
-topaz → emerald → ruby → sapphire → diamond → crown
+dirt → stone → iron → silver → tin →
+copper coin → silver coin → gold coin → coin stack → ingot →
+topaz → amethyst → emerald → ruby → sapphire → diamond →
+crown → treasure → vault
 ```
 
-Metals first, then stones, each rarer than the last, and each cut differently
-so they never blur together — raw cluster, pear, step, marquise, brilliant.
-The whole theme is the list in `js/data/pieces.js` plus its icons; nothing
-else in the game knows what a diamond is.
+Ore, then coin, then stone, then what you keep them in. Every stone has its
+own cut — pear, step, marquise, brilliant — so they never blur into coloured
+lumps. The whole theme is that list in `js/data/pieces.js` plus its icons;
+nothing else in the game knows what a diamond is, which is what makes adding
+a rung a one-line job.
+
+**Nothing ends the game but a full board.** The vault has nothing above it, so
+it simply sits there taking a square — reaching the top is not a win, it is
+the start of the squeeze. The score is the point.
+
+**Every sixth drop the seam gives way** and two pieces fall in on their own,
+into columns you did not pick. They come from the rungs already in your hand,
+so they are never unmergeable — what they cost you is the choice of where.
 
 **The strip above the board** is the same ladder laid out left to right. It
 lights up as far as you have climbed *this game*, with a ring on the three
@@ -82,15 +93,11 @@ the rest of the game. With this rule nothing on the board is ever below what is
 being dealt, so **every square always has a way out**. Verified across ten
 full games: zero stranded pieces.
 
-**Making the Crown wins.** That is the end of the game, not a high score to
-chase — a good player gets there in about 140 drops. If the board fills to the
-top first, that is the other ending.
-
 **Game length is one number:** `dealBehind` in `js/core/config.js`, which is
-how far the hand trails the best thing you have built. Measured with a bot
-playing well, on the twelve-rung ladder: **2 → 107 drops, 3 → 202**. Board
-size barely moves it. The other lever is the ladder itself — each rung past
-the middle costs roughly 25–30 drops.
+how far the hand trails the best thing you have made. Measured with a bot that
+never jams, on the nineteen-rung ladder: **2 → ~440 drops, 3 → ~765**. A
+person jams long before either. Board size barely moves it; the ladder length
+is the other lever.
 
 The ladder down the side of the page stays dark until you have made each rung,
 and remembers between games.

@@ -10,9 +10,16 @@
         <link rel="stylesheet" href="css/game.css" />
     </head>
     <body class="game">
+        <div class="scoreboard" id="scoreboard" aria-live="off">
+            <span class="scoreboard__value">0</span>
+            <span class="scoreboard__best"></span>
+        </div>
+
         <main class="table">
-            <ol class="track" id="track" aria-label="What can be made"></ol>
-            <div class="board" id="board" aria-label="Board"></div>
+            <div class="table__row">
+                <ol class="track" id="track" aria-label="What can be made"></ol>
+                <div class="board" id="board" aria-label="Board"></div>
+            </div>
             <div class="hand" id="hand"></div>
         </main>
 
@@ -35,6 +42,7 @@
         <script src="js/ui/effects.js"></script>
         <script src="js/ui/boardview.js"></script>
         <script src="js/ui/roundview.js"></script>
+        <script src="js/ui/scoreview.js"></script>
 
         <script src="js/pages/game.js"></script>
     </body>

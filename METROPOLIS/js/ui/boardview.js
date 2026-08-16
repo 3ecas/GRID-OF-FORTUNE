@@ -20,6 +20,7 @@ window.Game = window.Game || {};
     var busy = false;
     var pointer = { x: 0, y: 0, known: false };
     var seenThisDrop = {};
+    var pending = [];
 
     var FALL_MS = 190;
     var MERGE_MS = 175;
@@ -156,6 +157,9 @@ window.Game = window.Game || {};
         void tile.offsetWidth;
         tile.classList.add("is-made");
 
+        // the score counts up in step with the pops, not all at the end
+        Game.Events.emit("board:merged", { step: step, chain: chain });
+
         var neighbours = around(step.cell);
         Game.Effects.burst(tile, neighbours, made.tier, chain);
         Game.Effects.shake(host, made.tier, chain);
@@ -187,9 +191,7 @@ window.Game = window.Game || {};
     /** Walks the sequence, one beat at a time. */
     function playSteps(steps, index, chain) {
         if (index >= steps.length) {
-            busy = false;
-            paintHover();
-            Game.Events.emit("board:settled", {});
+            advance();
             return;
         }
 
@@ -215,14 +217,28 @@ window.Game = window.Game || {};
         }, hold);
     }
 
-    function play(steps) {
-        seenThisDrop = {};
-        if (!steps || !steps.length) {
-            paintBoard(Game.Board.snapshot());
+    /**
+     * One move can set off more than one sequence — the drop itself, then
+     * the countryside growing up behind it, then a fall of loose pieces.
+     * They queue so each plays out fully instead of cutting the last one off.
+     */
+    function enqueue(steps) {
+        if (!steps || !steps.length) return;
+        pending.push(steps);
+        if (!busy) advance();
+    }
+
+    function advance() {
+        if (!pending.length) {
+            busy = false;
+            paintHover();
+            Game.Events.emit("board:settled", {});
             return;
         }
+
         busy = true;
-        playSteps(steps, 0, 0);
+        seenThisDrop = {};
+        playSteps(pending.shift(), 0, 0);
     }
 
     /* -------------------------------------------------------------- clicks */
@@ -258,13 +274,10 @@ window.Game = window.Game || {};
         var round = Game.Round.get();
         if (!round || !round.running) return;
 
-        var result = Game.Round.play(column);
-        if (!result) {
+        // playback is driven by the events the move raises, in order
+        if (!Game.Round.play(column)) {
             Game.Toast.notice("That column is full.", "warn");
-            return;
         }
-
-        play(result.steps);
     }
 
     Game.BoardView = {
@@ -279,12 +292,23 @@ window.Game = window.Game || {};
             Game.Events.on("game:started", function () {
                 hovered = -1;
                 busy = false;
+                pending = [];
                 build();
             });
 
-            // the countryside growing up behind the hand
+            // the move itself
+            Game.Events.on("board:steps", function (detail) {
+                enqueue(detail.steps);
+            });
+
+            // then anything left behind growing up to catch the hand
             Game.Events.on("game:grown", function (detail) {
-                play(detail.settled.steps);
+                enqueue(detail.settled.steps);
+            });
+
+            // then whatever the seam drops on you
+            Game.Events.on("game:rain", function (detail) {
+                enqueue(detail.steps);
             });
         },
 

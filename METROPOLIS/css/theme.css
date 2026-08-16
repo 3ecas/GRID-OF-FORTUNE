@@ -76,6 +76,22 @@
 
     /* Metals and stones. Three tones each so they can be properly cut, but
        kept soft — these sit on cream, not on velvet. */
+    --i-dirt: #b08a63;
+    --i-dirt-light: #cba888;
+    --i-dirt-deep: #8b6a47;
+
+    --i-rock: #b2b5af;
+    --i-rock-light: #d0d3cd;
+    --i-rock-deep: #8c8f8a;
+
+    --i-iron: #8d949d;
+    --i-iron-light: #adb4bc;
+    --i-iron-deep: #6a7078;
+
+    --i-tin: #c6ced4;
+    --i-tin-light: #e4ebef;
+    --i-tin-deep: #9aa5ad;
+
     --i-copper: #d59468;
     --i-copper-light: #f2bb95;
     --i-copper-deep: #ac6d40;

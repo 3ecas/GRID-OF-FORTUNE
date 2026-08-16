@@ -38,6 +38,42 @@ window.Game = window.Game || {};
         }
     }
 
+    /**
+     * A few pieces fall in on their own, into columns you did not choose.
+     *
+     * They are drawn from the same rungs as your hand, so they are always
+     * something you could merge — the difficulty is where they land, not what
+     * they are.
+     */
+    function rain() {
+        var count = settings().wildCount;
+        var made = [];
+        var steps = [];
+        var points = 0;
+
+        for (var i = 0; i < count; i++) {
+            var open = [];
+            for (var col = 0; col < Game.Board.size().cols; col++) {
+                if (Game.Board.landing(col)) open.push(col);
+            }
+            if (!open.length) break;
+
+            var where = open[Math.floor(Math.random() * open.length)];
+            var piece = Game.Pieces.randomFor(state.highest);
+            var result = Game.Board.drop(where, piece.id);
+            if (!result) continue;
+
+            steps = steps.concat(result.steps);
+            made = made.concat(result.made);
+            points += result.points;
+        }
+
+        if (!steps.length) return;
+
+        Game.Events.emit("game:rain", { steps: steps, count: count });
+        absorb({ made: made, points: points }, 0);
+    }
+
     /** Walks a piece up the ladder until it reaches this rung. */
     function grownTo(piece, tier) {
         while (piece && piece.tier < tier && piece.next) {
@@ -110,13 +146,19 @@ window.Game = window.Game || {};
         if (record) state.best = state.score;
         writeSave();
 
+        var top = Game.Pieces.top;
+        var crowns = Game.Board.cells().filter(function (cell) {
+            return cell.piece === top.id;
+        }).length;
+
         Game.Events.emit("game:over", {
-            reason: reason, // "built" if you got to the top, "full" if not
+            reason: reason,
             score: state.score,
             best: state.best,
             record: record,
             made: state.tally,
             moves: state.placed,
+            crowns: crowns,
             highest: Game.Board.highest()
         });
     }
@@ -181,15 +223,23 @@ window.Game = window.Game || {};
             state.hand.splice(index, 1);
             state.picked = 0;
             state.placed += 1;
+
+            // announce the move before anything the move sets off, so the
+            // view plays them back in the order they happened
+            Game.Events.emit("board:steps", { steps: result.steps });
+
             absorb(result, 0);
             fillHand();
+
+            if (state.placed % settings().wildEvery === 0) rain();
 
             Game.Events.emit("game:placed", { result: result });
             Game.Events.emit("game:hand", {});
 
-            // the top of the ladder is the point of the whole thing
-            if (state.highest >= Game.Pieces.list.length) finish("built");
-            else if (Game.Board.isFull()) finish("full");
+            // Reaching the top does not end anything — the crown has nothing
+            // above it, so it simply sits there taking a square. Keep going
+            // and keep making them; the board filling is the only ending.
+            if (Game.Board.isFull()) finish("full");
 
             return result;
         },

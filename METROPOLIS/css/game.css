@@ -13,18 +13,88 @@
     align-items: center;
     justify-content: center;
     gap: 16px;
-    padding: 20px;
+    padding: 92px 20px 20px;
+}
+
+/* stretch, so the strip stands exactly as tall as the board beside it */
+.table__row {
+    display: flex;
+    align-items: stretch;
+    gap: 14px;
+}
+
+/* --- The score ----------------------------------------------------------
+   Top centre, counting rather than jumping, and popping in proportion to
+   what was just won.
+   ------------------------------------------------------------------------ */
+
+.scoreboard {
+    position: fixed;
+    top: 18px;
+    left: 50%;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.scoreboard__value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+}
+
+.scoreboard__value.is-up {
+    animation: score-up 0.44s cubic-bezier(0.2, 1.5, 0.4, 1);
+}
+
+.scoreboard__best {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+@keyframes score-up {
+    0% {
+        transform: scale(1);
+    }
+    35% {
+        transform: scale(var(--pop, 1.2));
+        color: var(--accent-deep);
+    }
+    100% {
+        transform: scale(1);
+    }
 }
 
 /* --- The run of everything, left to right -------------------------------- */
 
+/* The run of everything, standing beside the board: first rung at the top,
+   last at the bottom. --count comes from the ladder length so it always
+   fits in one column, however many rungs there are. */
 .track {
-    --step: clamp(20px, 3.4vmin, 30px);
+    --count: 19;
+    --room: calc(100vh - 210px);
+    --step: clamp(
+        11px,
+        min(2.7vmin, calc(var(--room) / var(--count) - 5px)),
+        26px
+    );
 
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: calc(var(--step) * 0.22);
-    padding: 8px 14px;
+    justify-content: space-between;
+    gap: calc(var(--step) * 0.18);
+    padding: 12px 8px;
     border: 1px solid var(--line);
     border-radius: var(--radius-pill);
     background: var(--panel);
@@ -76,8 +146,8 @@
     --cols: 6;
     --gap: 7px;
     --tile: clamp(
-        38px,
-        min(12.5vmin, calc((100vh - 250px) / var(--cols))),
+        34px,
+        min(12.5vmin, calc((100vh - 260px) / var(--cols))),
         94px
     );
 
@@ -703,11 +773,24 @@
 
 @media (max-width: 700px) {
     .table {
-        padding: 14px;
+        padding: 84px 12px 14px;
         gap: 12px;
     }
 
+    .table__row {
+        gap: 8px;
+    }
+
+    .track {
+        padding: 10px 5px;
+    }
+
+    /* the column beside the board has to come out of the width too */
     .board {
-        --tile: clamp(34px, calc((100vw - 56px) / var(--cols) - 7px), 94px);
+        --tile: clamp(
+            26px,
+            calc((100vw - 92px) / var(--cols) - 6px),
+            94px
+        );
     }
 }

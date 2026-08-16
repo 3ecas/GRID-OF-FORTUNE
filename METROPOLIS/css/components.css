@@ -182,6 +182,27 @@
     background: #f8edd0;
 }
 
+/* out of the ground */
+.tint-dirt {
+    color: #7f6041;
+    background: #f0e3d3;
+}
+
+.tint-rock {
+    color: #6b6e69;
+    background: #eceeea;
+}
+
+.tint-iron {
+    color: #5c626a;
+    background: #e9ecef;
+}
+
+.tint-tin {
+    color: #6c777f;
+    background: #eff3f6;
+}
+
 /* metals and stones */
 .tint-copper {
     color: #9a6a41;
@@ -231,6 +252,16 @@
 .tint-crown {
     color: #96742c;
     background: #fcf1da;
+}
+
+.tint-treasure {
+    color: #925c33;
+    background: #f8e6d6;
+}
+
+.tint-vault {
+    color: #5e6b78;
+    background: #eef1f5;
 }
 
 /* --- Notices (bottom centre) -------------------------------------------- */

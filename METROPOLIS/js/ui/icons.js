@@ -84,6 +84,50 @@ window.Game = window.Game || {};
            single light source — the right-hand face is always the shaded one.
            No highlights, no emblems, no trinkets. */
 
+        /* what you start with: a heap of soil */
+        dirt:
+            '<path d="M2.6 18.8c0-4.4 4.2-7.6 9.4-7.6s9.4 3.2 9.4 7.6Z" ' +
+            'fill="var(--i-dirt)"/>' +
+            '<path d="M12 11.2c5.2 0 9.4 3.2 9.4 7.6H12Z" ' +
+            'fill="var(--i-dirt-deep)"/>' +
+            '<path d="M7.4 13.6a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z" ' +
+            'fill="var(--i-dirt-light)"/>',
+
+        /* an angular chunk */
+        rock:
+            '<path d="M3 19.2 5.6 9.6 12 6.6l6.6 3.8 2.4 8.8Z" ' +
+            'fill="var(--i-rock)"/>' +
+            '<path d="M12 6.6l6.6 3.8 2.4 8.8H12Z" ' +
+            'fill="var(--i-rock-deep)"/>' +
+            '<path d="M5.6 9.6 12 6.6l6.6 3.8-6.6 2.4Z" ' +
+            'fill="var(--i-rock-light)"/>',
+
+        /* smelted: a small rough bar */
+        iron:
+            '<path d="M3.4 19.4 5.6 13h12.8l2.2 6.4Z" fill="var(--i-iron)"/>' +
+            '<path d="M12 13h6.4l2.2 6.4H12Z" fill="var(--i-iron-deep)"/>' +
+            '<path d="M5.6 13 7 9.6h10l1.4 3.4Z" fill="var(--i-iron-light)"/>' +
+            '<path d="M12 9.6h5l1.4 3.4H12Z" fill="var(--i-iron)"/>',
+
+        /* two bright nuggets */
+        silver_ore:
+            '<path d="M12.4 19.6c-3 0-5-1.8-5-4.2s2-4.2 5-4.2 5 1.8 5 4.2-2 4.2-5 4.2Z" ' +
+            'fill="var(--i-silver)"/>' +
+            '<path d="M12.4 11.2c3 0 5 1.8 5 4.2s-2 4.2-5 4.2Z" ' +
+            'fill="var(--i-silver-deep)"/>' +
+            '<path d="M8.4 12.4c-2.4 0-4-1.4-4-3.4s1.6-3.4 4-3.4 4 1.4 4 3.4-1.6 3.4-4 3.4Z" ' +
+            'fill="var(--i-silver-light)"/>' +
+            '<path d="M8.4 5.6c2.4 0 4 1.4 4 3.4s-1.6 3.4-4 3.4Z" ' +
+            'fill="var(--i-silver)"/>',
+
+        /* a cast block — a cube, so it never reads as another bar */
+        tin:
+            '<path d="M12 3.4 20.6 8.2 12 13 3.4 8.2Z" ' +
+            'fill="var(--i-tin-light)"/>' +
+            '<path d="M3.4 8.2 12 13v7.6L3.4 15.8Z" fill="var(--i-tin)"/>' +
+            '<path d="M20.6 8.2 12 13v7.6l8.6-4.8Z" ' +
+            'fill="var(--i-tin-deep)"/>',
+
         copper:
             '<circle cx="12" cy="12" r="7" fill="var(--i-copper)"/>' +
             '<path d="M12 5a7 7 0 0 1 0 14Z" fill="var(--i-copper-deep)"/>' +
@@ -181,6 +225,25 @@ window.Game = window.Game || {};
             'fill="var(--i-gold-deep)"/>' +
             '<path d="M4.2 17.8h15.6V20H4.2Z" fill="var(--i-gold-light)"/>' +
             '<path d="M12 17.8h7.8V20H12Z" fill="var(--i-gold)"/>',
+
+        /* what a crown goes into */
+        treasure:
+            '<path d="M3.4 12.6h17.2v7.4H3.4Z" fill="var(--i-copper)"/>' +
+            '<path d="M12 12.6h8.6v7.4H12Z" fill="var(--i-copper-deep)"/>' +
+            '<path d="M3.4 12.6a8.6 5.2 0 0 1 17.2 0Z" ' +
+            'fill="var(--i-copper-light)"/>' +
+            '<path d="M12 7.4a8.6 5.2 0 0 1 8.6 5.2H12Z" ' +
+            'fill="var(--i-copper)"/>' +
+            '<path d="M10.4 11.4h3.2v5.2h-3.2Z" fill="var(--i-gold)"/>',
+
+        /* and what the treasure goes into */
+        vault:
+            '<rect x="2.8" y="3.8" width="18.4" height="16.4" rx="3" ' +
+            'fill="var(--i-silver)"/>' +
+            '<path d="M12 3.8h6.4a3 3 0 0 1 3 3v10.4a3 3 0 0 1-3 3H12Z" ' +
+            'fill="var(--i-silver-deep)"/>' +
+            '<circle cx="12" cy="12" r="5.6" fill="var(--i-silver-light)"/>' +
+            '<circle cx="12" cy="12" r="2.2" fill="var(--i-gold)"/>',
 
         /* thrown about when something joins up */
         sparkle:
