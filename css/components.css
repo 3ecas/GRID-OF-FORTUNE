@@ -46,87 +46,118 @@
 }
 
 /* --- Tints ---------------------------------------------------------------
-   The plate a piece sits on, one per rung of the ladder.
+   The plate a piece sits on, one per rung of the ladder — and it must be
+   ONE PER RUNG. Whether two squares can join is a thing you read at a
+   glance, so two rungs wearing the same colour is not a cosmetic slip: it
+   looks exactly like a broken merge.
+
+   Neighbours on the ladder are the ones that matter, since those are the
+   two you hold at the same time. Every touching pair here is pulled apart
+   by hue where the theme allows it, and by lightness where it does not —
+   the three golds in the middle are gold because they have to be, so they
+   run dark, mid, pale instead.
    ------------------------------------------------------------------------ */
 
+/* dug up: earth, then rock, then what is in the rock */
 .tint-dirt {
-    color: #7f6041;
-    background: #f0e3d3;
+    color: #8a6446;
+    background: #f2e4d4;
 }
 
 .tint-rock {
-    color: #6b6e69;
-    background: #eceeea;
+    color: #7c8178;
+    background: #ecefe9;
 }
 
 .tint-iron {
-    color: #5c626a;
-    background: #e9ecef;
+    color: #4d5666;
+    background: #e6e9ee;
+}
+
+/* ore leans lavender and tin leans blue, so neither reads as plain silver —
+   there are already three silvery things on this ladder */
+.tint-ore {
+    color: #8981b4;
+    background: #eeecf8;
 }
 
 .tint-tin {
-    color: #6c777f;
-    background: #eff3f6;
+    color: #4a7e91;
+    background: #e3f0f4;
 }
 
+/* minted: copper, silver, then the three golds by weight */
 .tint-copper {
-    color: #9a6a41;
-    background: #f7e5d5;
+    color: #b1683a;
+    background: #f9e4d3;
 }
 
 .tint-silver {
-    color: #69767f;
-    background: #edf0f3;
+    color: #98a4ad;
+    background: #eff3f6;
 }
 
 .tint-gold {
-    color: #96742c;
-    background: #faeed3;
+    color: #b8901f;
+    background: #fbf0d2;
 }
 
+.tint-coins {
+    color: #8a6a14;
+    background: #f4e8c8;
+}
+
+.tint-ingot {
+    color: #cdae5c;
+    background: #fcf4dd;
+}
+
+/* cut: the stones, each its own hue */
+/* pushed orange, away from the golds three rungs below it */
 .tint-topaz {
-    color: #8f6222;
-    background: #fbeed7;
+    color: #dd7614;
+    background: #fdead2;
 }
 
 .tint-amethyst {
-    color: #6d5892;
-    background: #f0e9f8;
+    color: #7a5aa2;
+    background: #f0e9f9;
 }
 
 .tint-emerald {
-    color: #3f7357;
-    background: #e3f2e9;
+    color: #2f8059;
+    background: #e0f3e8;
 }
 
 .tint-ruby {
-    color: #9c4d5e;
-    background: #fae3e8;
+    color: #b23f57;
+    background: #fbe2e7;
 }
 
 .tint-sapphire {
-    color: #486a93;
-    background: #e5eef9;
+    color: #3b6bb4;
+    background: #e4edfa;
 }
 
 .tint-diamond {
-    color: #57798a;
-    background: #eaf4f8;
+    color: #4aa2bb;
+    background: #e6f6fa;
 }
 
+/* kept: the last three */
 .tint-crown {
-    color: #96742c;
-    background: #fcf1da;
+    color: #caa227;
+    background: #fdf3da;
 }
 
 .tint-treasure {
-    color: #925c33;
-    background: #f8e6d6;
+    color: #9c5628;
+    background: #f8e5d3;
 }
 
 .tint-vault {
-    color: #5e6b78;
-    background: #eef1f5;
+    color: #545f6e;
+    background: #ebeef3;
 }
 
 /* --- Notices (bottom centre) -------------------------------------------- */

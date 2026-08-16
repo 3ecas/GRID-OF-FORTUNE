@@ -22,17 +22,20 @@ window.Game = window.Game || {};
            doubling ladder compounds into the millions. Half again keeps a
            good run in five figures while a vault is still worth a thousand
            stones. */
+        /* Every rung owns its own tint. Sharing one between rungs reads as a
+           bug at the table: four alike-looking squares that will not join,
+           because two of them were never the same thing. */
         { id: "dirt", name: "Dirt", icon: "dirt", tint: "tint-dirt" },
         { id: "stone", name: "Stone", icon: "rock", tint: "tint-rock", points: 1 },
         { id: "iron", name: "Iron", icon: "iron", tint: "tint-iron", points: 2 },
-        { id: "silver_ore", name: "Silver", icon: "silver_ore", tint: "tint-silver", points: 3 },
+        { id: "silver_ore", name: "Silver", icon: "silver_ore", tint: "tint-ore", points: 3 },
         { id: "tin", name: "Tin", icon: "tin", tint: "tint-tin", points: 5 },
 
         { id: "copper", name: "Copper Coin", icon: "copper", tint: "tint-copper", points: 7 },
         { id: "silver", name: "Silver Coin", icon: "silver", tint: "tint-silver", points: 11 },
         { id: "gold", name: "Gold Coin", icon: "gold", tint: "tint-gold", points: 16 },
-        { id: "coins", name: "Coin Stack", icon: "coins", tint: "tint-gold", points: 24 },
-        { id: "ingot", name: "Ingot", icon: "ingot", tint: "tint-gold", points: 36 },
+        { id: "coins", name: "Coin Stack", icon: "coins", tint: "tint-coins", points: 24 },
+        { id: "ingot", name: "Ingot", icon: "ingot", tint: "tint-ingot", points: 36 },
 
         { id: "topaz", name: "Topaz", icon: "topaz", tint: "tint-topaz", points: 54 },
         { id: "amethyst", name: "Amethyst", icon: "amethyst", tint: "tint-amethyst", points: 81 },
