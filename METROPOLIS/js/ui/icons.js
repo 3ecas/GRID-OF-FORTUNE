@@ -78,7 +78,115 @@ window.Game = window.Game || {};
             '<circle cx="8.3" cy="10.5" r="4.5" fill="var(--i-leaf)"/>' +
             '<circle cx="12" cy="7.3" r="5.3" fill="var(--i-leaf)"/>',
 
+        /* ---- the ladder: metals, then stones, then the crown ---- */
+
+        /* One system for the whole ladder: flat geometry, two tones, and a
+           single light source — the right-hand face is always the shaded one.
+           No highlights, no emblems, no trinkets. */
+
+        copper:
+            '<circle cx="12" cy="12" r="7" fill="var(--i-copper)"/>' +
+            '<path d="M12 5a7 7 0 0 1 0 14Z" fill="var(--i-copper-deep)"/>' +
+            '<circle cx="12" cy="12" r="3.4" fill="var(--i-copper-light)"/>',
+
+        silver:
+            '<circle cx="12" cy="12" r="8" fill="var(--i-silver)"/>' +
+            '<path d="M12 4a8 8 0 0 1 0 16Z" fill="var(--i-silver-deep)"/>' +
+            '<circle cx="12" cy="12" r="4.8" fill="var(--i-silver-light)"/>' +
+            '<circle cx="12" cy="12" r="2" fill="var(--i-silver)"/>',
+
+        gold:
+            '<circle cx="12" cy="12" r="9" fill="var(--i-gold)"/>' +
+            '<path d="M12 3a9 9 0 0 1 0 18Z" fill="var(--i-gold-deep)"/>' +
+            '<circle cx="12" cy="12" r="5.8" fill="var(--i-gold-light)"/>' +
+            '<circle cx="12" cy="12" r="3" fill="var(--i-gold)"/>',
+
+        /* three discs, seen from an angle */
+        coins:
+            '<ellipse cx="12" cy="17.4" rx="8" ry="2.8" ' +
+            'fill="var(--i-gold-deep)"/>' +
+            '<ellipse cx="12" cy="12.6" rx="8" ry="2.8" fill="var(--i-gold)"/>' +
+            '<ellipse cx="12" cy="7.8" rx="8" ry="2.8" ' +
+            'fill="var(--i-gold-light)"/>',
+
+        /* one cast bar, tapered the way a bar is, with a lit top face */
+        ingot:
+            '<path d="M3.6 19.8 6.6 12.6h10.8l3 7.2Z" fill="var(--i-gold)"/>' +
+            '<path d="M12 12.6h5.4l3 7.2H12Z" fill="var(--i-gold-deep)"/>' +
+            '<path d="M6.6 12.6 8.2 9.2h7.6l1.6 3.4Z" ' +
+            'fill="var(--i-gold-light)"/>' +
+            '<path d="M12 9.2h3.8l1.6 3.4H12Z" fill="var(--i-gold)"/>',
+
+        /* a single hexagonal crystal, cut down the middle */
+        amethyst:
+            '<path d="M12 2.6 17.2 8v8.4L12 21.4 6.8 16.4V8Z" ' +
+            'fill="var(--i-amethyst)"/>' +
+            '<path d="M12 2.6 17.2 8v8.4L12 21.4Z" ' +
+            'fill="var(--i-amethyst-deep)"/>' +
+            '<path d="M6.8 8 12 2.6 17.2 8 12 10.6Z" ' +
+            'fill="var(--i-amethyst-light)"/>',
+
+        /* pear cut */
+        topaz:
+            '<path d="M12 2.6c3.6 4 5.6 6.9 5.6 10.2a5.6 5.6 0 0 1-11.2 0c0-3.3 2-6.2 5.6-10.2Z" ' +
+            'fill="var(--i-topaz)"/>' +
+            '<path d="M12 2.6c3.6 4 5.6 6.9 5.6 10.2a5.6 5.6 0 0 1-5.6 5.6Z" ' +
+            'fill="var(--i-topaz-deep)"/>' +
+            '<path d="M6.4 12.8h11.2a5.6 5.6 0 0 1-11.2 0Z" ' +
+            'fill="var(--i-topaz-light)" opacity=".45"/>',
+
+        /* marquise */
+        ruby:
+            '<path d="M12 2.6c3.3 3.7 5 6.8 5 9.4s-1.7 5.7-5 9.4c-3.3-3.7-5-6.8-5-9.4s1.7-5.7 5-9.4Z" ' +
+            'fill="var(--i-ruby)"/>' +
+            '<path d="M12 2.6c3.3 3.7 5 6.8 5 9.4s-1.7 5.7-5 9.4Z" ' +
+            'fill="var(--i-ruby-deep)"/>' +
+            '<path d="M7 12h10" fill="none"/>' +
+            '<path d="M12 2.6c3.3 3.7 5 6.8 5 9.4H7c0-2.6 1.7-5.7 5-9.4Z" ' +
+            'fill="var(--i-ruby-light)" opacity=".4"/>',
+
+        /* step cut */
+        emerald:
+            '<path d="M8.4 4h7.2l4.4 4.4v7.2L15.6 20H8.4L4 15.6V8.4Z" ' +
+            'fill="var(--i-emerald)"/>' +
+            '<path d="M12 4h3.6L20 8.4v7.2L15.6 20H12Z" ' +
+            'fill="var(--i-emerald-deep)"/>' +
+            '<path d="M9.6 7h4.8l2.6 2.6v4.8L14.4 17H9.6L7 14.4V9.6Z" ' +
+            'fill="var(--i-emerald-light)" opacity=".5"/>',
+
+        /* brilliant: table, girdle, pavilion */
+        sapphire:
+            '<path d="M7.4 3.6h9.2L21 9.4 12 20.8 3 9.4Z" ' +
+            'fill="var(--i-sapphire)"/>' +
+            '<path d="M12 3.6h4.6L21 9.4 12 20.8Z" ' +
+            'fill="var(--i-sapphire-deep)"/>' +
+            '<path d="M7.4 3.6h9.2L18.4 9.4H5.6Z" ' +
+            'fill="var(--i-sapphire-light)"/>' +
+            '<path d="M12 3.6h4.6l1.8 5.8H12Z" fill="var(--i-sapphire)"/>',
+
+        diamond:
+            '<path d="M7.4 3.6h9.2L21 9.4 12 20.8 3 9.4Z" ' +
+            'fill="var(--i-diamond)"/>' +
+            '<path d="M12 3.6h4.6L21 9.4 12 20.8Z" ' +
+            'fill="var(--i-diamond-deep)"/>' +
+            '<path d="M7.4 3.6h9.2L18.4 9.4H5.6Z" ' +
+            'fill="var(--i-diamond-light)"/>' +
+            '<path d="M12 3.6h4.6l1.8 5.8H12Z" fill="var(--i-diamond)"/>',
+
+        /* the whole point: three points and a band */
+        crown:
+            '<path d="M2.8 6.8 7 12.2 12 4l5 8.2 4.2-5.4-1.4 10.2H4.2Z" ' +
+            'fill="var(--i-gold)"/>' +
+            '<path d="M12 4l5 8.2 4.2-5.4-1.4 10.2H12Z" ' +
+            'fill="var(--i-gold-deep)"/>' +
+            '<path d="M4.2 17.8h15.6V20H4.2Z" fill="var(--i-gold-light)"/>' +
+            '<path d="M12 17.8h7.8V20H12Z" fill="var(--i-gold)"/>',
+
         /* thrown about when something joins up */
+        sparkle:
+            '<path d="M12 2.2 14 10 21.8 12 14 14 12 21.8 10 14 2.2 12 10 10Z" ' +
+            'fill="var(--i-gold-light)"/>',
+
         leaf:
             '<path d="M12 2.4c4.7 3.3 7.2 7.2 7.2 10.8 0 3.8-3.2 8.4-7.2 8.4s-7.2-4.6-7.2-8.4c0-3.6 2.5-7.5 7.2-10.8Z" ' +
             'fill="var(--i-leaf)"/>' +

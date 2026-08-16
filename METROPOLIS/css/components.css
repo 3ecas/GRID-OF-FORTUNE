@@ -182,6 +182,57 @@
     background: #f8edd0;
 }
 
+/* metals and stones */
+.tint-copper {
+    color: #9a6a41;
+    background: #f7e5d5;
+}
+
+.tint-silver {
+    color: #69767f;
+    background: #edf0f3;
+}
+
+.tint-gold {
+    color: #96742c;
+    background: #faeed3;
+}
+
+.tint-amethyst {
+    color: #6d5892;
+    background: #f0e9f8;
+}
+
+.tint-topaz {
+    color: #8f6222;
+    background: #fbeed7;
+}
+
+.tint-emerald {
+    color: #3f7357;
+    background: #e3f2e9;
+}
+
+.tint-ruby {
+    color: #9c4d5e;
+    background: #fae3e8;
+}
+
+.tint-sapphire {
+    color: #486a93;
+    background: #e5eef9;
+}
+
+.tint-diamond {
+    color: #57798a;
+    background: #eaf4f8;
+}
+
+.tint-crown {
+    color: #96742c;
+    background: #fcf1da;
+}
+
 /* --- Notices (bottom centre) -------------------------------------------- */
 
 .notice-host {

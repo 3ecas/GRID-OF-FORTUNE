@@ -1,20 +1,25 @@
 window.Game = window.Game || {};
 
 /**
- * sparks.js — the little burst of leaves thrown out when something joins up.
+ * sparks.js — the little burst thrown out when something joins up.
  *
- * Each leaf gets its own angle, distance, spin and green, so no two bursts
+ * Each spark gets its own angle, distance, spin and colour, so no two bursts
  * look alike. They arc up and fall back, which reads as a pop rather than a
  * spray.
  */
 (function () {
     var host = null;
 
-    var GREENS = [
-        ["#9ec78c", "#7ba668"],
-        ["#b3d3a0", "#8fb87c"],
-        ["#88b877", "#6b9a5b"],
-        ["#c6d9a8", "#a3bd82"]
+    /* struck metal and stone dust */
+    var GLINTS = [
+        "#f3d894",
+        "#e9bd93",
+        "#dee4ea",
+        "#dfb45f",
+        "#d8e8f0",
+        "#b39ad6",
+        "#8fb5df",
+        "#86c3a0"
     ];
 
     var LIFE_MS = 780;
@@ -38,29 +43,28 @@ window.Game = window.Game || {};
                 var angle =
                     (i / total) * Math.PI * 2 + (Math.random() - 0.5) * 0.7;
                 var reach = 34 + Math.random() * 46;
-                var green = GREENS[Math.floor(Math.random() * GREENS.length)];
+                var glint = GLINTS[Math.floor(Math.random() * GLINTS.length)];
 
-                var leaf = document.createElement("span");
-                leaf.className = "spark";
-                leaf.style.left = x + "px";
-                leaf.style.top = y + "px";
-                leaf.style.setProperty("--dx", Math.cos(angle) * reach + "px");
-                leaf.style.setProperty(
+                var spark = document.createElement("span");
+                spark.className = "spark";
+                spark.style.left = x + "px";
+                spark.style.top = y + "px";
+                spark.style.setProperty("--dx", Math.cos(angle) * reach + "px");
+                spark.style.setProperty(
                     "--dy",
                     Math.sin(angle) * reach - 26 + "px"
                 );
-                leaf.style.setProperty(
+                spark.style.setProperty(
                     "--spin",
                     Math.round((Math.random() - 0.5) * 400) + "deg"
                 );
-                leaf.style.setProperty("--size", 11 + Math.random() * 9 + "px");
-                leaf.style.setProperty("--delay", Math.random() * 60 + "ms");
-                leaf.style.setProperty("--i-leaf", green[0]);
-                leaf.style.setProperty("--i-leaf-deep", green[1]);
-                leaf.innerHTML = Game.Icons.svg("leaf");
+                spark.style.setProperty("--size", 10 + Math.random() * 10 + "px");
+                spark.style.setProperty("--delay", Math.random() * 60 + "ms");
+                spark.style.setProperty("--i-gold-light", glint);
+                spark.innerHTML = Game.Icons.svg("sparkle");
 
-                where.appendChild(leaf);
-                Game.Toast.autoRemove(leaf, LIFE_MS + 200);
+                where.appendChild(spark);
+                Game.Toast.autoRemove(spark, LIFE_MS + 200);
             }
         }
     };

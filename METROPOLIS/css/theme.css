@@ -73,6 +73,44 @@
     --i-glass: #b7d6e6;
     --i-coin: #ddb75c;
     --i-coin-light: #f0d894;
+
+    /* Metals and stones. Three tones each so they can be properly cut, but
+       kept soft — these sit on cream, not on velvet. */
+    --i-copper: #d59468;
+    --i-copper-light: #f2bb95;
+    --i-copper-deep: #ac6d40;
+
+    --i-silver: #bcc8d4;
+    --i-silver-light: #e8eef4;
+    --i-silver-deep: #8f9dab;
+
+    --i-gold: #e2b75c;
+    --i-gold-light: #f8dc99;
+    --i-gold-deep: #b78d33;
+
+    --i-amethyst: #a98cd9;
+    --i-amethyst-light: #ccb4ef;
+    --i-amethyst-deep: #8163b3;
+
+    --i-topaz: #e5a95c;
+    --i-topaz-light: #f6cb96;
+    --i-topaz-deep: #bb8134;
+
+    --i-emerald: #63bd92;
+    --i-emerald-light: #95dcba;
+    --i-emerald-deep: #43926c;
+
+    --i-ruby: #e08496;
+    --i-ruby-light: #f3b0bd;
+    --i-ruby-deep: #b45c6f;
+
+    --i-sapphire: #7ba6dc;
+    --i-sapphire-light: #a8c9f0;
+    --i-sapphire-deep: #567fb4;
+
+    --i-diamond: #bfdff0;
+    --i-diamond-light: #e9f7ff;
+    --i-diamond-deep: #93b8cd;
     --i-ember: #e08a5c;
     --i-shine: rgba(255, 255, 255, 0.55);
 

@@ -15,16 +15,18 @@ window.Game = window.Game || {};
  */
 (function () {
     var ladder = [
-        { id: "sapling", name: "Sapling", icon: "sapling", tint: "tint-leaf" },
-        { id: "tree", name: "Tree", icon: "tree", tint: "tint-leaf", points: 5 },
-        { id: "grove", name: "Grove", icon: "grove", tint: "tint-wood", points: 15 },
-        { id: "orchard", name: "Orchard", icon: "orchard", tint: "tint-food", points: 40 },
-        { id: "farm", name: "Farm", icon: "forager", tint: "tint-food", points: 100 },
-        { id: "cottage", name: "Cottage", icon: "cottage", tint: "tint-plank", points: 250 },
-        { id: "townhouse", name: "Townhouse", icon: "townhouse", tint: "tint-plank", points: 600 },
-        { id: "market", name: "Market", icon: "market", tint: "tint-brick", points: 1500 },
-        { id: "town", name: "Town Hall", icon: "town_hall", tint: "tint-brick", points: 3500 },
-        { id: "metropolis", name: "Metropolis", icon: "metropolis", tint: "tint-coin", points: 9000 }
+        { id: "copper", name: "Copper", icon: "copper", tint: "tint-copper" },
+        { id: "silver", name: "Silver", icon: "silver", tint: "tint-silver", points: 5 },
+        { id: "gold", name: "Gold", icon: "gold", tint: "tint-gold", points: 15 },
+        { id: "coins", name: "Coin Stack", icon: "coins", tint: "tint-gold", points: 40 },
+        { id: "ingot", name: "Ingot", icon: "ingot", tint: "tint-gold", points: 100 },
+        { id: "amethyst", name: "Amethyst", icon: "amethyst", tint: "tint-amethyst", points: 250 },
+        { id: "topaz", name: "Topaz", icon: "topaz", tint: "tint-topaz", points: 550 },
+        { id: "emerald", name: "Emerald", icon: "emerald", tint: "tint-emerald", points: 1200 },
+        { id: "ruby", name: "Ruby", icon: "ruby", tint: "tint-ruby", points: 2600 },
+        { id: "sapphire", name: "Sapphire", icon: "sapphire", tint: "tint-sapphire", points: 5500 },
+        { id: "diamond", name: "Diamond", icon: "diamond", tint: "tint-diamond", points: 12000 },
+        { id: "crown", name: "Crown", icon: "crown", tint: "tint-crown", points: 28000 }
     ];
 
     // each rung knows the one above it

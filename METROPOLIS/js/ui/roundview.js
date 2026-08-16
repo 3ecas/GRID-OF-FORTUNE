@@ -9,10 +9,61 @@ window.Game = window.Game || {};
  */
 (function () {
     var handHost = null;
+    var trackHost = null;
     var sheetHost = null;
     var overHost = null;
     var sheetOpen = false;
     var pendingOver = null;
+
+    /** The rungs being dealt right now, as a lookup. */
+    function dealingNow() {
+        var round = Game.Round.get();
+        if (!round) return {};
+
+        var live = {};
+        Game.Pieces.dealing(round.highest).forEach(function (piece) {
+            live[piece.id] = true;
+        });
+        return live;
+    }
+
+    /* -------------------------------------------------------------- track */
+
+    /**
+     * The whole ladder as one strip above the board, left to right.
+     *
+     * This one tracks *this game*, not the all-time album — you can only
+     * reach a rung by making everything under it, so how far the colour runs
+     * is exactly how far you have climbed. The sheet keeps the album.
+     */
+    function renderTrack() {
+        var round = Game.Round.get();
+        if (!trackHost || !round) return;
+
+        var live = dealingNow();
+
+        trackHost.innerHTML = Game.Pieces.list
+            .map(function (piece) {
+                var known = piece.tier <= round.highest;
+
+                return (
+                    '<li class="step' +
+                    (known ? " is-known" : "") +
+                    (live[piece.id] ? " is-dealing" : "") +
+                    '" title="' +
+                    piece.name +
+                    (piece.points ? " · " + piece.points : "") +
+                    '">' +
+                    '<span class="step__bit ' +
+                    piece.tint +
+                    '">' +
+                    Game.Icons.svg(piece.icon) +
+                    "</span>" +
+                    "</li>"
+                );
+            })
+            .join("");
+    }
 
     /* --------------------------------------------------------------- hand */
 
@@ -53,7 +104,7 @@ window.Game = window.Game || {};
             '<span class="hand__divider"></span>' +
             '<button type="button" class="slot slot--quiet" data-sheet="1" ' +
             'title="What you have made">' +
-            Game.Icons.svg("city") +
+            Game.Icons.svg("crown") +
             "</button>";
     }
 
@@ -63,9 +114,7 @@ window.Game = window.Game || {};
         var round = Game.Round.get();
         if (!sheetHost || !round || !sheetOpen) return;
 
-        var dealing = Game.Pieces.dealing(round.highest).map(function (piece) {
-            return piece.id;
-        });
+        var dealing = dealingNow();
 
         var found = Game.Pieces.made.filter(function (piece) {
             return Game.Round.found(piece.id);
@@ -74,7 +123,7 @@ window.Game = window.Game || {};
         var rungs = Game.Pieces.list
             .map(function (piece) {
                 var known = piece.tier === 1 || Game.Round.found(piece.id);
-                var live = dealing.indexOf(piece.id) !== -1;
+                var live = dealing[piece.id];
 
                 return (
                     '<li class="rung' +
@@ -168,10 +217,10 @@ window.Game = window.Game || {};
                 : "") +
             '<span class="over__top">' +
             (won
-                ? "A Metropolis, in " + detail.moves + " moves"
+                ? "A " + Game.Pieces.top.name + ", in " + detail.moves + " moves"
                 : top
-                ? "You got as far as a " + top.name
-                : "Nothing built") +
+                ? "You got as far as " + top.name
+                : "Nothing made") +
             "</span>" +
             '<span class="over__score">' +
             detail.score +
@@ -219,6 +268,7 @@ window.Game = window.Game || {};
     Game.RoundView = {
         init: function () {
             handHost = document.getElementById("hand");
+            trackHost = document.getElementById("track");
             sheetHost = document.getElementById("sheet");
             overHost = document.getElementById("over");
 
@@ -241,12 +291,17 @@ window.Game = window.Game || {};
                 hideOver();
                 closeSheet();
                 renderHand();
+                renderTrack();
             });
 
             Game.Events.on("game:hand", renderHand);
-            Game.Events.on("game:placed", renderSheet);
+            Game.Events.on("game:placed", function () {
+                renderTrack();
+                renderSheet();
+            });
 
             Game.Events.on("game:dealing", function (detail) {
+                renderTrack();
                 renderSheet();
                 Game.Toast.notice(
                     "Now dealing " + detail.lowest.name.toLowerCase() + "s",
@@ -265,6 +320,7 @@ window.Game = window.Game || {};
             });
 
             Game.Events.on("game:found", function (detail) {
+                renderTrack();
                 renderSheet();
                 detail.pieces.forEach(function (id) {
                     var piece = Game.Pieces.byId(id);

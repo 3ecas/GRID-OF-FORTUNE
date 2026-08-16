@@ -38,12 +38,22 @@ is — measured, across every board from 4×4 to 6×6 — and what you are left 
 is scattered pieces with a gap between each one. Falling closes those holes the
 moment they appear: the built part stays packed, the empty part stays overhead.
 
-The ladder is ten rungs, sapling to metropolis:
+The ladder is twelve rungs, a copper coin to the crown:
 
 ```
-sapling → tree → grove → orchard → farm →
-cottage → townhouse → market → town hall → metropolis
+copper → silver → gold → coin stack → ingot → amethyst →
+topaz → emerald → ruby → sapphire → diamond → crown
 ```
+
+Metals first, then stones, each rarer than the last, and each cut differently
+so they never blur together — raw cluster, pear, step, marquise, brilliant.
+The whole theme is the list in `js/data/pieces.js` plus its icons; nothing
+else in the game knows what a diamond is.
+
+**The strip above the board** is the same ladder laid out left to right. It
+lights up as far as you have climbed *this game*, with a ring on the three
+rungs currently being dealt. The button on the hand opens the fuller sheet —
+score, point values, and everything you have ever made.
 
 You hold **two pieces**. Scroll the wheel anywhere on the page to swap between
 them, or click. Whichever you do not play stays in hand, so every drop is the
@@ -72,16 +82,15 @@ the rest of the game. With this rule nothing on the board is ever below what is
 being dealt, so **every square always has a way out**. Verified across ten
 full games: zero stranded pieces.
 
-**Building the Metropolis wins.** That is the end of the game, not a high
-score to chase — a good player gets there in about 140 drops. If the board
-fills to the top first, that is the other ending.
+**Making the Crown wins.** That is the end of the game, not a high score to
+chase — a good player gets there in about 140 drops. If the board fills to the
+top first, that is the other ending.
 
 **Game length is one number:** `dealBehind` in `js/core/config.js`, which is
 how far the hand trails the best thing you have built. Measured with a bot
-playing well: **2 → 79 drops, 3 → 141, 4 → 233**. Board size barely moves it
-(5×5 finishes in 132, 6×6 in 154). The other lever is the ladder itself —
-each rung above Cottage costs roughly 25–30 drops, so four more rungs is
-another hundred.
+playing well, on the twelve-rung ladder: **2 → 107 drops, 3 → 202**. Board
+size barely moves it. The other lever is the ladder itself — each rung past
+the middle costs roughly 25–30 drops.
 
 The ladder down the side of the page stays dark until you have made each rung,
 and remembers between games.
