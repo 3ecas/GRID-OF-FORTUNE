@@ -4,7 +4,7 @@ window.Game = window.Game || {};
  * effects.js — how the board reacts to what happens on it.
  *
  * Sparks throws the leaves; this is everything else. The idea is escalation:
- * a grove is a tap, a metropolis is an event, and the fifth merge in one
+ * a stone is a tap, a vault is an event, and the fifth merge in one
  * chain hits harder than the first. Weight and payoff, scaled — so the board
  * always tells you how big a thing you just did.
  */

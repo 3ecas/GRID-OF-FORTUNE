@@ -1,5 +1,6 @@
 param(
-    [string]$Root = "D:\TESTING_GAMING\METROPOLIS\METROPOLIS",
+    # the game sits at the repo root now, so Pages can serve it as-is
+    [string]$Root = "D:\TESTING_GAMING\METROPOLIS",
     [int]$Port = 4173
 )
 
@@ -24,21 +25,28 @@ while ($listener.IsListening) {
         if ($path -eq "/") { $path = "/index.html" }
         $full = Join-Path $Root ($path.TrimStart("/") -replace "/", "\")
 
-        if (Test-Path $full -PathType Leaf) {
-            $ext = [System.IO.Path]::GetExtension($full).ToLower()
-            $type = $types[$ext]
-            if (-not $type) { $type = "application/octet-stream" }
-            $bytes = [System.IO.File]::ReadAllBytes($full)
-            $context.Response.ContentType = $type
+        try {
+            if (Test-Path $full -PathType Leaf) {
+                $ext = [System.IO.Path]::GetExtension($full).ToLower()
+                $type = $types[$ext]
+                if (-not $type) { $type = "application/octet-stream" }
+                $bytes = [System.IO.File]::ReadAllBytes($full)
+                $context.Response.ContentType = $type
+            } else {
+                $context.Response.StatusCode = 404
+                $context.Response.ContentType = "text/plain; charset=utf-8"
+                $bytes = [System.Text.Encoding]::UTF8.GetBytes("not found: $path")
+            }
+
+            # both paths must declare a length, or the write overruns it
             $context.Response.Headers.Add("Cache-Control", "no-store")
             $context.Response.ContentLength64 = $bytes.Length
             $context.Response.OutputStream.Write($bytes, 0, $bytes.Length)
-        } else {
-            $context.Response.StatusCode = 404
-            $msg = [System.Text.Encoding]::UTF8.GetBytes("not found: $path")
-            $context.Response.OutputStream.Write($msg, 0, $msg.Length)
+        } finally {
+            # always close, or a failed response leaves the connection hanging
+            # and the requests behind it start misbehaving
+            $context.Response.Close()
         }
-        $context.Response.Close()
     } catch {
         Write-Output "error: $_"
     }

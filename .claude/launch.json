@@ -2,7 +2,7 @@
     "version": "0.0.1",
     "configurations": [
         {
-            "name": "metropolis",
+            "name": "gridoffortune",
             "runtimeExecutable": "powershell",
             "runtimeArgs": [
                 "-NoProfile",

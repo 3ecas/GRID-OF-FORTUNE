@@ -1,7 +1,7 @@
 window.Game = window.Game || {};
 
 /**
- * round.js — a game of Metropolis.
+ * round.js — a game of Grid of Fortune.
  *
  * No clock and nothing to spend: you place pieces, things join up, and the
  * board slowly fills. It ends when there is nowhere left to put anything.

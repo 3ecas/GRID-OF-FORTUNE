@@ -8,7 +8,7 @@ window.Game = window.Game || {};
 (function () {
     function available() {
         try {
-            var probe = "__metropolis_probe__";
+            var probe = "__storage_probe__";
             window.localStorage.setItem(probe, "1");
             window.localStorage.removeItem(probe);
             return true;

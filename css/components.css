@@ -1,5 +1,5 @@
 /* ==========================================================================
-   components.css — buttons, panels, chips and floating feedback.
+   components.css — buttons, chips and floating feedback.
    ========================================================================== */
 
 /* --- Buttons ------------------------------------------------------------ */
@@ -45,144 +45,10 @@
     background: #d6e9d0;
 }
 
-.btn--ghost {
-    background: transparent;
-    color: var(--ink-soft);
-}
+/* --- Tints ---------------------------------------------------------------
+   The plate a piece sits on, one per rung of the ladder.
+   ------------------------------------------------------------------------ */
 
-.btn--ghost:hover:not(:disabled) {
-    color: var(--ink);
-    background: var(--panel);
-}
-
-.btn--on {
-    background: var(--wood-soft);
-    border-color: var(--wood);
-    color: #8a6242;
-}
-
-.btn--small {
-    padding: 6px 12px;
-    font-size: 0.82rem;
-}
-
-/* --- Panels & cards ----------------------------------------------------- */
-
-.panel {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 20px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    background: var(--panel);
-    box-shadow: var(--shadow-1);
-}
-
-.panel--quiet {
-    background: var(--panel-soft);
-    box-shadow: none;
-}
-
-/* keep buttons their natural width inside a stacked panel */
-.panel > .btn {
-    align-self: flex-start;
-}
-
-.panel__title {
-    font-size: 0.82rem;
-    font-weight: 800;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-}
-
-.card {
-    display: flex;
-    gap: 14px;
-    padding: 18px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    background: var(--panel);
-    box-shadow: var(--shadow-1);
-}
-
-/* --- Chips -------------------------------------------------------------- */
-
-.chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 3px 10px 3px 7px;
-    border-radius: var(--radius-pill);
-    background: var(--panel-soft);
-    border: 1px solid var(--line);
-    font-size: 0.8rem;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    color: var(--ink-soft);
-}
-
-.chip svg.icon {
-    width: 1.05em;
-    height: 1.05em;
-}
-
-.chip--short {
-    color: #b57070;
-    background: var(--food-soft);
-    border-color: #eec9cd;
-}
-
-.pill {
-    display: inline-block;
-    padding: 2px 9px;
-    border-radius: var(--radius-pill);
-    background: var(--accent-soft);
-    color: var(--accent-ink);
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    vertical-align: middle;
-}
-
-/* Resource colour tokens, shared by HUD / cards / grid nodes */
-.tint-wood {
-    color: #8a6242;
-    background: var(--wood-soft);
-}
-
-.tint-stone {
-    color: #5d7086;
-    background: var(--stone-soft);
-}
-
-.tint-food {
-    color: #b06a73;
-    background: var(--food-soft);
-}
-
-.tint-leaf {
-    color: #5f7f53;
-    background: #e4eedc;
-}
-
-.tint-plank {
-    color: #8b6a45;
-    background: #f0e5d2;
-}
-
-.tint-brick {
-    color: #a2603f;
-    background: #f7e1d5;
-}
-
-.tint-coin {
-    color: #97762c;
-    background: #f8edd0;
-}
-
-/* out of the ground */
 .tint-dirt {
     color: #7f6041;
     background: #f0e3d3;
@@ -203,7 +69,6 @@
     background: #eff3f6;
 }
 
-/* metals and stones */
 .tint-copper {
     color: #9a6a41;
     background: #f7e5d5;
@@ -219,14 +84,14 @@
     background: #faeed3;
 }
 
-.tint-amethyst {
-    color: #6d5892;
-    background: #f0e9f8;
-}
-
 .tint-topaz {
     color: #8f6222;
     background: #fbeed7;
+}
+
+.tint-amethyst {
+    color: #6d5892;
+    background: #f0e9f8;
 }
 
 .tint-emerald {
@@ -295,7 +160,7 @@
 
 .notice--warn {
     border-color: #eec9cd;
-    background: var(--food-soft);
+    background: #f7e2e4;
     color: #a95f69;
 }
 
@@ -323,7 +188,7 @@
     }
 }
 
-/* --- Floating "+1" feedback --------------------------------------------- */
+/* --- Floating gains ----------------------------------------------------- */
 
 .float {
     position: fixed;

@@ -25,55 +25,6 @@
     --accent-ink: #4a6b43;
     --accent-soft: #e2efdd;
 
-    /* Resource tints */
-    --wood: #c8a179;
-    --wood-soft: #f2e5d6;
-    --stone: #a4b4c6;
-    --stone-soft: #e3e9f0;
-    --food: #dc9ba4;
-    --food-soft: #f7e2e4;
-
-    /* Terrain */
-    --meadow: #e2ecd3;
-    --forest: #cfe0bd;
-    --rocky: #dde2d9;
-    --built: #ecdcc4;
-    --built-line: #ddc8a9;
-
-    /* Shape */
-    --radius-sm: 10px;
-    --radius: 14px;
-    --radius-lg: 20px;
-    --radius-pill: 999px;
-
-    /* Depth */
-    --shadow-1: 0 1px 2px rgba(112, 98, 72, 0.06),
-        0 4px 12px rgba(112, 98, 72, 0.07);
-    --shadow-2: 0 2px 4px rgba(112, 98, 72, 0.07),
-        0 12px 28px rgba(112, 98, 72, 0.1);
-
-    /* Illustrated icon palette (see js/ui/icons.js) */
-    --i-leaf: #93bd83;
-    --i-leaf-deep: #74a266;
-    --i-bark: #b08258;
-    --i-bark-deep: #8d6541;
-    --i-rock: #b4c1d0;
-    --i-rock-light: #cfd9e4;
-    --i-rock-deep: #93a2b4;
-    --i-berry: #e08a92;
-    --i-berry-deep: #c56a75;
-    --i-straw: #e7c78e;
-    --i-straw-deep: #d1a969;
-    --i-roof: #d0906d;
-    --i-roof-deep: #b57352;
-    --i-wall: #fcf2e2;
-    --i-wall-deep: #eddfc8;
-    --i-door: #a3714b;
-    --i-water: #a6c9dd;
-    --i-glass: #b7d6e6;
-    --i-coin: #ddb75c;
-    --i-coin-light: #f0d894;
-
     /* Metals and stones. Three tones each so they can be properly cut, but
        kept soft — these sit on cream, not on velvet. */
     --i-dirt: #b08a63;
@@ -104,13 +55,13 @@
     --i-gold-light: #f8dc99;
     --i-gold-deep: #b78d33;
 
-    --i-amethyst: #a98cd9;
-    --i-amethyst-light: #ccb4ef;
-    --i-amethyst-deep: #8163b3;
-
     --i-topaz: #e5a95c;
     --i-topaz-light: #f6cb96;
     --i-topaz-deep: #bb8134;
+
+    --i-amethyst: #a98cd9;
+    --i-amethyst-light: #ccb4ef;
+    --i-amethyst-deep: #8163b3;
 
     --i-emerald: #63bd92;
     --i-emerald-light: #95dcba;
@@ -127,12 +78,20 @@
     --i-diamond: #bfdff0;
     --i-diamond-light: #e9f7ff;
     --i-diamond-deep: #93b8cd;
-    --i-ember: #e08a5c;
+
     --i-shine: rgba(255, 255, 255, 0.55);
 
-    /* Rhythm */
-    --gap: 16px;
-    --topbar-h: 64px;
+    /* Shape */
+    --radius-sm: 10px;
+    --radius: 14px;
+    --radius-lg: 20px;
+    --radius-pill: 999px;
+
+    /* Depth */
+    --shadow-1: 0 1px 2px rgba(112, 98, 72, 0.06),
+        0 4px 12px rgba(112, 98, 72, 0.07);
+    --shadow-2: 0 2px 4px rgba(112, 98, 72, 0.07),
+        0 12px 28px rgba(112, 98, 72, 0.1);
 
     --font: "Nunito", "Quicksand", "Segoe UI Variable Text", "Segoe UI",
         system-ui, -apple-system, sans-serif;
@@ -180,16 +139,8 @@ h3 {
     color: var(--ink);
 }
 
-h1 {
-    font-size: 1.5rem;
-}
-
 h2 {
     font-size: 1.05rem;
-}
-
-h3 {
-    font-size: 0.98rem;
 }
 
 p {
@@ -208,11 +159,6 @@ li {
     list-style: none;
 }
 
-a {
-    color: inherit;
-    text-decoration: none;
-}
-
 button {
     font: inherit;
     color: inherit;
@@ -220,10 +166,6 @@ button {
 
 .muted {
     color: var(--ink-soft);
-}
-
-.tiny {
-    font-size: 0.78rem;
 }
 
 /* Line icons: UI chrome, drawn in whatever colour the parent uses */
