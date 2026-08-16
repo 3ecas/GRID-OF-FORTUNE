@@ -211,7 +211,10 @@ window.Game = window.Game || {};
 
         Game.Effects.shake(host, 8, 0);
         Game.Effects.flash(8);
-        if (middle) {
+
+        // rubble knocked loose pays nothing, so there is no figure to float —
+        // the squares breaking open is the whole message
+        if (middle && step.points) {
             Game.Toast.float(
                 middle,
                 "+" + step.points,

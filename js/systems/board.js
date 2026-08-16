@@ -136,6 +136,31 @@ window.Game = window.Game || {};
     }
 
     /**
+     * The rubble touching any of these squares.
+     *
+     * Rubble cannot join anything, so on its own it never leaves the board.
+     * What shakes it loose is a join happening against it: the bigger the run
+     * you bring together, the more of the mess it knocks out at once.
+     */
+    function rubbleAround(cells) {
+        var hit = [];
+        var seen = {};
+
+        cells.forEach(function (cell) {
+            [[0, -1], [0, 1], [-1, 0], [1, 0]].forEach(function (step) {
+                var near = at(cell.x + step[0], cell.y + step[1]);
+                if (!near || seen[near.id]) return;
+                if (near.piece !== "rubble") return;
+
+                seen[near.id] = true;
+                hit.push(near);
+            });
+        });
+
+        return hit;
+    }
+
+    /**
      * A row or column with nothing missing.
      *
      * Columns are the interesting one: gravity packs the bottom, so a full
@@ -212,6 +237,26 @@ window.Game = window.Game || {};
                     points: grown.points || 0,
                     board: snapshot()
                 });
+
+                /* The join shakes loose whatever rubble it was pressed
+                   against. This is the only way rubble ever leaves, so
+                   without it the board silts up with squares nobody can use
+                   and the game just runs down. It pays nothing — getting the
+                   square back is the whole reward. */
+                if (Game.Config.game.rubbleBreaks) {
+                    var broken = rubbleAround(pair.eat);
+                    if (broken.length) {
+                        steps.push({
+                            type: "clear",
+                            cells: broken.map(function (cell) {
+                                cell.piece = null;
+                                return cell.id;
+                            }),
+                            points: 0,
+                            board: snapshot()
+                        });
+                    }
+                }
 
                 /* The top of the ladder has nothing above it, so left on the
                    board it is dead weight forever. Instead it is cashed in on

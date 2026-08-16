@@ -58,10 +58,16 @@ Game.Config = {
         cashTop: true,
         cashBonus: 2,
 
-        /* Rubble: the only thing that cannot merge, and so the only thing
-           that can end a run. The seam gets dirtier the longer you work it. */
+        /* Rubble: the only thing that cannot join anything. The seam gets
+           dirtier the longer you work it.
+
+           It comes off the board only by being next to a join when one
+           happens, which is what keeps it a nuisance rather than a slow
+           death sentence — the mess is clearable, but only by playing into
+           it rather than away from it. */
         rubbleAfter: 90, // clean falls until this many drops
         rubbleRamp: 260, // then the chance climbs over this many more
-        rubbleMost: 0.75 // never quite all of it
+        rubbleMost: 0.75, // never quite all of it
+        rubbleBreaks: true // a join alongside it knocks it out
     }
 };
