@@ -1,0 +1,301 @@
+/* ==========================================================================
+   components.css — buttons, panels, chips and floating feedback.
+   ========================================================================== */
+
+/* --- Buttons ------------------------------------------------------------ */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 9px 16px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-pill);
+    background: var(--panel);
+    color: var(--ink);
+    font-weight: 700;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: transform 0.14s ease, background 0.18s ease,
+        border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-1);
+}
+
+.btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn--primary {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+}
+
+.btn--primary:hover:not(:disabled) {
+    background: #d6e9d0;
+}
+
+.btn--ghost {
+    background: transparent;
+    color: var(--ink-soft);
+}
+
+.btn--ghost:hover:not(:disabled) {
+    color: var(--ink);
+    background: var(--panel);
+}
+
+.btn--on {
+    background: var(--wood-soft);
+    border-color: var(--wood);
+    color: #8a6242;
+}
+
+.btn--small {
+    padding: 6px 12px;
+    font-size: 0.82rem;
+}
+
+/* --- Panels & cards ----------------------------------------------------- */
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--panel);
+    box-shadow: var(--shadow-1);
+}
+
+.panel--quiet {
+    background: var(--panel-soft);
+    box-shadow: none;
+}
+
+/* keep buttons their natural width inside a stacked panel */
+.panel > .btn {
+    align-self: flex-start;
+}
+
+.panel__title {
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.card {
+    display: flex;
+    gap: 14px;
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--panel);
+    box-shadow: var(--shadow-1);
+}
+
+/* --- Chips -------------------------------------------------------------- */
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px 3px 7px;
+    border-radius: var(--radius-pill);
+    background: var(--panel-soft);
+    border: 1px solid var(--line);
+    font-size: 0.8rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-soft);
+}
+
+.chip svg.icon {
+    width: 1.05em;
+    height: 1.05em;
+}
+
+.chip--short {
+    color: #b57070;
+    background: var(--food-soft);
+    border-color: #eec9cd;
+}
+
+.pill {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: var(--radius-pill);
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    vertical-align: middle;
+}
+
+/* Resource colour tokens, shared by HUD / cards / grid nodes */
+.tint-wood {
+    color: #8a6242;
+    background: var(--wood-soft);
+}
+
+.tint-stone {
+    color: #5d7086;
+    background: var(--stone-soft);
+}
+
+.tint-food {
+    color: #b06a73;
+    background: var(--food-soft);
+}
+
+.tint-leaf {
+    color: #5f7f53;
+    background: #e4eedc;
+}
+
+.tint-plank {
+    color: #8b6a45;
+    background: #f0e5d2;
+}
+
+.tint-brick {
+    color: #a2603f;
+    background: #f7e1d5;
+}
+
+.tint-coin {
+    color: #97762c;
+    background: #f8edd0;
+}
+
+/* --- Notices (bottom centre) -------------------------------------------- */
+
+.notice-host {
+    position: fixed;
+    left: 50%;
+    bottom: 26px;
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--line-strong);
+    background: var(--panel);
+    box-shadow: var(--shadow-2);
+    font-size: 0.86rem;
+    font-weight: 600;
+    animation: notice-in 0.22s ease;
+}
+
+.notice--warn {
+    border-color: #eec9cd;
+    background: var(--food-soft);
+    color: #a95f69;
+}
+
+.notice--good {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+}
+
+.notice.is-leaving {
+    animation: notice-out 0.25s ease forwards;
+}
+
+@keyframes notice-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+}
+
+@keyframes notice-out {
+    to {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+}
+
+/* --- Floating "+1" feedback --------------------------------------------- */
+
+.float {
+    position: fixed;
+    z-index: 45;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 9px;
+    border-radius: var(--radius-pill);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-1);
+    font-size: 0.82rem;
+    font-weight: 800;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    animation: float-up 0.85s ease-out forwards;
+}
+
+.float svg.icon {
+    width: 1em;
+    height: 1em;
+}
+
+/* what a big merge paid */
+.float--big {
+    padding: 4px 14px;
+    font-size: 1.25rem;
+    box-shadow: var(--shadow-2);
+}
+
+.float--big svg.icon {
+    width: 1.2em;
+    height: 1.2em;
+}
+
+/* the name of something made for the first time */
+.float--name {
+    animation-duration: 1.3s;
+    font-size: 0.9rem;
+    letter-spacing: 0.02em;
+}
+
+@keyframes float-up {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -30%) scale(0.9);
+    }
+    18% {
+        opacity: 1;
+        transform: translate(-50%, -60%) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -160%) scale(1);
+    }
+}

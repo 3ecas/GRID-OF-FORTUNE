@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Metropolis</title>
+
+        <link rel="stylesheet" href="css/theme.css" />
+        <link rel="stylesheet" href="css/components.css" />
+        <link rel="stylesheet" href="css/game.css" />
+    </head>
+    <body class="game">
+        <main class="table">
+            <div class="board" id="board" aria-label="Board"></div>
+            <div class="hand" id="hand"></div>
+        </main>
+
+        <div class="sheet" id="sheet"></div>
+        <div class="over" id="over"></div>
+        <div class="notice-host" id="noticeHost" aria-live="polite"></div>
+
+        <script src="js/core/config.js"></script>
+        <script src="js/core/events.js"></script>
+        <script src="js/core/storage.js"></script>
+
+        <script src="js/data/pieces.js"></script>
+
+        <script src="js/systems/board.js"></script>
+        <script src="js/systems/round.js"></script>
+
+        <script src="js/ui/icons.js"></script>
+        <script src="js/ui/toast.js"></script>
+        <script src="js/ui/sparks.js"></script>
+        <script src="js/ui/effects.js"></script>
+        <script src="js/ui/boardview.js"></script>
+        <script src="js/ui/roundview.js"></script>
+
+        <script src="js/pages/game.js"></script>
+    </body>
+</html>

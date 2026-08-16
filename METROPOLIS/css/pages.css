@@ -1,0 +1,362 @@
+/* ==========================================================================
+   pages.css — inventory, buildings and city pages.
+   ========================================================================== */
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(258px, 1fr));
+    gap: 14px;
+}
+
+/* --- Grouped catalogue --------------------------------------------------- */
+
+.group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.group + .group {
+    margin-top: 12px;
+}
+
+.group__head {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.group__title {
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.group__note {
+    font-size: 0.84rem;
+    color: var(--ink-soft);
+}
+
+/* --- Resource card ------------------------------------------------------- */
+
+.res-card {
+    align-items: center;
+}
+
+.res-card.is-full {
+    border-color: #e8cfa8;
+    background: #fdf6ea;
+}
+
+.res-card__icon {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius);
+    flex: none;
+}
+
+.res-card__icon svg.icon {
+    width: 66%;
+    height: 66%;
+}
+
+.res-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+
+.res-card__name {
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.res-card__value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+
+.res-card__cap {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--ink-faint);
+}
+
+.res-card__meta {
+    font-size: 0.76rem;
+    color: var(--ink-soft);
+}
+
+.meter {
+    display: block;
+    height: 5px;
+    margin: 3px 0 2px;
+    border-radius: var(--radius-pill);
+    background: var(--panel-soft);
+    border: 1px solid var(--line);
+    overflow: hidden;
+}
+
+.meter__fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--accent);
+    transition: width 0.3s ease;
+}
+
+/* --- Stats --------------------------------------------------------------- */
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.stats__cell {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 12px 14px;
+    border-radius: var(--radius);
+    background: var(--panel-soft);
+    border: 1px solid var(--line);
+}
+
+.stats__label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.stats__value {
+    font-size: 1.15rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+.stats__note {
+    margin-left: 6px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: var(--ink-faint);
+}
+
+/* --- Building card ------------------------------------------------------- */
+
+.build-card {
+    flex-direction: column;
+    gap: 12px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.build-card.is-selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-soft), var(--shadow-1);
+}
+
+.build-card.is-locked {
+    opacity: 0.55;
+    box-shadow: none;
+}
+
+.build-card__head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.build-card__icon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    flex: none;
+    border-radius: var(--radius);
+    background: var(--panel-soft);
+    border: 1px solid var(--line);
+}
+
+.build-card__icon svg.icon {
+    width: 74%;
+    height: 74%;
+}
+
+.build-card__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 3px;
+}
+
+.build-card__blurb {
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    min-height: 2.5em;
+}
+
+.build-card__cost {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.build-card__foot {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: auto;
+}
+
+.build-card__note {
+    font-size: 0.75rem;
+    line-height: 1.35;
+    color: var(--ink-faint);
+}
+
+/* --- City page ----------------------------------------------------------- */
+
+.stage {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.stage__name {
+    font-size: 1.7rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.stage__size {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.stage__blurb {
+    margin-top: 4px;
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+}
+
+.claim {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: var(--panel-soft);
+}
+
+.claim__text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 200px;
+    font-size: 0.88rem;
+}
+
+.claim__note {
+    width: 100%;
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+}
+
+.claim .btn svg.icon--art {
+    width: 18px;
+    height: 18px;
+}
+
+/* --- Stage ladder -------------------------------------------------------- */
+
+.steps {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 8px 0;
+}
+
+.step__dot {
+    position: relative;
+    flex: none;
+    width: 13px;
+    height: 13px;
+    margin-top: 4px;
+    border-radius: var(--radius-pill);
+    border: 2px solid var(--line-strong);
+    background: var(--panel);
+}
+
+/* the line joining one stage to the next */
+.step:not(:last-child) .step__dot::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    width: 2px;
+    height: 26px;
+    transform: translateX(-50%);
+    background: var(--line);
+}
+
+.step.is-done .step__dot {
+    border-color: var(--accent-deep);
+    background: var(--accent-deep);
+}
+
+.step.is-current .step__dot {
+    border-color: var(--accent-deep);
+    box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+.step__body {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.35;
+}
+
+.step__name {
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.step__size {
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+}
+
+.step.is-locked .step__name,
+.step.is-locked .step__size {
+    color: var(--ink-faint);
+}
+
+@media (max-width: 760px) {
+    .cards {
+        grid-template-columns: 1fr;
+    }
+}
