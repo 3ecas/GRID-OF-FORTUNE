@@ -22,9 +22,9 @@ window.Game = window.Game || {};
     var seenThisDrop = {};
     var pending = [];
 
-    var FALL_MS = 190;
-    var MERGE_MS = 175;
-    var CLEAR_MS = 330;
+    var FALL_MS = 140;
+    var MERGE_MS = 125;
+    var CLEAR_MS = 240;
 
     /* --------------------------------------------------------------- build */
 
@@ -182,16 +182,16 @@ window.Game = window.Game || {};
             made.tier >= 6 ? "float--big" : ""
         );
 
-        // leaves burst where you are looking, which is wherever the cursor is
         var box = tile.getBoundingClientRect();
-        var x = pointer.known ? pointer.x : box.left + box.width / 2;
-        var y = pointer.known ? pointer.y : box.top + box.height / 2;
-        Game.Sparks.burst(x, y, 6 + Math.min(14, made.tier + chain * 2));
+        var x = box.left + box.width / 2;
+        var y = box.top + box.height / 2;
+
+        Game.Sparks.ring(x, y, made.tier);
+        Game.Sparks.burst(x, y, 9 + Math.min(20, made.tier + chain * 3), made);
 
         if (fresh) {
             seenThisDrop[made.id] = true;
             Game.Effects.discover(tile);
-            Game.Toast.float(tile, made.name, null, made.tint, "float--name");
         }
     }
 
@@ -262,7 +262,7 @@ window.Game = window.Game || {};
 
         // the big ones are held a beat longer, so the payoff lands
         var made = Game.Pieces.byId(step.piece);
-        var hold = MERGE_MS + (made.tier >= 7 ? 160 : 0);
+        var hold = MERGE_MS + (made.tier >= 7 ? 110 : 0);
 
         window.setTimeout(function () {
             playSteps(steps, index + 1, chain + 1);

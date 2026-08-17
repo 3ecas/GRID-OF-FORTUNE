@@ -64,8 +64,8 @@ window.Game = window.Game || {};
         /** The whole board flinches when something big lands on it. */
         shake: function (board, tier, chain) {
             var weight = tier + chain * 1.5;
-            if (!board || weight < 6) return;
-            board.style.setProperty("--shake", Math.min(weight - 4, 9) * 1.2 + "px");
+            if (!board || weight < 3) return;
+            board.style.setProperty("--shake", Math.min(weight - 1, 11) * 1.5 + "px");
             restart(board, "is-shaken");
         },
 

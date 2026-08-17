@@ -11,7 +11,32 @@ window.Game = window.Game || {};
     var handHost = null;
     var trackHost = null;
     var overHost = null;
+    var revealHost = null;
+    var revealTimer = null;
     var pendingOver = null;
+
+    function showReveal(id) {
+        var piece = Game.Pieces.byId(id);
+        if (!revealHost || !piece) return;
+
+        revealHost.className = "reveal " + piece.tint;
+        revealHost.innerHTML =
+            '<span class="reveal__art">' +
+            Game.Icons.svg(piece.icon) +
+            "</span>" +
+            '<span class="reveal__name">' +
+            piece.name +
+            "</span>";
+
+        revealHost.classList.remove("is-up");
+        void revealHost.offsetWidth;
+        revealHost.classList.add("is-up");
+
+        window.clearTimeout(revealTimer);
+        revealTimer = window.setTimeout(function () {
+            revealHost.classList.remove("is-up");
+        }, 1800);
+    }
 
     /* -------------------------------------------------------------- track */
 
@@ -172,6 +197,7 @@ window.Game = window.Game || {};
             handHost = document.getElementById("hand");
             trackHost = document.getElementById("track");
             overHost = document.getElementById("over");
+            revealHost = document.getElementById("reveal");
 
             if (handHost) {
                 handHost.addEventListener("click", function (event) {
@@ -198,11 +224,24 @@ window.Game = window.Game || {};
                 );
             });
 
-            /* No notice when the seam gives way. It used to be worth saying,
-               back when it happened every eighth drop — now it happens up to
-               every single one, and a message that fires fifty times a run is
-               not news, it is a thing sitting on top of your hand. You can
-               see the pieces land. */
+            /* Nothing is said about an ordinary fall — it happens far too
+               often to be news, and a message that fires fifty times a run
+               just sits on top of your hand. Stepping up to the next level
+               of the seam is different: it happens four times at most, and
+               it changes how the rest of the game will go. */
+            Game.Events.on("game:seam", function (detail) {
+                var level = detail.level;
+                if (!level) return;
+
+                Game.Toast.notice(
+                    "The seam widens — " +
+                        level.count +
+                        (level.count === 1 ? " piece" : " pieces") +
+                        " every " +
+                        level.every,
+                    "warn"
+                );
+            });
 
             Game.Events.on("game:grown", function (detail) {
                 Game.Toast.notice(
@@ -215,10 +254,7 @@ window.Game = window.Game || {};
 
             Game.Events.on("game:found", function (detail) {
                 renderTrack();
-                detail.pieces.forEach(function (id) {
-                    var piece = Game.Pieces.byId(id);
-                    Game.Toast.notice("First " + piece.name + "!", "good");
-                });
+                showReveal(detail.pieces[detail.pieces.length - 1]);
             });
 
             Game.Events.on("game:over", showOver);

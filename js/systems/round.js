@@ -59,18 +59,33 @@ window.Game = window.Game || {};
         return Math.random() < rubbleChance();
     }
 
-    /** How many drops between falls right now. It only ever tightens. */
-    function fallGap() {
-        var s = settings();
-        var tighter = Math.floor(state.placed / s.wildRamp);
-        return Math.max(s.wildTo, s.wildFrom - tighter);
+    /**
+     * Which level of the seam you are on: the last entry in the table whose
+     * rung you have reached, or nothing at all if you have reached none of
+     * them and the board is still quiet.
+     */
+    function seam() {
+        var table = settings().falls;
+        var found = null;
+
+        for (var i = 0; i < table.length; i++) {
+            var piece = Game.Pieces.byId(table[i].at);
+            if (piece && state.highest >= piece.tier) found = table[i];
+        }
+
+        return found;
     }
 
-    /** How many pieces come down each fall. It only ever grows. */
+    /** How many drops between falls right now. */
+    function fallGap() {
+        var level = seam();
+        return level ? level.every : Infinity;
+    }
+
+    /** How many pieces come down each fall. */
     function fallCount() {
-        var s = settings();
-        var heavier = Math.floor(state.placed / s.wildRamp);
-        return Math.min(s.wildMost, s.wildCount + heavier);
+        var level = seam();
+        return level ? level.count : 0;
     }
 
     /**
@@ -139,11 +154,18 @@ window.Game = window.Game || {};
      */
     function raise(made, depth) {
         var before = Game.Pieces.dealing(state.highest)[0];
+        var wasSeam = seam();
 
         made.forEach(function (step) {
             var piece = Game.Pieces.byId(step.piece);
             if (piece.tier > state.highest) state.highest = piece.tier;
         });
+
+        // climbing a rung can widen the seam, and that is worth being told
+        var nowSeam = seam();
+        if (nowSeam !== wasSeam) {
+            Game.Events.emit("game:seam", { level: nowSeam });
+        }
 
         var after = Game.Pieces.dealing(state.highest)[0];
         if (after === before || depth > 12) return;

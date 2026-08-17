@@ -29,20 +29,27 @@ Game.Config = {
            your hand, so they are never unmergeable — what they cost you is
            the choice of where.
 
-           Both dials move against you: the gap closes and the fall gets
-           heavier, until near the end four pieces come down after every
-           single drop and your own move is one placement in five.
+           This is a table of levels, not a ramp, and it is read off the best
+           rung you have MADE rather than the number of drops you have taken.
+           Two reasons. On the clock it tightened whether or not you were
+           getting anywhere, so a slow game — the one already going badly —
+           got squeezed for being slow. And a ramp cannot be read: three
+           interacting dials had to be simulated to find out what the game
+           actually did at drop 120. This you can just look at.
 
-           More pieces makes a run shorter without making it meaner. Measured
-           at nine tenths perfect play, going from two to four cut a run from
-           230 drops to 146 while the score held or climbed — four pieces a
-           turn is four more chances to merge, so the ladder is climbed
-           faster even though there is less time to climb it. */
-        wildFrom: 6, // drops between falls at the start
-        wildTo: 1, // ... and once it has tightened all the way
-        wildRamp: 30, // one step worse every this many placements
-        wildCount: 2, // pieces each fall at the start
-        wildMost: 4, // ... and once the seam has fully given way
+           Below the first entry nothing falls at all, so the opening is
+           yours alone: no pressure until you have minted a coin.
+
+           Each step is a real moment in the run, announced when it lands.
+
+           `at` names a rung, so reordering the ladder cannot silently
+           rewrite the difficulty. */
+        falls: [
+            { at: "copper", count: 1, every: 7 },
+            { at: "gold", count: 2, every: 6 },
+            { at: "amethyst", count: 3, every: 4 },
+            { at: "diamond", count: 3, every: 3 }
+        ],
 
         /* Filling a line does nothing. Stacking to the ceiling is not an
            achievement, it is the mistake the game is about avoiding — paying

@@ -1,16 +1,8 @@
 window.Game = window.Game || {};
 
-/**
- * sparks.js — the little burst thrown out when something joins up.
- *
- * Each spark gets its own angle, distance, spin and colour, so no two bursts
- * look alike. They arc up and fall back, which reads as a pop rather than a
- * spray.
- */
 (function () {
     var host = null;
 
-    /* struck metal and stone dust */
     var GLINTS = [
         "#f3d894",
         "#e9bd93",
@@ -22,7 +14,7 @@ window.Game = window.Game || {};
         "#86c3a0"
     ];
 
-    var LIFE_MS = 780;
+    var LIFE_MS = 640;
 
     function ensureHost() {
         if (host) return host;
@@ -32,40 +24,65 @@ window.Game = window.Game || {};
         return host;
     }
 
+    function shard(x, y, angle, reach, piece) {
+        var spark = document.createElement("span");
+        spark.className = "spark";
+
+        if (piece) {
+            spark.className += " spark--piece " + piece.tint;
+            spark.innerHTML = Game.Icons.svg(piece.icon);
+            spark.style.setProperty("--size", 16 + Math.random() * 16 + "px");
+        } else {
+            spark.innerHTML = Game.Icons.svg("sparkle");
+            spark.style.setProperty("--size", 9 + Math.random() * 9 + "px");
+            spark.style.setProperty(
+                "--i-gold-light",
+                GLINTS[Math.floor(Math.random() * GLINTS.length)]
+            );
+        }
+
+        spark.style.left = x + "px";
+        spark.style.top = y + "px";
+        spark.style.setProperty("--dx", Math.cos(angle) * reach + "px");
+        spark.style.setProperty("--dy", Math.sin(angle) * reach - 30 + "px");
+        spark.style.setProperty(
+            "--spin",
+            Math.round((Math.random() - 0.5) * 620) + "deg"
+        );
+        spark.style.setProperty("--delay", Math.random() * 44 + "ms");
+
+        ensureHost().appendChild(spark);
+        Game.Toast.autoRemove(spark, LIFE_MS + 260);
+    }
+
     Game.Sparks = {
-        /** Throws `count` leaves out from a point on the screen. */
-        burst: function (x, y, count) {
-            var where = ensureHost();
+        burst: function (x, y, count, piece) {
             var total = count || 9;
 
             for (var i = 0; i < total; i++) {
-                // spread them round a circle, with a wobble so it is not a wheel
                 var angle =
-                    (i / total) * Math.PI * 2 + (Math.random() - 0.5) * 0.7;
-                var reach = 34 + Math.random() * 46;
-                var glint = GLINTS[Math.floor(Math.random() * GLINTS.length)];
-
-                var spark = document.createElement("span");
-                spark.className = "spark";
-                spark.style.left = x + "px";
-                spark.style.top = y + "px";
-                spark.style.setProperty("--dx", Math.cos(angle) * reach + "px");
-                spark.style.setProperty(
-                    "--dy",
-                    Math.sin(angle) * reach - 26 + "px"
-                );
-                spark.style.setProperty(
-                    "--spin",
-                    Math.round((Math.random() - 0.5) * 400) + "deg"
-                );
-                spark.style.setProperty("--size", 10 + Math.random() * 10 + "px");
-                spark.style.setProperty("--delay", Math.random() * 60 + "ms");
-                spark.style.setProperty("--i-gold-light", glint);
-                spark.innerHTML = Game.Icons.svg("sparkle");
-
-                where.appendChild(spark);
-                Game.Toast.autoRemove(spark, LIFE_MS + 200);
+                    (i / total) * Math.PI * 2 + (Math.random() - 0.5) * 0.8;
+                shard(x, y, angle, 40 + Math.random() * 58, null);
             }
+
+            if (!piece) return;
+
+            var chunks = Math.max(4, Math.min(9, 3 + Math.round(total / 3)));
+            for (var j = 0; j < chunks; j++) {
+                var lean =
+                    (j / chunks) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+                shard(x, y, lean, 54 + Math.random() * 70, piece);
+            }
+        },
+
+        ring: function (x, y, tier) {
+            var wave = document.createElement("span");
+            wave.className = "shock";
+            wave.style.left = x + "px";
+            wave.style.top = y + "px";
+            wave.style.setProperty("--reach", 90 + Math.min(tier, 12) * 16 + "px");
+            ensureHost().appendChild(wave);
+            Game.Toast.autoRemove(wave, 620);
         }
     };
 })();
