@@ -125,12 +125,15 @@ window.Game = window.Game || {};
             art.classList.add("is-falling");
         });
 
-        // the thump, once each piece is actually down
+        // the thump, once each piece is actually down. The sound hangs off
+        // this rather than off the move, because the move resolves instantly
+        // and the pieces are still in the air for another beat and a half
         window.setTimeout(function () {
             moves.forEach(function (move) {
                 var cell = Game.Board.byId(move.to);
                 Game.Effects.land(tiles[move.to], around(cell));
             });
+            Game.Events.emit("board:landed", { count: moves.length });
         }, FALL_MS - 60);
     }
 
@@ -165,7 +168,10 @@ window.Game = window.Game || {};
         Game.Effects.burst(tile, neighbours, made.tier, chain);
         Game.Effects.shake(host, made.tier, chain);
         Game.Effects.flash(made.tier);
-        Game.Effects.combo(chain + 1);
+
+        // the figure shown is the one that was actually paid, not the view's
+        // own tally of beats — they used to be able to disagree
+        Game.Effects.combo(step.times || 1);
 
         // what it paid, floating off the square that paid it
         Game.Toast.float(

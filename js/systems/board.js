@@ -213,6 +213,12 @@ window.Game = window.Game || {};
     function resolve(steps) {
         var guard = 0;
 
+        /* How many joins this one drop has set off so far. Everything a drop
+           knocks over belongs to the same chain, and the chain is what pays:
+           the second join is worth double, the third triple, up to the cap.
+           One well-placed piece beats three tidy ones. */
+        var chain = 0;
+
         var first = fall();
         if (first.length) {
             steps.push({ type: "fall", moves: first, board: snapshot() });
@@ -222,19 +228,28 @@ window.Game = window.Game || {};
             var pair = nextGroup();
 
             if (pair) {
+                chain++;
                 pair.eat.forEach(function (cell) {
                     if (cell !== pair.keep) cell.piece = null;
                 });
                 pair.keep.piece = pair.piece.next;
 
                 var grown = Game.Pieces.byId(pair.piece.next);
+                var over = Game.Config.game;
+                var times = Math.min(
+                    over.chainMost,
+                    1 + (chain - 1) * over.chainStep
+                );
+
                 steps.push({
                     type: "merge",
                     cell: pair.keep,
                     piece: grown.id,
                     from: pair.piece.id,
                     took: pair.eat.length,
-                    points: grown.points || 0,
+                    chain: chain,
+                    times: times,
+                    points: Math.round((grown.points || 0) * times),
                     board: snapshot()
                 });
 

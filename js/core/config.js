@@ -58,16 +58,32 @@ Game.Config = {
         cashTop: true,
         cashBonus: 2,
 
-        /* Rubble: the only thing that cannot join anything. The seam gets
-           dirtier the longer you work it.
+        /* A drop that keeps knocking things over pays more with every join
+           it sets off — second join double, third triple, and so on. Capped,
+           because a long cascade already pays plenty by being long, and
+           without a ceiling one lucky drop dwarfs a whole careful game. */
+        chainStep: 1,
+        chainMost: 5,
 
-           It comes off the board only by being next to a join when one
-           happens, which is what keeps it a nuisance rather than a slow
-           death sentence — the mess is clearable, but only by playing into
-           it rather than away from it. */
-        rubbleAfter: 90, // clean falls until this many drops
-        rubbleRamp: 260, // then the chance climbs over this many more
-        rubbleMost: 0.75, // never quite all of it
+        /* Rubble: the only thing that cannot join anything.
+
+           It thickens with how far UP you have got, not with how long you
+           have been playing. Tying it to the clock punished you for a slow
+           game you were already losing, and it kept climbing whether or not
+           you were getting anywhere — reach the good stones and the seam
+           turns bad, sit at the bottom and it stays clean.
+
+           rubbleCap is what keeps it from arriving in a heap: without it a
+           four-piece fall can be four rubble, which is not difficulty, it is
+           just a turn taken away from you.
+
+           It comes off the board only by being beside a join when one
+           happens, which keeps it a nuisance rather than a death sentence —
+           clearable, but only by playing into the mess, not away from it. */
+        rubbleFrom: 8, // the rung the seam starts to give at — the gold coin
+        rubbleRise: 0.05, // ... and how much likelier with every rung above
+        rubbleMost: 0.45, // never more likely than this
+        rubbleCap: 1, // at most this many in any one fall
         rubbleBreaks: true // a join alongside it knocks it out
     }
 };

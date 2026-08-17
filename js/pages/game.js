@@ -7,6 +7,7 @@ window.Game = window.Game || {};
 document.addEventListener("DOMContentLoaded", function () {
     Game.Icons.hydrate(document);
     Game.Toast.init();
+    Game.Sound.start();
 
     Game.BoardView.init();
     Game.RoundView.init();

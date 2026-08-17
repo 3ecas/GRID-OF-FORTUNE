@@ -39,17 +39,24 @@ window.Game = window.Game || {};
     }
 
     /**
-     * Whether what falls next is rubble.
+     * How likely the next loose piece is rubble.
      *
-     * The seam is clean at first and gets dirtier the longer you work it.
-     * This is the only thing in the game that cannot merge, so it is the only
-     * thing that can eventually end a run.
+     * Measured off the best rung reached, not off the number of drops made.
+     * On the clock it thickened whether or not you were getting anywhere,
+     * so a slow game — the one already going badly — got buried for being
+     * slow. On the ladder it only turns bad once you are doing well: the
+     * seam is clean all the way up to the gold coin, and every rung past
+     * that costs you a little.
      */
-    function rubbleNow() {
+    function rubbleChance() {
         var s = settings();
-        var into = state.placed - s.rubbleAfter;
-        if (into <= 0) return false;
-        return Math.random() < Math.min(s.rubbleMost, into / s.rubbleRamp);
+        var over = state.highest - s.rubbleFrom + 1;
+        if (over <= 0) return 0;
+        return Math.min(s.rubbleMost, over * s.rubbleRise);
+    }
+
+    function rubbleNow() {
+        return Math.random() < rubbleChance();
     }
 
     /** How many drops between falls right now. It only ever tightens. */
@@ -79,6 +86,7 @@ window.Game = window.Game || {};
         var made = [];
         var steps = [];
         var points = 0;
+        var dirt = 0; // rubble so far this fall, held under rubbleCap
 
         for (var i = 0; i < count; i++) {
             var open = [];
@@ -88,7 +96,10 @@ window.Game = window.Game || {};
             if (!open.length) break;
 
             var where = open[Math.floor(Math.random() * open.length)];
-            var piece = rubbleNow()
+            var spoilt = dirt < settings().rubbleCap && rubbleNow();
+            if (spoilt) dirt++;
+
+            var piece = spoilt
                 ? Game.Pieces.rubble
                 : Game.Pieces.randomFor(state.highest);
             var result = Game.Board.drop(where, piece.id);
