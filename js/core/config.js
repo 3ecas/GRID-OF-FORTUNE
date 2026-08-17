@@ -14,9 +14,9 @@ Game.Config = {
         dealBehind: 2,
 
         falls: [
-            { after: 0, count: 1, every: 12 },
-            { after: 150, count: 1, every: 9 },
-            { after: 320, count: 1, every: 7 },
+            { after: 0, count: 1, every: 10 },
+            { after: 150, count: 1, every: 8 },
+            { after: 320, count: 1, every: 6 },
             { after: 500, count: 2, every: 9 },
             { after: 700, count: 2, every: 7 },
             { after: 900, count: 2, every: 5 },
