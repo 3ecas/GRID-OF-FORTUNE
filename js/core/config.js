@@ -9,25 +9,25 @@ Game.Config = {
         seedPieces: 8,
         handSize: 2,
 
-        mergeAt: 2,
+        mergeAt: 3,
 
         dealBehind: 2,
 
         falls: [
-            { after: 0, count: 1, every: 8 },
-            { after: 50, count: 2, every: 7 },
-            { after: 110, count: 2, every: 5 },
-            { after: 180, count: 3, every: 5 },
-            { after: 250, count: 3, every: 4 },
-            { after: 330, count: 3, every: 3 },
-            { after: 420, count: 4, every: 3 },
-            { after: 520, count: 4, every: 2 },
-            { after: 620, count: 5, every: 2 },
-            { after: 720, count: 5, every: 1 },
-            { after: 820, count: 6, every: 1 },
-            { after: 920, count: 7, every: 1 },
-            { after: 1020, count: 9, every: 1 },
-            { after: 1120, count: 12, every: 1 }
+            { after: 0, count: 1, every: 12 },
+            { after: 150, count: 1, every: 9 },
+            { after: 320, count: 1, every: 7 },
+            { after: 500, count: 2, every: 9 },
+            { after: 700, count: 2, every: 7 },
+            { after: 900, count: 2, every: 5 },
+            { after: 1100, count: 3, every: 6 },
+            { after: 1300, count: 3, every: 4 },
+            { after: 1500, count: 3, every: 3 },
+            { after: 1700, count: 4, every: 3 },
+            { after: 1900, count: 4, every: 2 },
+            { after: 2100, count: 6, every: 2 },
+            { after: 2300, count: 9, every: 1 },
+            { after: 2500, count: 14, every: 1 }
         ],
 
         clearColumns: false,
