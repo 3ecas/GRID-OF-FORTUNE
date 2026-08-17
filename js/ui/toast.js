@@ -1,9 +1,5 @@
 window.Game = window.Game || {};
 
-/**
- * toast.js — short lived feedback: the "+1" that lifts off a harvested plot
- * and the little message pill at the bottom of the screen.
- */
 (function () {
     var host = null;
     var MAX_NOTICES = 3;
@@ -34,11 +30,7 @@ window.Game = window.Game || {};
     }
 
     Game.Toast = {
-        /**
-         * Removes a decoration when its animation ends, with a timer as a
-         * backstop: a hidden tab throttles animations, so animationend alone
-         * would leave leftovers stacked on screen when the player returns.
-         */
+
         autoRemove: function (element, fallbackMs) {
             element.addEventListener("animationend", function () {
                 drop(element);
@@ -57,7 +49,6 @@ window.Game = window.Game || {};
 
         notice: showNotice,
 
-        /** Floats a label up from an element, e.g. "+250" over a square. */
         float: function (anchor, text, iconName, tintClass, extraClass) {
             if (!anchor) return;
 

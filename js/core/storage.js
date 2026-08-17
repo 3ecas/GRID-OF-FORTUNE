@@ -1,10 +1,5 @@
 window.Game = window.Game || {};
 
-/**
- * storage.js — the only place that talks to localStorage.
- * Every call is guarded: if storage is unavailable the game still runs,
- * it just forgets everything when the tab closes.
- */
 (function () {
     function available() {
         try {
@@ -47,7 +42,7 @@ window.Game = window.Game || {};
             try {
                 window.localStorage.removeItem(key);
             } catch (err) {
-                /* nothing we can do */
+
             }
         }
     };

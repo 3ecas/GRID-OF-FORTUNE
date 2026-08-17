@@ -1,9 +1,3 @@
-/* ==========================================================================
-   components.css — buttons, chips and floating feedback.
-   ========================================================================== */
-
-/* --- Buttons ------------------------------------------------------------ */
-
 .btn {
     display: inline-flex;
     align-items: center;
@@ -45,20 +39,6 @@
     background: #d6e9d0;
 }
 
-/* --- Tints ---------------------------------------------------------------
-   The plate a piece sits on, one per rung of the ladder — and it must be
-   ONE PER RUNG. Whether two squares can join is a thing you read at a
-   glance, so two rungs wearing the same colour is not a cosmetic slip: it
-   looks exactly like a broken merge.
-
-   Neighbours on the ladder are the ones that matter, since those are the
-   two you hold at the same time. Every touching pair here is pulled apart
-   by hue where the theme allows it, and by lightness where it does not —
-   the three golds in the middle are gold because they have to be, so they
-   run dark, mid, pale instead.
-   ------------------------------------------------------------------------ */
-
-/* dug up: earth, then rock, then what is in the rock */
 .tint-dirt {
     color: #8a6446;
     background: #f2e4d4;
@@ -74,8 +54,6 @@
     background: #e6e9ee;
 }
 
-/* ore leans lavender and tin leans blue, so neither reads as plain silver —
-   there are already three silvery things on this ladder */
 .tint-ore {
     color: #8981b4;
     background: #eeecf8;
@@ -86,7 +64,6 @@
     background: #e3f0f4;
 }
 
-/* minted: copper, silver, then the three golds by weight */
 .tint-copper {
     color: #b1683a;
     background: #f9e4d3;
@@ -112,8 +89,6 @@
     background: #fcf4dd;
 }
 
-/* cut: the stones, each its own hue */
-/* pushed orange, away from the golds three rungs below it */
 .tint-topaz {
     color: #dd7614;
     background: #fdead2;
@@ -144,7 +119,6 @@
     background: #e6f6fa;
 }
 
-/* kept: the last three */
 .tint-crown {
     color: #caa227;
     background: #fdf3da;
@@ -159,8 +133,6 @@
     color: #545f6e;
     background: #ebeef3;
 }
-
-/* --- Notices (bottom centre) -------------------------------------------- */
 
 .notice-host {
     position: fixed;
@@ -219,8 +191,6 @@
     }
 }
 
-/* --- Floating gains ----------------------------------------------------- */
-
 .float {
     position: fixed;
     z-index: 45;
@@ -244,7 +214,6 @@
     height: 1em;
 }
 
-/* what a big merge paid */
 .float--big {
     padding: 4px 14px;
     font-size: 1.25rem;
@@ -256,7 +225,6 @@
     height: 1.2em;
 }
 
-/* the name of something made for the first time */
 .float--name {
     animation-duration: 1.3s;
     font-size: 0.9rem;

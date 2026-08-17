@@ -1,7 +1,3 @@
-﻿/* ==========================================================================
-   game.css â€” a board, a hand, and nothing else.
-   ========================================================================== */
-
 .game {
     min-height: 100vh;
 }
@@ -17,11 +13,6 @@
     padding: 92px 20px 78px;
 }
 
-/* --- The score ----------------------------------------------------------
-   Top centre, counting rather than jumping, and popping in proportion to
-   what was just won.
-   ------------------------------------------------------------------------ */
-
 .scoreboard {
     position: fixed;
     top: 18px;
@@ -33,62 +24,6 @@
     gap: 1px;
     transform: translateX(-50%);
     pointer-events: none;
-}
-
-/* --- Mute ---------------------------------------------------------------
-   Tucked into the corner and mostly invisible until you go looking for it.
-   It is the only control on the page that is not the game itself, so it
-   should never compete with the board for attention.
-   ------------------------------------------------------------------------ */
-
-.reveal {
-    position: absolute;
-    left: 50%;
-    top: 56px;
-    z-index: 25;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    height: 34px;
-    padding: 0 14px;
-    border-radius: 999px;
-    opacity: 0;
-    font-size: 0.95rem;
-    font-weight: 700;
-    white-space: nowrap;
-    pointer-events: none;
-    transform: translate(-50%, 6px) scale(0.9);
-}
-
-.reveal.is-up {
-    animation: reveal-in 0.34s cubic-bezier(0.2, 1.5, 0.4, 1) forwards;
-}
-
-.reveal:not(.is-up) {
-    transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.reveal__art {
-    display: block;
-    width: 24px;
-    height: 24px;
-}
-
-.reveal__art svg.icon {
-    width: 100%;
-    height: 100%;
-}
-
-@keyframes reveal-in {
-    from {
-        opacity: 0;
-        transform: translate(-50%, 6px) scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: translate(-50%, 0) scale(1);
-    }
 }
 
 .mute {
@@ -159,12 +94,6 @@
     }
 }
 
-/* --- The run of everything ------------------------------------------------
-   Along the foot of the screen, first rung on the left, last on the right.
-   Only as tall as the pieces need. --count comes from the ladder length, so
-   they always fit on one line however many rungs there are.
-   ------------------------------------------------------------------------ */
-
 .track {
     --count: 19;
     --step: clamp(
@@ -198,7 +127,6 @@
     transition: opacity 0.35s ease, filter 0.35s ease, transform 0.35s ease;
 }
 
-/* what a rung is and what it pays, under the cursor */
 .step__tip {
     position: absolute;
     bottom: calc(100% + 10px);
@@ -256,13 +184,11 @@
     }
 }
 
-/* what you have made */
 .step.is-known {
     opacity: 1;
     filter: none;
 }
 
-/* what is coming into your hand right now */
 .step.is-dealing .step__bit {
     box-shadow: 0 0 0 2px var(--accent-deep);
 }
@@ -286,9 +212,6 @@
     height: 82%;
 }
 
-/* --- Board --------------------------------------------------------------- */
-
-/* the square shrinks to whatever keeps the whole board on screen at once */
 .board {
     --cols: 6;
     --gap: 7px;
@@ -324,7 +247,6 @@
         box-shadow 0.18s ease;
 }
 
-/* empty air above the pile */
 .tile--empty {
     cursor: pointer;
     background: var(--bg-deep);
@@ -335,7 +257,6 @@
     cursor: pointer;
 }
 
-/* the column under the cursor, and the square the piece will land on */
 .tile.is-column {
     background: var(--accent-soft);
 }
@@ -363,8 +284,6 @@
     height: 100%;
 }
 
-/* Falling: --fall is how many squares it has to cover, set per piece.
-   The ease lands it hard rather than drifting in. */
 .tile__art.is-falling {
     animation: fall-in 0.26s cubic-bezier(0.45, 0, 0.6, 1);
 }
@@ -372,6 +291,40 @@
 .tile.is-made {
     animation: tile-made 0.32s cubic-bezier(0.28, 1.9, 0.5, 1);
     z-index: 2;
+}
+
+.tile.is-fused {
+    animation: fused 0.16s ease-out;
+    z-index: 3;
+}
+
+.tile.is-fused .tile__art {
+    animation: fused-art 0.16s ease-in forwards;
+}
+
+@keyframes fused {
+    0% {
+        box-shadow: 0 0 0 0 var(--accent);
+    }
+    45% {
+        box-shadow: 0 0 14px 4px var(--accent);
+        transform: scale(1.14);
+    }
+    100% {
+        box-shadow: 0 0 0 0 transparent;
+        transform: scale(1);
+    }
+}
+
+@keyframes fused-art {
+    0% {
+        opacity: 1;
+        transform: scale(1) rotate(0);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.2) rotate(38deg);
+    }
 }
 
 @keyframes tile-in {
@@ -413,22 +366,14 @@
     }
 }
 
-/* --- Weight and payoff ---------------------------------------------------
-   Everything here scales with how far up the ladder a thing is and how deep
-   into a chain it lands, so the board tells you how big a move was.
-   ------------------------------------------------------------------------ */
-
-/* the thump of a piece coming to rest */
 .tile.is-landed {
     animation: land 0.24s ease-out;
 }
 
-/* neighbours shoved away from whatever just happened */
 .tile.is-jolt {
     animation: jolt 0.28s cubic-bezier(0.36, 0.07, 0.19, 0.97);
 }
 
-/* the ring that goes out from a merge */
 .tile__ring {
     position: absolute;
     inset: 0;
@@ -438,13 +383,11 @@
     animation: ring-out 0.62s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
 }
 
-/* something made for the first time ever */
 .tile.is-new {
     animation: first-time 1.1s ease-out;
     z-index: 3;
 }
 
-/* a whole line cashed in â€” the squares light up in turn, left to right */
 .tile.is-cleared {
     animation: cleared 0.42s ease-out var(--wait, 0ms) both;
     z-index: 3;
@@ -465,7 +408,6 @@
     animation: board-shake 0.26s cubic-bezier(0.36, 0.07, 0.19, 0.97);
 }
 
-/* a wash of warm light for the really big ones */
 .flash {
     position: fixed;
     inset: 0;
@@ -483,7 +425,6 @@
     animation: flash-up 0.5s ease-out;
 }
 
-/* the running count when one drop keeps setting things off */
 .combo {
     position: fixed;
     left: 50%;
@@ -597,8 +538,6 @@
     }
 }
 
-/* --- Sparks thrown out when something joins up --------------------------- */
-
 .sparks {
     position: fixed;
     inset: 0;
@@ -668,8 +607,6 @@
     }
 }
 
-/* --- Hand ---------------------------------------------------------------- */
-
 .hand {
     display: flex;
     align-items: center;
@@ -731,8 +668,6 @@
     width: 58%;
     height: 58%;
 }
-
-/* --- The end ------------------------------------------------------------- */
 
 .over {
     position: fixed;
@@ -820,8 +755,6 @@
         transform: scale(0.4) rotate(-8deg);
     }
 }
-
-/* --- Small screens ------------------------------------------------------- */
 
 @media (max-width: 700px) {
     .table {

@@ -1,22 +1,5 @@
 window.Game = window.Game || {};
 
-/**
- * board.js — the grid, the falling, and the merging.
- *
- * You drop a piece into a column and it falls to the ground. Two of the same
- * thing touching become the next one up, whatever is above drops into the gap,
- * and that can set off another merge — so one piece can start a long chain.
- *
- * Everything falling is what keeps the board solid. A merge takes two squares
- * and gives back one, so without gravity every merge leaves a hole exactly
- * where the twin stood, and the board settles into scattered pieces with a gap
- * between each one.
- *
- * A move does not come back as one finished board. It comes back as the
- * sequence it actually happened in — fall, join, fall, join — each with a
- * picture of the board at that moment, so the view can play it out in order
- * instead of showing the answer straight away.
- */
 (function () {
     var cells = [];
     var cols = 0;
@@ -33,7 +16,6 @@ window.Game = window.Game || {};
         });
     }
 
-    /** Packs every column down to the ground, reporting what moved where. */
     function fall() {
         var moves = [];
 
@@ -65,19 +47,6 @@ window.Game = window.Game || {};
         return moves;
     }
 
-    /**
-     * Everything of one kind touching this square, found by spreading
-     * outwards until there is nothing left to find.
-     *
-     * The whole run goes at once, however big it is. Two here and two there
-     * with a hole between them is nothing at all — but drop the missing one
-     * into the hole and all five are one connected run, so all five join.
-     * Not three of them with a stranded pair left either side.
-     *
-     * Touching means edges. Corners are not touching.
-     *
-     * Gives back null when there are too few to join.
-     */
     function reach(start, need) {
         var found = [start];
         var seen = {};
@@ -108,13 +77,6 @@ window.Game = window.Game || {};
         return found.length >= need ? found : null;
     }
 
-    /**
-     * The next group ready to join, searched from the ground up so the
-     * settlement resolves from the bottom like it would if you were building
-     * it. The first square found is the lowest and leftmost, so that is the
-     * one left holding what they become — which is also where gravity would
-     * have put it.
-     */
     function nextGroup() {
         var need = Game.Config.game.mergeAt || 2;
 
@@ -135,13 +97,6 @@ window.Game = window.Game || {};
         return null;
     }
 
-    /**
-     * The rubble touching any of these squares.
-     *
-     * Rubble cannot join anything, so on its own it never leaves the board.
-     * What shakes it loose is a join happening against it: the bigger the run
-     * you bring together, the more of the mess it knocks out at once.
-     */
     function rubbleAround(cells) {
         var hit = [];
         var seen = {};
@@ -160,14 +115,6 @@ window.Game = window.Game || {};
         return hit;
     }
 
-    /**
-     * A row or column with nothing missing.
-     *
-     * Columns are the interesting one: gravity packs the bottom, so a full
-     * row turns up on its own, but a full column means you stacked all the
-     * way to the ceiling — one square from being unable to drop there at all.
-     * Paying out for that is paying out for the risk.
-     */
     function fullLine() {
         var settings = Game.Config.game;
         var x, y, line, full;
@@ -178,11 +125,7 @@ window.Game = window.Game || {};
                 full = true;
                 for (y = 0; y < rows; y++) {
                     var down = at(x, y);
-                    // rubble spoils the column it lands in: it cannot merge
-                    // and it cannot be cashed, so the square is gone for good.
-                    // Without this the clear sweeps rubble away too, and a
-                    // valve that opens whenever the board is full can never
-                    // be overwhelmed — no run would ever end.
+
                     if (!down.piece || down.piece === "rubble") {
                         full = false;
                         break;
@@ -209,14 +152,9 @@ window.Game = window.Game || {};
         return null;
     }
 
-    /** Runs the board to a standstill, keeping every beat in order. */
     function resolve(steps) {
         var guard = 0;
 
-        /* How many joins this one drop has set off so far. Everything a drop
-           knocks over belongs to the same chain, and the chain is what pays:
-           the second join is worth double, the third triple, up to the cap.
-           One well-placed piece beats three tidy ones. */
         var chain = 0;
 
         var first = fall();
@@ -229,6 +167,15 @@ window.Game = window.Game || {};
 
             if (pair) {
                 chain++;
+
+                var lit = snapshot();
+                var fuse = pair.eat
+                    .slice()
+                    .reverse()
+                    .map(function (cell) {
+                        return cell.id;
+                    });
+
                 pair.eat.forEach(function (cell) {
                     if (cell !== pair.keep) cell.piece = null;
                 });
@@ -247,17 +194,14 @@ window.Game = window.Game || {};
                     piece: grown.id,
                     from: pair.piece.id,
                     took: pair.eat.length,
+                    fuse: fuse,
+                    lit: lit,
                     chain: chain,
                     times: times,
                     points: Math.round((grown.points || 0) * times),
                     board: snapshot()
                 });
 
-                /* The join shakes loose whatever rubble it was pressed
-                   against. This is the only way rubble ever leaves, so
-                   without it the board silts up with squares nobody can use
-                   and the game just runs down. It pays nothing — getting the
-                   square back is the whole reward. */
                 if (Game.Config.game.rubbleBreaks) {
                     var broken = rubbleAround(pair.eat);
                     if (broken.length) {
@@ -273,18 +217,16 @@ window.Game = window.Game || {};
                     }
                 }
 
-                /* The top of the ladder has nothing above it, so left on the
-                   board it is dead weight forever. Instead it is cashed in on
-                   the spot: paid out at a premium and carried off, freeing the
-                   square. Without this the endgame is nothing but disposing of
-                   vaults, and no amount of pressure ends a run — a full column
-                   clears, so pressure only makes clears more frequent. */
                 if (!grown.next && Game.Config.game.cashTop) {
-                    pair.keep.piece = null;
+                    pair.keep.piece = Game.Config.game.cashLeaves
+                        ? Game.Pieces.rubble.id
+                        : null;
+
                     steps.push({
                         type: "cash",
                         cells: [pair.keep.id],
                         piece: grown.id,
+                        spent: Game.Config.game.cashLeaves,
                         points: Math.round(
                             (grown.points || 0) * Game.Config.game.cashBonus
                         ),
@@ -325,7 +267,6 @@ window.Game = window.Game || {};
             return step.type === "merge";
         });
 
-        // clears pay too, but they make nothing, so they are not "made"
         var points = steps.reduce(function (sum, step) {
             return sum + (step.points || 0);
         }, 0);
@@ -363,7 +304,6 @@ window.Game = window.Game || {};
             return 1 - this.empties().length / cells.length;
         },
 
-        /** The best thing standing right now. */
         highest: function () {
             var best = null;
             cells.forEach(function (cell) {
@@ -374,7 +314,6 @@ window.Game = window.Game || {};
             return best;
         },
 
-        /** Where a piece dropped into this column would come to rest. */
         landing: function (column) {
             if (column < 0 || column >= cols) return null;
             for (var y = rows - 1; y >= 0; y--) {
@@ -396,7 +335,6 @@ window.Game = window.Game || {};
             return cells;
         },
 
-        /** Some ground already laid, so the first drop has something to land on. */
         seed: function (count, highestTier) {
             for (var i = 0; i < count; i++) {
                 if (!this.empties().length) break;
@@ -408,19 +346,16 @@ window.Game = window.Game || {};
             resolve([]);
         },
 
-        /** Lets the board settle after something changed it from outside. */
         settle: function () {
             return report(resolve([]));
         },
 
-        /** The only move: drop a piece into a column. */
         drop: function (column, pieceId) {
             var spot = this.landing(column);
             if (!spot) return null;
 
             spot.piece = pieceId;
 
-            // the piece coming in from above the board is the first beat
             var steps = [
                 {
                     type: "fall",
@@ -434,19 +369,6 @@ window.Game = window.Game || {};
             return out;
         },
 
-        /**
-         * Brings anything left below the rungs still being dealt up to the
-         * bottom of them.
-         *
-         * Without this, a piece can be buried under a pile it can never merge
-         * with: you only ever drop from the top, so the only twin it could
-         * meet would have to be dealt — and once the hand has moved on, that
-         * twin is never coming. The square is dead for the rest of the game.
-         *
-         * So the countryside keeps growing on its own. Nothing on the board is
-         * ever below what is being dealt, which means every square always has
-         * a way out.
-         */
         growUpTo: function (tier) {
             var grown = 0;
 

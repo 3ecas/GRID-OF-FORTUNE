@@ -1,20 +1,12 @@
 window.Game = window.Game || {};
 
-/**
- * scoreview.js — the number at the top of the screen.
- *
- * It does not jump. It counts, and it counts in step with the board: each
- * merge in a chain adds its own share as that merge pops, so a five-deep
- * cascade reads as five separate gains rather than one number appearing out
- * of nowhere at the end.
- */
 (function () {
     var host = null;
     var valueEl = null;
     var bestEl = null;
 
-    var shown = 0; // what the screen says
-    var target = 0; // what it is counting towards
+    var shown = 0;
+    var target = 0;
     var frame = null;
 
     var COUNT_MS = 420;
@@ -29,7 +21,6 @@ window.Game = window.Game || {};
         bestEl.textContent = round.best ? "best " + round.best : "";
     }
 
-    /** Eases the shown figure towards the target. */
     function run() {
         var from = shown;
         var gap = target - from;
@@ -45,7 +36,7 @@ window.Game = window.Game || {};
         function step(now) {
             if (started === null) started = now;
             var t = Math.min(1, (now - started) / COUNT_MS);
-            // fast out of the gate, settling at the end
+
             var eased = 1 - Math.pow(1 - t, 3);
             shown = from + gap * eased;
             paint();
@@ -56,7 +47,6 @@ window.Game = window.Game || {};
         frame = window.requestAnimationFrame(step);
     }
 
-    /** A pop sized to what was just won. */
     function pop(points) {
         if (!valueEl) return;
         var weight = Math.min(1, points / 3000);
@@ -84,7 +74,6 @@ window.Game = window.Game || {};
                 paintBest();
             });
 
-            // one gain per merge, as that merge lands
             Game.Events.on("board:merged", function (detail) {
                 if (!detail.step.points) return;
                 target += detail.step.points;
@@ -92,7 +81,6 @@ window.Game = window.Game || {};
                 run();
             });
 
-            // catch anything the beats missed, such as a grow-up cascade
             Game.Events.on("board:settled", function () {
                 var round = Game.Round.get();
                 if (!round || target === round.score) return;

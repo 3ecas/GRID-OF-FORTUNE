@@ -1,14 +1,5 @@
 window.Game = window.Game || {};
 
-/**
- * round.js — a game of Grid of Fortune.
- *
- * No clock and nothing to spend: you place pieces, things join up, and the
- * board slowly fills. It ends when there is nowhere left to put anything.
- *
- * Two things are written down between games — the best score, and every kind
- * of thing you have ever managed to make.
- */
 (function () {
     var config = null;
     var state = null;
@@ -38,16 +29,6 @@ window.Game = window.Game || {};
         }
     }
 
-    /**
-     * How likely the next loose piece is rubble.
-     *
-     * Measured off the best rung reached, not off the number of drops made.
-     * On the clock it thickened whether or not you were getting anywhere,
-     * so a slow game — the one already going badly — got buried for being
-     * slow. On the ladder it only turns bad once you are doing well: the
-     * seam is clean all the way up to the gold coin, and every rung past
-     * that costs you a little.
-     */
     function rubbleChance() {
         var s = settings();
         var over = state.highest - s.rubbleFrom + 1;
@@ -59,49 +40,41 @@ window.Game = window.Game || {};
         return Math.random() < rubbleChance();
     }
 
-    /**
-     * Which level of the seam you are on: the last entry in the table whose
-     * rung you have reached, or nothing at all if you have reached none of
-     * them and the board is still quiet.
-     */
     function seam() {
         var table = settings().falls;
         var found = null;
 
         for (var i = 0; i < table.length; i++) {
-            var piece = Game.Pieces.byId(table[i].at);
-            if (piece && state.highest >= piece.tier) found = table[i];
+            var level = table[i];
+
+            if (typeof level.after === "number") {
+                if (state.placed >= level.after) found = level;
+                continue;
+            }
+
+            var piece = Game.Pieces.byId(level.at);
+            if (piece && state.highest >= piece.tier) found = level;
         }
 
         return found;
     }
 
-    /** How many drops between falls right now. */
     function fallGap() {
         var level = seam();
         return level ? level.every : Infinity;
     }
 
-    /** How many pieces come down each fall. */
     function fallCount() {
         var level = seam();
         return level ? level.count : 0;
     }
 
-    /**
-     * The seam gives way and pieces fall in on their own, into columns you
-     * did not choose.
-     *
-     * They are drawn from the same rungs as your hand, so what lands is
-     * always something you could merge — the difficulty is where, not what.
-     * The exception is rubble, which is the only thing here you cannot use.
-     */
     function rain() {
         var count = fallCount();
         var made = [];
         var steps = [];
         var points = 0;
-        var dirt = 0; // rubble so far this fall, held under rubbleCap
+        var dirt = 0;
 
         for (var i = 0; i < count; i++) {
             var open = [];
@@ -131,7 +104,6 @@ window.Game = window.Game || {};
         absorb({ made: made, points: points }, 0);
     }
 
-    /** Walks a piece up the ladder until it reaches this rung. */
     function grownTo(piece, tier) {
         while (piece && piece.tier < tier && piece.next) {
             piece = Game.Pieces.byId(piece.next);
@@ -139,7 +111,6 @@ window.Game = window.Game || {};
         return piece;
     }
 
-    /** Takes what a settling produced: points, album, and the hand moving up. */
     function absorb(result, depth) {
         state.score += result.points;
         state.tally += result.made.length;
@@ -147,33 +118,29 @@ window.Game = window.Game || {};
         raise(result.made, depth || 0);
     }
 
-    /**
-     * Notices when the game has climbed far enough that the bottom rung stops
-     * being dealt — the moment saplings give way to trees — and brings the
-     * stragglers on the board up with it so nothing is left stranded.
-     */
+    function checkSeam() {
+        var now = seam();
+        if (now === state.seam) return;
+
+        state.seam = now;
+        Game.Events.emit("game:seam", { level: now });
+    }
+
     function raise(made, depth) {
         var before = Game.Pieces.dealing(state.highest)[0];
-        var wasSeam = seam();
 
         made.forEach(function (step) {
             var piece = Game.Pieces.byId(step.piece);
             if (piece.tier > state.highest) state.highest = piece.tier;
         });
 
-        // climbing a rung can widen the seam, and that is worth being told
-        var nowSeam = seam();
-        if (nowSeam !== wasSeam) {
-            Game.Events.emit("game:seam", { level: nowSeam });
-        }
+        checkSeam();
 
         var after = Game.Pieces.dealing(state.highest)[0];
         if (after === before || depth > 12) return;
 
         Game.Events.emit("game:dealing", { lowest: after });
 
-        // what you are holding grows up too, or you could plant a sapling
-        // onto a board that has left saplings behind
         state.hand = state.hand.map(function (piece) {
             return grownTo(piece, after.tier);
         });
@@ -187,7 +154,6 @@ window.Game = window.Game || {};
         absorb(settled, depth + 1);
     }
 
-    /** Records anything made for the first time ever. */
     function record(made) {
         var fresh = [];
 
@@ -232,7 +198,6 @@ window.Game = window.Game || {};
             return state;
         },
 
-        /** Everything made this game, and everything ever made. */
         found: function (pieceId) {
             return !!state && state.found.indexOf(pieceId) !== -1;
         },
@@ -247,34 +212,33 @@ window.Game = window.Game || {};
                 running: true,
                 score: 0,
                 placed: 0,
-                tally: 0, // how many things joined up this game
-                highest: 1, // the best rung reached, which sets what is dealt
+                tally: 0,
+                highest: 1,
                 sinceFall: 0,
+                seam: null,
                 hand: [],
                 picked: 0,
                 best: save.best,
                 found: save.found
             };
+            state.seam = seam();
             fillHand();
 
             Game.Events.emit("game:started", {});
         },
 
-        /** Which of the waiting pieces is in hand. */
         pick: function (index) {
             if (!state || index < 0 || index >= state.hand.length) return;
             state.picked = index;
             Game.Events.emit("game:hand", {});
         },
 
-        /** Wheel the hand along, wrapping round. */
         cycle: function (step) {
             if (!state || !state.running || state.hand.length < 2) return;
             var count = state.hand.length;
             this.pick((state.picked + step + count) % count);
         },
 
-        /** The only move: drop the piece in hand into a column. */
         play: function (column) {
             if (!state || !state.running) return null;
 
@@ -288,9 +252,8 @@ window.Game = window.Game || {};
             state.hand.splice(index, 1);
             state.picked = 0;
             state.placed += 1;
+            checkSeam();
 
-            // announce the move before anything the move sets off, so the
-            // view plays them back in the order they happened
             Game.Events.emit("board:steps", { steps: result.steps });
 
             absorb(result, 0);
@@ -305,9 +268,6 @@ window.Game = window.Game || {};
             Game.Events.emit("game:placed", { result: result });
             Game.Events.emit("game:hand", {});
 
-            // Reaching the top does not end anything — the crown has nothing
-            // above it, so it simply sits there taking a square. Keep going
-            // and keep making them; the board filling is the only ending.
             if (Game.Board.isFull()) finish("full");
 
             return result;

@@ -1,21 +1,9 @@
 window.Game = window.Game || {};
 
-/**
- * boardview.js — draws the board and takes the one move there is: a drop.
- *
- * A move is played out, not shown finished. The board hands back the beats it
- * actually happened in — the piece falls, lands, *then* notices its twin and
- * joins with it, then whatever was above drops into the gap — and each beat
- * is drawn and given its moment before the next one starts.
- *
- * Contents are only rewritten when the piece on a square really changes.
- * Redrawing them on every hover restarts each icon's entry animation and the
- * whole board flickers as the cursor moves.
- */
 (function () {
     var host = null;
     var tiles = [];
-    var shown = []; // what is currently drawn, by cell id
+    var shown = [];
     var hovered = -1;
     var busy = false;
     var pointer = { x: 0, y: 0, known: false };
@@ -25,8 +13,7 @@ window.Game = window.Game || {};
     var FALL_MS = 140;
     var MERGE_MS = 125;
     var CLEAR_MS = 240;
-
-    /* --------------------------------------------------------------- build */
+    var FUSE_MS = 58;
 
     function build() {
         var size = Game.Board.size();
@@ -49,9 +36,6 @@ window.Game = window.Game || {};
         paintBoard(Game.Board.snapshot());
     }
 
-    /* --------------------------------------------------------------- paint */
-
-    /** Only touches the DOM where the piece on a square has changed. */
     function paintContents(id, piece) {
         var tile = tiles[id];
         if (!tile || shown[id] === piece) return;
@@ -72,7 +56,6 @@ window.Game = window.Game || {};
         tile.setAttribute("aria-label", art.name);
     }
 
-    /** Classes only — safe to run on every mouse move. */
     function paintState(id) {
         var tile = tiles[id];
         if (!tile) return;
@@ -111,8 +94,6 @@ window.Game = window.Game || {};
         });
     }
 
-    /* ------------------------------------------------------------ the beats */
-
     function playFall(moves) {
         moves.forEach(function (move) {
             var tile = tiles[move.to];
@@ -125,20 +106,23 @@ window.Game = window.Game || {};
             art.classList.add("is-falling");
         });
 
-        // the thump, once each piece is actually down. The sound hangs off
-        // this rather than off the move, because the move resolves instantly
-        // and the pieces are still in the air for another beat and a half
         window.setTimeout(function () {
+            var landed = 0;
+
             moves.forEach(function (move) {
                 var cell = Game.Board.byId(move.to);
+                if (!cell) return;
                 Game.Effects.land(tiles[move.to], around(cell));
+                landed++;
             });
-            Game.Events.emit("board:landed", { count: moves.length });
+
+            if (landed) Game.Events.emit("board:landed", { count: landed });
         }, FALL_MS - 60);
     }
 
-    /** The four squares around one, and which way they should be shoved. */
     function around(cell) {
+        if (!cell) return [];
+
         return [[0, -1], [0, 1], [-1, 0], [1, 0]]
             .map(function (step) {
                 var near = Game.Board.at(cell.x + step[0], cell.y + step[1]);
@@ -161,7 +145,6 @@ window.Game = window.Game || {};
         void tile.offsetWidth;
         tile.classList.add("is-made");
 
-        // the score counts up in step with the pops, not all at the end
         Game.Events.emit("board:merged", { step: step, chain: chain });
 
         var neighbours = around(step.cell);
@@ -169,11 +152,8 @@ window.Game = window.Game || {};
         Game.Effects.shake(host, made.tier, chain);
         Game.Effects.flash(made.tier);
 
-        // the figure shown is the one that was actually paid, not the view's
-        // own tally of beats — they used to be able to disagree
         Game.Effects.combo(step.times || 1);
 
-        // what it paid, floating off the square that paid it
         Game.Toast.float(
             tile,
             "+" + step.points,
@@ -195,7 +175,62 @@ window.Game = window.Game || {};
         }
     }
 
-    /** A whole line cashed in: the squares flash and the points fly off. */
+    function playFuse(step, chain, done) {
+        var trail = (step.fuse || []).filter(function (id) {
+            return id !== step.cell.id;
+        });
+
+        if (!trail.length || !step.lit) {
+            playMerge(step, chain);
+            done();
+            return;
+        }
+
+        paintBoard(step.lit);
+
+        var at = 0;
+
+        function burn() {
+            if (at >= trail.length) {
+                paintBoard(step.board);
+                playMerge(step, chain);
+                done();
+                return;
+            }
+
+            var id = trail[at];
+            at++;
+
+            var tile = tiles[id];
+            if (tile) {
+                tile.classList.remove("is-fused");
+                void tile.offsetWidth;
+                tile.classList.add("is-fused");
+
+                var box = tile.getBoundingClientRect();
+                Game.Sparks.burst(
+                    box.left + box.width / 2,
+                    box.top + box.height / 2,
+                    3
+                );
+            }
+
+            Game.Events.emit("board:fuse", {
+                step: at,
+                of: trail.length,
+                piece: step.from
+            });
+
+            window.setTimeout(function () {
+                paintContents(id, null);
+                paintState(id);
+                burn();
+            }, FUSE_MS);
+        }
+
+        burn();
+    }
+
     function playClear(step) {
         var middle = tiles[step.cells[Math.floor(step.cells.length / 2)]];
 
@@ -218,8 +253,6 @@ window.Game = window.Game || {};
         Game.Effects.shake(host, 8, 0);
         Game.Effects.flash(8);
 
-        // rubble knocked loose pays nothing, so there is no figure to float —
-        // the squares breaking open is the whole message
         if (middle && step.points) {
             Game.Toast.float(
                 middle,
@@ -231,7 +264,6 @@ window.Game = window.Game || {};
         }
     }
 
-    /** Walks the sequence, one beat at a time. */
     function playSteps(steps, index, chain) {
         if (index >= steps.length) {
             advance();
@@ -239,9 +271,9 @@ window.Game = window.Game || {};
         }
 
         var step = steps[index];
-        paintBoard(step.board);
 
         if (step.type === "fall") {
+            paintBoard(step.board);
             playFall(step.moves);
             window.setTimeout(function () {
                 playSteps(steps, index + 1, chain);
@@ -250,6 +282,7 @@ window.Game = window.Game || {};
         }
 
         if (step.type === "clear" || step.type === "cash") {
+            paintBoard(step.board);
             playClear(step);
             Game.Events.emit("board:merged", { step: step, chain: chain });
             window.setTimeout(function () {
@@ -258,22 +291,16 @@ window.Game = window.Game || {};
             return;
         }
 
-        playMerge(step, chain);
-
-        // the big ones are held a beat longer, so the payoff lands
         var made = Game.Pieces.byId(step.piece);
         var hold = MERGE_MS + (made.tier >= 7 ? 110 : 0);
 
-        window.setTimeout(function () {
-            playSteps(steps, index + 1, chain + 1);
-        }, hold);
+        playFuse(step, chain, function () {
+            window.setTimeout(function () {
+                playSteps(steps, index + 1, chain + 1);
+            }, hold);
+        });
     }
 
-    /**
-     * One move can set off more than one sequence — the drop itself, then
-     * the countryside growing up behind it, then a fall of loose pieces.
-     * They queue so each plays out fully instead of cutting the last one off.
-     */
     function enqueue(steps) {
         if (!steps || !steps.length) return;
         pending.push(steps);
@@ -292,8 +319,6 @@ window.Game = window.Game || {};
         seenThisDrop = {};
         playSteps(pending.shift(), 0, 0);
     }
-
-    /* -------------------------------------------------------------- clicks */
 
     function columnOf(event) {
         var tile = event.target.closest("[data-column]");
@@ -318,7 +343,7 @@ window.Game = window.Game || {};
     }
 
     function onClick(event) {
-        if (busy) return; // let the board finish settling first
+        if (busy) return;
 
         var column = columnOf(event);
         if (column < 0) return;
@@ -326,7 +351,6 @@ window.Game = window.Game || {};
         var round = Game.Round.get();
         if (!round || !round.running) return;
 
-        // playback is driven by the events the move raises, in order
         if (!Game.Round.play(column)) {
             Game.Toast.notice("That column is full.", "warn");
         }
@@ -348,17 +372,14 @@ window.Game = window.Game || {};
                 build();
             });
 
-            // the move itself
             Game.Events.on("board:steps", function (detail) {
                 enqueue(detail.steps);
             });
 
-            // then anything left behind growing up to catch the hand
             Game.Events.on("game:grown", function (detail) {
                 enqueue(detail.settled.steps);
             });
 
-            // then whatever the seam drops on you
             Game.Events.on("game:rain", function (detail) {
                 enqueue(detail.steps);
             });

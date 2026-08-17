@@ -1,46 +1,11 @@
 window.Game = window.Game || {};
 
-/**
- * roundview.js — the hand, the run along the bottom, and the card at the end.
- *
- * The screen holds three things: the board, the two pieces in your hand, and
- * the ladder along the foot. Everything you might want to look up — what a
- * rung is called, what it pays — is on the bar itself, under the cursor.
- */
 (function () {
     var handHost = null;
     var trackHost = null;
     var overHost = null;
-    var revealHost = null;
-    var revealTimer = null;
     var pendingOver = null;
 
-    function showReveal(id) {
-        var piece = Game.Pieces.byId(id);
-        if (!revealHost || !piece) return;
-
-        revealHost.className = "reveal " + piece.tint;
-        revealHost.innerHTML =
-            '<span class="reveal__art">' +
-            Game.Icons.svg(piece.icon) +
-            "</span>" +
-            '<span class="reveal__name">' +
-            piece.name +
-            "</span>";
-
-        revealHost.classList.remove("is-up");
-        void revealHost.offsetWidth;
-        revealHost.classList.add("is-up");
-
-        window.clearTimeout(revealTimer);
-        revealTimer = window.setTimeout(function () {
-            revealHost.classList.remove("is-up");
-        }, 1800);
-    }
-
-    /* -------------------------------------------------------------- track */
-
-    /** The rungs being dealt right now, as a lookup. */
     function dealingNow() {
         var round = Game.Round.get();
         if (!round) return {};
@@ -52,14 +17,6 @@ window.Game = window.Game || {};
         return live;
     }
 
-    /**
-     * The whole ladder along the foot of the screen, left to right.
-     *
-     * It tracks *this game*, not any all-time record — you can only reach a
-     * rung by making everything under it, so how far the colour runs is
-     * exactly how far you have climbed. Each rung carries its own label,
-     * shown on hover, so nothing else has to exist to explain it.
-     */
     function renderTrack() {
         var round = Game.Round.get();
         if (!trackHost || !round) return;
@@ -100,8 +57,6 @@ window.Game = window.Game || {};
             .join("");
     }
 
-    /* --------------------------------------------------------------- hand */
-
     function renderHand() {
         var round = Game.Round.get();
         if (!handHost || !round) return;
@@ -124,12 +79,9 @@ window.Game = window.Game || {};
             .join("");
     }
 
-    /* ---------------------------------------------------------------- end */
-
     function showOver(detail) {
         if (!overHost) return;
 
-        // let the board finish settling before declaring the game done
         if (Game.BoardView.isBusy()) {
             pendingOver = detail;
             return;
@@ -177,13 +129,6 @@ window.Game = window.Game || {};
         overHost.innerHTML = "";
     }
 
-    /* ------------------------------------------------------------- events */
-
-    /**
-     * The wheel swaps which of the two you are holding, from anywhere on the
-     * page — you spend the whole game with the cursor over the board, so
-     * reaching down to the hand to click would be the slow way round.
-     */
     function onWheel(event) {
         var round = Game.Round.get();
         if (!round || !round.running) return;
@@ -197,7 +142,6 @@ window.Game = window.Game || {};
             handHost = document.getElementById("hand");
             trackHost = document.getElementById("track");
             overHost = document.getElementById("over");
-            revealHost = document.getElementById("reveal");
 
             if (handHost) {
                 handHost.addEventListener("click", function (event) {
@@ -224,11 +168,6 @@ window.Game = window.Game || {};
                 );
             });
 
-            /* Nothing is said about an ordinary fall — it happens far too
-               often to be news, and a message that fires fifty times a run
-               just sits on top of your hand. Stepping up to the next level
-               of the seam is different: it happens four times at most, and
-               it changes how the rest of the game will go. */
             Game.Events.on("game:seam", function (detail) {
                 var level = detail.level;
                 if (!level) return;
@@ -252,10 +191,7 @@ window.Game = window.Game || {};
                 );
             });
 
-            Game.Events.on("game:found", function (detail) {
-                renderTrack();
-                showReveal(detail.pieces[detail.pieces.length - 1]);
-            });
+            Game.Events.on("game:found", renderTrack);
 
             Game.Events.on("game:over", showOver);
             Game.Events.on("board:settled", function () {

@@ -1,32 +1,22 @@
-/* ==========================================================================
-   theme.css — palette, reset and base typography.
-   Cozy minimalist: warm paper background, soft pastels, rounded everything.
-   ========================================================================== */
-
 :root {
-    /* Surfaces */
+
     --bg: #f5efe3;
     --bg-deep: #efe7d8;
     --panel: #fffdf8;
     --panel-soft: #faf4e9;
 
-    /* Lines */
     --line: #e8ddc9;
     --line-strong: #dbcdb3;
 
-    /* Ink */
     --ink: #59513f;
     --ink-soft: #8f866f;
     --ink-faint: #b6ad96;
 
-    /* Accent (sage) */
     --accent: #a8c6a0;
     --accent-deep: #7ea875;
     --accent-ink: #4a6b43;
     --accent-soft: #e2efdd;
 
-    /* Metals and stones. Three tones each so they can be properly cut, but
-       kept soft — these sit on cream, not on velvet. */
     --i-dirt: #b08a63;
     --i-dirt-light: #cba888;
     --i-dirt-deep: #8b6a47;
@@ -81,13 +71,11 @@
 
     --i-shine: rgba(255, 255, 255, 0.55);
 
-    /* Shape */
     --radius-sm: 10px;
     --radius: 14px;
     --radius-lg: 20px;
     --radius-pill: 999px;
 
-    /* Depth */
     --shadow-1: 0 1px 2px rgba(112, 98, 72, 0.06),
         0 4px 12px rgba(112, 98, 72, 0.07);
     --shadow-2: 0 2px 4px rgba(112, 98, 72, 0.07),
@@ -168,7 +156,6 @@ button {
     color: var(--ink-soft);
 }
 
-/* Line icons: UI chrome, drawn in whatever colour the parent uses */
 svg.icon {
     display: block;
     width: 1.25em;
@@ -181,7 +168,6 @@ svg.icon {
     stroke-linejoin: round;
 }
 
-/* Illustrated icons: flat vector art, every shape carries its own fill */
 svg.icon--art {
     stroke: none;
     fill: none;
