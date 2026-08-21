@@ -4,28 +4,28 @@ window.Game = window.Game || {};
 
     var ladder = [
 
-        { id: "dirt", name: "Dirt", icon: "dirt", tint: "tint-dirt" },
-        { id: "stone", name: "Stone", icon: "rock", tint: "tint-rock", points: 1 },
-        { id: "iron", name: "Iron", icon: "iron", tint: "tint-iron", points: 2 },
-        { id: "silver_ore", name: "Silver", icon: "silver_ore", tint: "tint-ore", points: 3 },
-        { id: "tin", name: "Tin", icon: "tin", tint: "tint-tin", points: 5 },
+        { id: "dirt", name: "Dirt", icon: "dirt", tint: "tint-dirt", points: 1 },
+        { id: "stone", name: "Stone", icon: "rock", tint: "tint-rock", points: 2 },
+        { id: "iron", name: "Iron", icon: "iron", tint: "tint-iron", points: 3 },
+        { id: "silver_ore", name: "Silver", icon: "silver_ore", tint: "tint-ore", points: 5 },
+        { id: "tin", name: "Tin", icon: "tin", tint: "tint-tin", points: 8 },
 
-        { id: "copper", name: "Copper Coin", icon: "copper", tint: "tint-copper", points: 7 },
-        { id: "silver", name: "Silver Coin", icon: "silver", tint: "tint-silver", points: 11 },
-        { id: "gold", name: "Gold Coin", icon: "gold", tint: "tint-gold", points: 16 },
-        { id: "coins", name: "Coin Stack", icon: "coins", tint: "tint-coins", points: 24 },
-        { id: "ingot", name: "Ingot", icon: "ingot", tint: "tint-ingot", points: 36 },
+        { id: "copper", name: "Copper Coin", icon: "copper", tint: "tint-copper", points: 12 },
+        { id: "silver", name: "Silver Coin", icon: "silver", tint: "tint-silver", points: 18 },
+        { id: "gold", name: "Gold Coin", icon: "gold", tint: "tint-gold", points: 27 },
+        { id: "coins", name: "Coin Stack", icon: "coins", tint: "tint-coins", points: 40 },
+        { id: "ingot", name: "Ingot", icon: "ingot", tint: "tint-ingot", points: 60 },
 
-        { id: "topaz", name: "Topaz", icon: "topaz", tint: "tint-topaz", points: 54 },
-        { id: "amethyst", name: "Amethyst", icon: "amethyst", tint: "tint-amethyst", points: 81 },
-        { id: "emerald", name: "Emerald", icon: "emerald", tint: "tint-emerald", points: 122 },
-        { id: "ruby", name: "Ruby", icon: "ruby", tint: "tint-ruby", points: 183 },
-        { id: "sapphire", name: "Sapphire", icon: "sapphire", tint: "tint-sapphire", points: 274 },
-        { id: "diamond", name: "Diamond", icon: "diamond", tint: "tint-diamond", points: 411 },
+        { id: "topaz", name: "Topaz", icon: "topaz", tint: "tint-topaz", points: 90 },
+        { id: "amethyst", name: "Amethyst", icon: "amethyst", tint: "tint-amethyst", points: 135 },
+        { id: "emerald", name: "Emerald", icon: "emerald", tint: "tint-emerald", points: 200 },
+        { id: "ruby", name: "Ruby", icon: "ruby", tint: "tint-ruby", points: 300 },
+        { id: "sapphire", name: "Sapphire", icon: "sapphire", tint: "tint-sapphire", points: 450 },
+        { id: "diamond", name: "Diamond", icon: "diamond", tint: "tint-diamond", points: 675 },
 
-        { id: "crown", name: "Crown", icon: "crown", tint: "tint-crown", points: 617 },
-        { id: "chest", name: "Treasure", icon: "treasure", tint: "tint-treasure", points: 925 },
-        { id: "vault", name: "Vault", icon: "vault", tint: "tint-vault", points: 1388 }
+        { id: "crown", name: "Crown", icon: "crown", tint: "tint-crown", points: 1000 },
+        { id: "chest", name: "Treasure", icon: "treasure", tint: "tint-treasure", points: 1600 },
+        { id: "vault", name: "Vault", icon: "vault", tint: "tint-vault", points: 2500 }
     ];
 
     ladder.forEach(function (piece, index) {
@@ -44,7 +44,32 @@ window.Game = window.Game || {};
         points: 0
     };
 
-    var index = { rubble: rubble };
+    /* Like rubble, dynamite joins nothing — next is null, so nextGroup walks
+       straight past it. What it does, it does when a merge lands beside it. */
+    var dynamite = {
+        id: "dynamite",
+        name: "Dynamite",
+        icon: "dynamite",
+        tint: "tint-tnt",
+        tier: 0,
+        next: null,
+        points: 0
+    };
+
+    /* Set off the same way dynamite is — by a merge landing against it —
+       but instead of blowing a hole it asks you which kind to draw out, and
+       takes every one of that kind wherever it is on the board. */
+    var lodestone = {
+        id: "lodestone",
+        name: "Lodestone",
+        icon: "lodestone",
+        tint: "tint-lode",
+        tier: 0,
+        next: null,
+        points: 0
+    };
+
+    var index = { rubble: rubble, dynamite: dynamite, lodestone: lodestone };
     ladder.forEach(function (piece) {
         index[piece.id] = piece;
     });
@@ -67,6 +92,8 @@ window.Game = window.Game || {};
         made: made,
         top: ladder[ladder.length - 1],
         rubble: rubble,
+        dynamite: dynamite,
+        lodestone: lodestone,
 
         byId: function (id) {
             return index[id] || null;

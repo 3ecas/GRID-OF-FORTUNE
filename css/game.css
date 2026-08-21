@@ -15,7 +15,11 @@
 
 .scoreboard {
     position: fixed;
-    top: 18px;
+
+    /* Sits in the middle of the room above the board rather than pinned to
+       the top edge — proportional, so it stays centred in that gap as the
+       screen changes, with a floor and a ceiling so it never runs off. */
+    top: calc(env(safe-area-inset-top) + clamp(28px, 10.5vh, 120px));
     left: 50%;
     z-index: 20;
     display: flex;
@@ -24,40 +28,6 @@
     gap: 1px;
     transform: translateX(-50%);
     pointer-events: none;
-}
-
-.mute {
-    position: fixed;
-    top: 18px;
-    right: 18px;
-    z-index: 30;
-    display: grid;
-    place-items: center;
-    width: 34px;
-    height: 34px;
-    padding: 0;
-    border: 0;
-    border-radius: 11px;
-    background: transparent;
-    color: var(--ink-soft, #9a8f83);
-    cursor: pointer;
-    opacity: 0.4;
-    transition: opacity 0.16s ease, background 0.16s ease;
-}
-
-.mute:hover,
-.mute:focus-visible {
-    background: rgba(255, 255, 255, 0.6);
-    opacity: 1;
-}
-
-.mute.is-off {
-    opacity: 0.75;
-}
-
-.mute svg {
-    width: 19px;
-    height: 19px;
 }
 
 .scoreboard__value {
@@ -94,94 +64,230 @@
     }
 }
 
-.track {
-    --count: 19;
-    --step: clamp(
-        13px,
-        min(3.4vmin, calc((100vw - 44px) / var(--count) - 6px)),
-        32px
-    );
-
+/* Top left, and only while there is a game to come back from. The sound
+   control it used to be paired with now lives in the menu. */
+.back {
     position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 15;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: calc(var(--step) * 0.2);
-    padding: 8px 12px;
-    border-top: 1px solid var(--line);
-    background: var(--panel);
-    box-shadow: 0 -2px 16px rgba(112, 98, 72, 0.08);
-}
-
-.step {
-    position: relative;
-    display: grid;
-    place-items: center;
-    opacity: 0.32;
-    filter: grayscale(0.85);
-    transition: opacity 0.35s ease, filter 0.35s ease, transform 0.35s ease;
-}
-
-.step__tip {
-    position: absolute;
-    bottom: calc(100% + 10px);
-    left: 50%;
-    z-index: 2;
+    top: calc(18px + env(safe-area-inset-top));
+    left: calc(18px + env(safe-area-inset-left));
+    z-index: 30;
     display: none;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    width: max-content;
-    padding: 10px 14px 8px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    background: var(--panel);
-    box-shadow: var(--shadow-2);
-    transform: translateX(-50%);
-    pointer-events: none;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 0;
+    border-radius: 11px;
+    background: transparent;
+    color: var(--ink-soft, #9a8f83);
+    cursor: pointer;
+    opacity: 0.4;
+    transition: opacity 0.16s ease, background 0.16s ease;
 }
 
-.step:hover .step__tip {
-    display: flex;
-    animation: tip-in 0.14s ease;
+.back.is-on {
+    display: grid;
 }
 
-.step__art {
+.back:hover,
+.back:focus-visible {
+    background: rgba(255, 255, 255, 0.6);
+    opacity: 1;
+}
+
+.back svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* ---- the ladder button, out of the way in the bottom corner ----------- */
+.rungs {
+    position: fixed;
+    left: 50%;
+    bottom: calc(20px + env(safe-area-inset-bottom));
+    z-index: 30;
     display: grid;
     place-items: center;
-    width: 56px;
-    height: 56px;
-    border-radius: var(--radius);
+    width: 54px;
+    height: 54px;
+    transform: translateX(-50%);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ink-soft);
+    opacity: 0.55;
+    cursor: pointer;
+    transition: transform 0.18s ease, color 0.18s ease, opacity 0.18s ease;
 }
 
-.step__art svg.icon {
-    width: 82%;
-    height: 82%;
+.rungs:hover,
+.rungs:focus-visible {
+    opacity: 1;
 }
 
-.step__name {
-    font-size: 0.8rem;
+.rungs:hover { color: var(--ink); transform: translateX(-50%) translateY(-1px); }
+.rungs:active { transform: translateX(-50%) scale(0.96); }
+.rungs svg.icon { width: 28px; height: 28px; }
+
+/* ---- the ladder sheet -------------------------------------------------- */
+.sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    display: none;
+    place-items: center;
+    padding: 24px 20px;
+    background: rgba(245, 239, 227, 0.88);
+    backdrop-filter: blur(3px);
+}
+
+.sheet.is-open {
+    display: grid;
+    animation: over-in 0.22s ease;
+}
+
+.sheet__card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: min(340px, 100%);
+    max-height: min(560px, 78vh);
+    padding: 16px 12px 12px;
+}
+
+.sheet__title {
+    padding: 0 10px;
+    font-size: 0.78rem;
     font-weight: 800;
-    color: var(--ink);
-}
-
-.step__worth {
-    font-size: 0.72rem;
-    font-weight: 800;
-    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     color: var(--ink-faint);
 }
 
-@keyframes tip-in {
-    from {
-        opacity: 0;
-        transform: translateX(-50%) translateY(4px);
-    }
+/* ---- the menu ---------------------------------------------------------- */
+.menu {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: none;
+    place-items: center;
+    padding: 20px;
+
+    /* Its own ground rather than a pane over the board: a warm floor with the
+       light coming from above, so the title sits in the bright part. */
+    background:
+        radial-gradient(
+            120% 80% at 50% 8%,
+            #fffdf8 0%,
+            rgba(255, 253, 248, 0) 62%
+        ),
+        radial-gradient(
+            90% 60% at 12% 100%,
+            rgba(226, 183, 92, 0.16) 0%,
+            rgba(226, 183, 92, 0) 70%
+        ),
+        radial-gradient(
+            90% 60% at 88% 96%,
+            rgba(126, 138, 166, 0.14) 0%,
+            rgba(126, 138, 166, 0) 70%
+        ),
+        linear-gradient(180deg, #f7f2e8 0%, #ece2cf 100%);
+}
+
+.menu.is-open {
+    display: grid;
+    animation: over-in 0.25s ease;
+}
+
+.menu__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: min(300px, 100%);
+    text-align: center;
+}
+
+.menu__title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+}
+
+.menu__best {
+    margin-bottom: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--ink-faint);
+}
+
+.menu__list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    margin-top: 6px;
+}
+
+/* Words, not boxes. */
+.word {
+    padding: 2px 4px;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    cursor: pointer;
+    transition: color 0.16s ease, transform 0.16s ease;
+}
+
+.word:hover,
+.word:focus-visible {
+    color: var(--accent-ink, #4a6b45);
+    transform: translateY(-1px);
+}
+
+.word--quiet {
+    display: grid;
+    place-items: center;
+    margin-top: 2px;
+    color: var(--ink-faint);
+    opacity: 0.75;
+}
+
+.word--quiet svg {
+    width: 22px;
+    height: 22px;
+}
+
+/* The ladder used to stand along the bottom of the screen. It lives in the
+   sheet now, on end and scrollable, so the board keeps the room. */
+.track {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    list-style: none;
+}
+
+.step {
+    display: grid;
+    grid-template-columns: 44px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 5px 10px;
+    border-radius: var(--radius-sm);
+    opacity: 0.34;
+    filter: grayscale(0.85);
+    transition: opacity 0.35s ease, filter 0.35s ease, background 0.2s ease;
 }
 
 .step.is-known {
@@ -189,27 +295,84 @@
     filter: none;
 }
 
-.step.is-dealing .step__bit {
-    box-shadow: 0 0 0 2px var(--accent-deep);
-}
-
 .step.is-dealing {
     opacity: 1;
     filter: none;
-    transform: scale(1.08);
+    background: var(--panel-soft);
+}
+
+/* Below the window: made, and never coming round again. */
+.step.is-past {
+    opacity: 0.5;
+    filter: grayscale(1);
+}
+
+.step.is-past .step__name,
+.step.is-past .step__worth {
+    color: var(--ink-faint);
+    text-decoration: line-through;
+    text-decoration-thickness: 1.5px;
+}
+
+.step.is-dealing .step__bit {
+    box-shadow: 0 0 0 2px var(--accent-deep);
 }
 
 .step__bit {
     display: grid;
     place-items: center;
-    width: var(--step);
-    height: var(--step);
-    border-radius: calc(var(--step) * 0.3);
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-sm);
 }
 
 .step__bit svg.icon {
     width: 82%;
     height: 82%;
+}
+
+.step__name {
+    font-size: 0.86rem;
+    font-weight: 800;
+    color: var(--ink);
+}
+
+.step__worth {
+    font-size: 0.78rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-faint);
+}
+
+/* While a lodestone waits, every piece on the board is a thing you could
+   name. They lift and brighten so the board reads as a menu, not a grid. */
+.tile.is-pickable {
+    cursor: pointer;
+    box-shadow: 0 0 0 2px var(--accent-deep);
+    transform: translateY(-1px);
+}
+
+.tile.is-pickable:hover {
+    box-shadow: 0 0 0 3px var(--accent-deep);
+    transform: translateY(-2px) scale(1.04);
+}
+
+/* The last few drops of a fuse. Quick and small — a warning, not a display. */
+.tile.is-fizzing {
+    animation: fizz 0.5s ease-in-out infinite;
+}
+
+@keyframes fizz {
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+    25% {
+        transform: translate(-0.7px, 0.4px);
+    }
+    75% {
+        transform: translate(0.7px, -0.4px);
+    }
 }
 
 .board {
@@ -612,34 +775,18 @@
     align-items: center;
     gap: 8px;
     padding: 9px 14px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-pill);
-    background: var(--panel);
-    box-shadow: var(--shadow-1);
 }
 
-.hand__row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.hand__divider {
-    width: 1px;
-    height: 26px;
-    background: var(--line);
-}
-
+/* No pill behind it any more, so it holds the space on its own. */
 .slot {
     display: grid;
     place-items: center;
-    width: 40px;
-    height: 40px;
+    width: 58px;
+    height: 58px;
     padding: 0;
     border: none;
     border-radius: var(--radius-sm);
     opacity: 0.55;
-    cursor: pointer;
     transition: transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
 }
 
@@ -676,8 +823,9 @@
     display: none;
     place-items: center;
     padding: 20px;
-    background: rgba(245, 239, 227, 0.82);
-    backdrop-filter: blur(4px);
+    /* the board stays readable behind it — just enough blur to push it back */
+    background: rgba(245, 239, 227, 0.55);
+    backdrop-filter: blur(2.5px);
 }
 
 .over.is-open {
@@ -691,11 +839,11 @@
     align-items: center;
     gap: 6px;
     padding: 30px 44px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    background: var(--panel);
-    box-shadow: var(--shadow-2);
     text-align: center;
+}
+
+.over__card .word {
+    margin-top: 14px;
 }
 
 .over__label {
@@ -712,7 +860,6 @@
     width: 76px;
     height: 76px;
     margin: 4px 0;
-    border-radius: var(--radius);
 }
 
 .over__crown svg.icon {

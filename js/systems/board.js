@@ -24,7 +24,12 @@ window.Game = window.Game || {};
             for (var y = rows - 1; y >= 0; y--) {
                 var cell = at(x, y);
                 if (cell.piece) {
-                    stack.push({ piece: cell.piece, id: cell.id, y: cell.y });
+                    stack.push({
+                        piece: cell.piece,
+                        fuse: cell.fuse || 0,
+                        id: cell.id,
+                        y: cell.y
+                    });
                 }
             }
 
@@ -34,6 +39,7 @@ window.Game = window.Game || {};
                 var item = i < stack.length ? stack[i] : null;
 
                 target.piece = item ? item.piece : null;
+                target.fuse = item ? item.fuse : 0;
 
                 if (item && item.id !== target.id) {
                     moves.push({
@@ -115,6 +121,80 @@ window.Game = window.Game || {};
         return hit;
     }
 
+    /* Dynamite is set off the same way rubble is broken: by a merge landing
+       against it. */
+    function fuseLit(cells) {
+        var lit = [];
+        var seen = {};
+
+        cells.forEach(function (cell) {
+            [[0, -1], [0, 1], [-1, 0], [1, 0]].forEach(function (step) {
+                var near = at(cell.x + step[0], cell.y + step[1]);
+                if (!near || seen[near.id]) return;
+                if (near.piece !== Game.Pieces.dynamite.id) return;
+
+                seen[near.id] = true;
+                lit.push(near);
+            });
+        });
+
+        return lit;
+    }
+
+    /* Lodestones a merge has landed against. They are lifted off the board
+       here; what they draw out waits on the player choosing a kind. */
+    function stonesWoken(cells) {
+        var woken = [];
+        var seen = {};
+
+        cells.forEach(function (cell) {
+            [[0, -1], [0, 1], [-1, 0], [1, 0]].forEach(function (step) {
+                var near = at(cell.x + step[0], cell.y + step[1]);
+                if (!near || seen[near.id]) return;
+                if (near.piece !== Game.Pieces.lodestone.id) return;
+
+                seen[near.id] = true;
+                woken.push(near);
+            });
+        });
+
+        return woken;
+    }
+
+    /* Everything in the eight squares around a lit stick goes, the stick with
+       it. A stick caught in another's blast goes off in turn, so a line of
+       them runs. */
+    function blast(sticks) {
+        var gone = {};
+        var fired = {};
+        var queue = sticks.slice();
+
+        while (queue.length) {
+            var stick = queue.shift();
+            if (fired[stick.id]) continue;
+            fired[stick.id] = true;
+            gone[stick.id] = stick;
+
+            for (var dx = -1; dx <= 1; dx++) {
+                for (var dy = -1; dy <= 1; dy++) {
+                    if (!dx && !dy) continue;
+
+                    var near = at(stick.x + dx, stick.y + dy);
+                    if (!near || !near.piece) continue;
+
+                    gone[near.id] = near;
+                    if (near.piece === Game.Pieces.dynamite.id && !fired[near.id]) {
+                        queue.push(near);
+                    }
+                }
+            }
+        }
+
+        return Object.keys(gone).map(function (id) {
+            return gone[id];
+        });
+    }
+
     function fullLine() {
         var settings = Game.Config.game;
         var x, y, line, full;
@@ -152,6 +232,8 @@ window.Game = window.Game || {};
         return null;
     }
 
+    var owed = 0;
+
     function resolve(steps) {
         var guard = 0;
 
@@ -176,13 +258,27 @@ window.Game = window.Game || {};
                         return cell.id;
                     });
 
-                pair.eat.forEach(function (cell) {
-                    if (cell !== pair.keep) cell.piece = null;
-                });
-                pair.keep.piece = pair.piece.next;
-
-                var grown = Game.Pieces.byId(pair.piece.next);
                 var over = Game.Config.game;
+                var grown = Game.Pieces.byId(pair.piece.next);
+
+                /* how many pieces the run gives back — one, unless the
+                   surplus is kept (see surplusStays in config) */
+                var makes = 1;
+                if (over.surplusStays) {
+                    var need = over.mergeAt || 2;
+                    makes = Math.max(1, pair.eat.length - (need - 1));
+                    if (over.surplusMost > 0) {
+                        makes = Math.min(makes, over.surplusMost);
+                    }
+                }
+
+                /* eat[0] is the cell the run was found from, and the rest are
+                   in breadth-first order out from it, so the kept pieces stay
+                   packed together where the run began */
+                pair.eat.forEach(function (cell, i) {
+                    cell.piece = i < makes ? grown.id : null;
+                });
+
                 var times = Math.min(
                     over.chainMost,
                     1 + (chain - 1) * over.chainStep
@@ -191,6 +287,9 @@ window.Game = window.Game || {};
                 steps.push({
                     type: "merge",
                     cell: pair.keep,
+                    cells: pair.eat.slice(0, makes).map(function (cell) {
+                        return cell.id;
+                    }),
                     piece: grown.id,
                     from: pair.piece.id,
                     took: pair.eat.length,
@@ -198,7 +297,12 @@ window.Game = window.Game || {};
                     lit: lit,
                     chain: chain,
                     times: times,
-                    points: Math.round((grown.points || 0) * times),
+                    makes: makes,
+                    points: Math.round(
+                        (grown.points || 0) *
+                            (over.surplusPays === false ? 1 : makes) *
+                            times
+                    ),
                     board: snapshot()
                 });
 
@@ -215,6 +319,39 @@ window.Game = window.Game || {};
                             board: snapshot()
                         });
                     }
+                }
+
+                var woken = stonesWoken(pair.eat);
+                if (woken.length) {
+                    owed += woken.length;
+                    steps.push({
+                        type: "wake",
+                        cells: woken.map(function (cell) {
+                            cell.piece = null;
+                            cell.fuse = 0;
+                            return cell.id;
+                        }),
+                        points: 0,
+                        board: snapshot()
+                    });
+                }
+
+                var lit = fuseLit(pair.eat);
+                if (lit.length) {
+                    var salvage = 0;
+                    var wrecked = blast(lit).map(function (cell) {
+                        var was = Game.Pieces.byId(cell.piece);
+                        salvage += (was && was.points) || 0;
+                        cell.piece = null;
+                        return cell.id;
+                    });
+
+                    steps.push({
+                        type: "blast",
+                        cells: wrecked,
+                        points: Math.round(salvage * (over.blastPays || 0)),
+                        board: snapshot()
+                    });
                 }
 
                 if (!grown.next && Game.Config.game.cashTop) {
@@ -326,24 +463,154 @@ window.Game = window.Game || {};
         build: function (width, height) {
             cols = width;
             rows = height;
+            owed = 0;
             cells = [];
             for (var y = 0; y < rows; y++) {
                 for (var x = 0; x < cols; x++) {
-                    cells.push({ id: cells.length, x: x, y: y, piece: null });
+                    cells.push({
+                        id: cells.length,
+                        x: x,
+                        y: y,
+                        piece: null,
+                        fuse: 0
+                    });
                 }
             }
             return cells;
         },
 
-        seed: function (count, highestTier) {
-            for (var i = 0; i < count; i++) {
-                if (!this.empties().length) break;
-                var column = Math.floor(Math.random() * cols);
-                var spot = this.landing(column);
-                if (!spot) continue;
-                spot.piece = Game.Pieces.randomFor(highestTier || 1).id;
+        /* Would dropping this piece into this column complete a run? Used by
+           the opening, which lays the board out without setting anything off. */
+        /* How many lodestone choices the board is waiting on. */
+        owes: function () {
+            return owed;
+        },
+
+        /* Draw every piece of one kind off the board. */
+        sweep: function (pieceId) {
+            if (owed <= 0) return null;
+            owed -= 1;
+
+            var worth = 0;
+            var pulled = [];
+
+            cells.forEach(function (cell) {
+                if (cell.piece !== pieceId) return;
+                var was = Game.Pieces.byId(cell.piece);
+                worth += (was && was.points) || 0;
+                cell.piece = null;
+                cell.fuse = 0;
+                pulled.push(cell.id);
+            });
+
+            if (!pulled.length) return report(resolve([]));
+
+            return report(
+                resolve([
+                    {
+                        type: "clear",
+                        cells: pulled,
+                        points: Math.round(
+                            worth * (Game.Config.game.blastPays || 0)
+                        ),
+                        board: snapshot()
+                    }
+                ])
+            );
+        },
+
+        /* One drop's worth of burning. Any stick that reaches the end of its
+           fuse goes off where it stands, which is what stops a stick stranded
+           among unmergeable pieces from becoming one of them. */
+        burn: function () {
+            var limit = Game.Config.game.dynamiteFuse || 0;
+            if (!limit) return null;
+
+            var stick = Game.Pieces.dynamite.id;
+            var lit = [];
+
+            cells.forEach(function (cell) {
+                if (cell.piece !== stick) return;
+                cell.fuse = (cell.fuse || 0) + 1;
+                if (cell.fuse >= limit) lit.push(cell);
+            });
+
+            if (!lit.length) return null;
+
+            var salvage = 0;
+            var wrecked = blast(lit).map(function (cell) {
+                var was = Game.Pieces.byId(cell.piece);
+                salvage += (was && was.points) || 0;
+                cell.piece = null;
+                cell.fuse = 0;
+                return cell.id;
+            });
+
+            return report(
+                resolve([
+                    {
+                        type: "blast",
+                        cells: wrecked,
+                        points: Math.round(
+                            salvage * (Game.Config.game.blastPays || 0)
+                        ),
+                        board: snapshot()
+                    }
+                ])
+            );
+        },
+
+        /* How close a stick is to going off, 0 to 1. The view uses it to
+           show the fuse burning down. */
+        fuseAt: function (id) {
+            var limit = Game.Config.game.dynamiteFuse || 0;
+            var cell = cells[id];
+            if (!limit || !cell || cell.piece !== Game.Pieces.dynamite.id) return 0;
+            return Math.min(1, (cell.fuse || 0) / limit);
+        },
+
+        /* Is the landing spot in this column at least `gap` squares clear of
+           every piece of this kind? Chebyshev, so diagonals count — two
+           sticks touching corner to corner is still two sticks together. */
+        spacedFrom: function (column, pieceId, gap) {
+            var spot = this.landing(column);
+            if (!spot) return false;
+            if (!gap) return true;
+
+            for (var i = 0; i < cells.length; i++) {
+                var cell = cells[i];
+                if (cell.piece !== pieceId) continue;
+                var dx = Math.abs(cell.x - spot.x);
+                var dy = Math.abs(cell.y - spot.y);
+                if (Math.max(dx, dy) < gap) return false;
             }
-            resolve([]);
+            return true;
+        },
+
+        wouldJoin: function (column, pieceId) {
+            var spot = this.landing(column);
+            if (!spot) return false;
+
+            var piece = Game.Pieces.byId(pieceId);
+            if (!piece || !piece.next) return false;
+
+            var was = spot.piece;
+            spot.piece = pieceId;
+            var joined = reach(spot, Game.Config.game.mergeAt || 2);
+            spot.piece = was;
+
+            return !!joined;
+        },
+
+        load: function (snapshot) {
+            if (!Array.isArray(snapshot) || snapshot.length !== cells.length) {
+                return false;
+            }
+            cells.forEach(function (cell, i) {
+                var id = snapshot[i];
+                cell.piece = id && Game.Pieces.byId(id) ? id : null;
+            });
+            return true;
         },
 
         settle: function () {
@@ -355,6 +622,7 @@ window.Game = window.Game || {};
             if (!spot) return null;
 
             spot.piece = pieceId;
+            spot.fuse = 0;
 
             var steps = [
                 {

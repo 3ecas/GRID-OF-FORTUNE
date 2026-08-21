@@ -4,9 +4,12 @@ window.Game = window.Game || {};
     var host = null;
     var tiles = [];
     var shown = [];
-    var hovered = -1;
+    var choosing = false;
+    var litColumn = -1;
+    var litCell = -1;
+    var litTimer = null;
+    var LIT_MS = 240;
     var busy = false;
-    var pointer = { x: 0, y: 0, known: false };
     var seenThisDrop = {};
     var pending = [];
 
@@ -61,7 +64,6 @@ window.Game = window.Game || {};
         if (!tile) return;
 
         var cell = Game.Board.byId(id);
-        var landing = hovered >= 0 ? Game.Board.landing(hovered) : null;
         var classes = ["tile"];
 
         if (shown[id]) {
@@ -70,10 +72,14 @@ window.Game = window.Game || {};
             classes.push("tile--empty");
         }
 
-        if (!busy) {
-            if (cell.x === hovered) classes.push("is-column");
-            if (landing && landing.id === id) classes.push("is-landing");
-        }
+        if (cell.x === litColumn) classes.push("is-column");
+        if (litCell === id) classes.push("is-landing");
+
+        /* a stick close to the end of its fuse starts twitching */
+        if (Game.Board.fuseAt(id) >= 0.6) classes.push("is-fizzing");
+
+        /* while a lodestone waits, anything on the board is a choice */
+        if (choosing && shown[id]) classes.push("is-pickable");
 
         var next = classes.join(" ");
         if (tile.className !== next) tile.className = next;
@@ -133,51 +139,68 @@ window.Game = window.Game || {};
             .filter(Boolean);
     }
 
+    /* A run can give back more than one piece. They all pop, but the one the
+       run was found from carries the weight — the shake, the gain, the ring —
+       so a big merge stays one event rather than several small ones. */
+    function madeCells(step) {
+        return step.cells && step.cells.length ? step.cells : [step.cell.id];
+    }
+
     function playMerge(step, chain) {
-        var tile = tiles[step.cell.id];
-        if (!tile) return;
+        var lead = tiles[step.cell.id];
+        if (!lead) return;
 
         var made = Game.Pieces.byId(step.piece);
         var fresh = !seenThisDrop[made.id] && Game.Round.found(made.id);
+        var kept = madeCells(step);
 
-        tile.classList.remove("is-landed");
-        tile.classList.remove("is-made");
-        void tile.offsetWidth;
-        tile.classList.add("is-made");
+        kept.forEach(function (id) {
+            var tile = tiles[id];
+            if (!tile) return;
+            tile.classList.remove("is-landed");
+            tile.classList.remove("is-made");
+            void tile.offsetWidth;
+            tile.classList.add("is-made");
+        });
 
         Game.Events.emit("board:merged", { step: step, chain: chain });
 
-        var neighbours = around(step.cell);
-        Game.Effects.burst(tile, neighbours, made.tier, chain);
+        Game.Effects.burst(lead, around(step.cell), made.tier, chain);
         Game.Effects.shake(host, made.tier, chain);
         Game.Effects.flash(made.tier);
-
         Game.Effects.combo(step.times || 1);
 
-        Game.Toast.float(
-            tile,
-            "+" + step.points,
-            made.icon,
-            made.tint,
-            made.tier >= 6 ? "float--big" : ""
-        );
+        if (step.points) {
+            Game.Toast.toScore(lead, "+" + step.points, made.icon, made.tint);
+        }
 
-        var box = tile.getBoundingClientRect();
-        var x = box.left + box.width / 2;
-        var y = box.top + box.height / 2;
+        kept.forEach(function (id, i) {
+            var tile = tiles[id];
+            if (!tile) return;
 
-        Game.Sparks.ring(x, y, made.tier);
-        Game.Sparks.burst(x, y, 9 + Math.min(20, made.tier + chain * 3), made);
+            var box = tile.getBoundingClientRect();
+            var x = box.left + box.width / 2;
+            var y = box.top + box.height / 2;
+
+            if (i === 0) Game.Sparks.ring(x, y, made.tier);
+            Game.Sparks.burst(
+                x,
+                y,
+                (i === 0 ? 9 : 5) + Math.min(20, made.tier + chain * 3),
+                made
+            );
+        });
 
         if (fresh) {
             seenThisDrop[made.id] = true;
-            Game.Effects.discover(tile);
+            Game.Effects.discover(lead);
         }
     }
 
     function playFuse(step, chain, done) {
+        var kept = madeCells(step);
         var trail = (step.fuse || []).filter(function (id) {
-            return id !== step.cell.id;
+            return kept.indexOf(id) === -1;
         });
 
         if (!trail.length || !step.lit) {
@@ -254,13 +277,7 @@ window.Game = window.Game || {};
         Game.Effects.flash(8);
 
         if (middle && step.points) {
-            Game.Toast.float(
-                middle,
-                "+" + step.points,
-                null,
-                "tint-gold",
-                "float--big"
-            );
+            Game.Toast.toScore(middle, "+" + step.points, null, "tint-gold");
         }
     }
 
@@ -281,9 +298,34 @@ window.Game = window.Game || {};
             return;
         }
 
-        if (step.type === "clear" || step.type === "cash") {
+        /* A lodestone waking is a lift, not a payout — it leaves the board and
+           the game waits on the player, so it gets its own short beat. */
+        if (step.type === "wake") {
+            paintBoard(step.board);
+            step.cells.forEach(function (id) {
+                var tile = tiles[id];
+                if (!tile) return;
+                tile.classList.remove("is-cleared");
+                void tile.offsetWidth;
+                tile.classList.add("is-cleared");
+            });
+            Game.Effects.flash(7);
+            window.setTimeout(function () {
+                playSteps(steps, index + 1, chain);
+            }, CLEAR_MS);
+            return;
+        }
+
+        if (step.type === "clear" || step.type === "cash" || step.type === "blast") {
             paintBoard(step.board);
             playClear(step);
+
+            /* a blast is louder than a line coming out */
+            if (step.type === "blast") {
+                Game.Effects.shake(host, 11, 1);
+                Game.Effects.flash(10);
+            }
+
             Game.Events.emit("board:merged", { step: step, chain: chain });
             window.setTimeout(function () {
                 playSteps(steps, index + 1, chain);
@@ -292,6 +334,13 @@ window.Game = window.Game || {};
         }
 
         var made = Game.Pieces.byId(step.piece);
+        if (!made) {
+            /* a step type the view does not know — skip it rather than stop */
+            if (step.board) paintBoard(step.board);
+            playSteps(steps, index + 1, chain);
+            return;
+        }
+
         var hold = MERGE_MS + (made.tier >= 7 ? 110 : 0);
 
         playFuse(step, chain, function () {
@@ -325,35 +374,48 @@ window.Game = window.Game || {};
         return tile ? Number(tile.dataset.column) : -1;
     }
 
-    function onMove(event) {
-        pointer.x = event.clientX;
-        pointer.y = event.clientY;
-        pointer.known = true;
-
-        var column = columnOf(event);
-        if (column === hovered) return;
-        hovered = column;
-        if (!busy) paintHover();
+    /* The column lights up on the tap that chooses it and then lets go —
+       there is no hover on a phone, and a highlight that follows the cursor
+       around was reading as part of the board. */
+    function unlight() {
+        if (litColumn === -1 && litCell === -1) return;
+        litColumn = -1;
+        litCell = -1;
+        paintHover();
     }
 
-    function onLeave() {
-        if (hovered === -1) return;
-        hovered = -1;
+    function light(column) {
+        var landing = Game.Board.landing(column);
+        litColumn = column;
+        litCell = landing ? landing.id : -1;
         paintHover();
+
+        window.clearTimeout(litTimer);
+        litTimer = window.setTimeout(unlight, LIT_MS);
     }
 
     function onClick(event) {
         if (busy) return;
 
-        var column = columnOf(event);
-        if (column < 0) return;
-
         var round = Game.Round.get();
         if (!round || !round.running) return;
 
-        if (!Game.Round.play(column)) {
-            Game.Toast.notice("That column is full.", "warn");
+        var tile = event.target.closest("[data-column]");
+        if (!tile) return;
+
+        /* a woken lodestone turns the next click into a choice of kind */
+        if (choosing) {
+            var picked = shown[Number(tile.dataset.cell)];
+            if (!picked) return;
+            Game.Round.choose(picked);
+            return;
         }
+
+        var column = Number(tile.dataset.column);
+        if (column < 0) return;
+
+        light(column);
+        Game.Round.play(column);
     }
 
     Game.BoardView = {
@@ -362,11 +424,11 @@ window.Game = window.Game || {};
             if (!host) return;
 
             host.addEventListener("click", onClick);
-            document.addEventListener("mousemove", onMove);
-            host.addEventListener("mouseleave", onLeave);
 
             Game.Events.on("game:started", function () {
-                hovered = -1;
+                window.clearTimeout(litTimer);
+                litColumn = -1;
+                litCell = -1;
                 busy = false;
                 pending = [];
                 build();
@@ -374,6 +436,20 @@ window.Game = window.Game || {};
 
             Game.Events.on("board:steps", function (detail) {
                 enqueue(detail.steps);
+            });
+
+            Game.Events.on("game:choosing", function () {
+                choosing = true;
+                paintHover();
+            });
+
+            Game.Events.on("game:chosen", function () {
+                choosing = false;
+                paintHover();
+            });
+
+            Game.Events.on("game:started", function () {
+                choosing = false;
             });
 
             Game.Events.on("game:grown", function (detail) {

@@ -1,30 +1,6 @@
 window.Game = window.Game || {};
 
 (function () {
-    var host = null;
-    var MAX_NOTICES = 3;
-    var NOTICE_MS = 2200;
-
-    function showNotice(text, tone) {
-        if (!host) return;
-
-        while (host.children.length >= MAX_NOTICES) {
-            host.removeChild(host.firstElementChild);
-        }
-
-        var pill = document.createElement("div");
-        pill.className = "notice notice--" + (tone || "info");
-        pill.textContent = text;
-        host.appendChild(pill);
-
-        window.setTimeout(function () {
-            pill.classList.add("is-leaving");
-            window.setTimeout(function () {
-                if (pill.parentNode) pill.parentNode.removeChild(pill);
-            }, 250);
-        }, NOTICE_MS);
-    }
-
     function drop(element) {
         if (element.parentNode) element.parentNode.removeChild(element);
     }
@@ -40,14 +16,40 @@ window.Game = window.Game || {};
             }, fallbackMs);
         },
 
-        init: function () {
-            host = document.getElementById("noticeHost");
-            Game.Events.on("notice", function (detail) {
-                showNotice(detail.text, detail.tone);
-            });
-        },
+        /* How long a gain takes to reach the score. The score waits for it. */
+        FLY_MS: 430,
 
-        notice: showNotice,
+        /* The merge pays out where it happened, then the number is thrown at
+           the score — so the board and the number at the top are visibly the
+           same thing rather than two unrelated readouts. */
+        toScore: function (anchor, text, iconName, tintClass) {
+            if (!anchor) return;
+
+            var box = anchor.getBoundingClientRect();
+            var x = box.left + box.width / 2;
+            var y = box.top + box.height / 2;
+
+            var chip = document.createElement("div");
+            chip.className = "float float--fly " + (tintClass || "");
+            chip.style.left = x + "px";
+            chip.style.top = y + "px";
+
+            var score = document.getElementById("scoreboard");
+            if (score) {
+                var aim = score.getBoundingClientRect();
+                chip.style.setProperty("--dx", aim.left + aim.width / 2 - x + "px");
+                chip.style.setProperty("--dy", aim.top + aim.height / 2 - y + "px");
+            }
+
+            chip.innerHTML =
+                (iconName ? Game.Icons.svg(iconName) : "") +
+                "<span>" +
+                text +
+                "</span>";
+
+            document.body.appendChild(chip);
+            this.autoRemove(chip, this.FLY_MS + 260);
+        },
 
         float: function (anchor, text, iconName, tintClass, extraClass) {
             if (!anchor) return;

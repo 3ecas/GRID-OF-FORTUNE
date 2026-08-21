@@ -236,6 +236,10 @@ window.Game = window.Game || {};
             button();
         },
 
+        /* The menu is rebuilt each time it opens, so its sound control has to
+           be bound again after. */
+        button: button,
+
         on: function () {
             return on;
         }

@@ -51,7 +51,15 @@ window.Game = window.Game || {};
         shake: function (board, tier, chain) {
             var weight = tier + chain * 1.5;
             if (!board || weight < 3) return;
-            board.style.setProperty("--shake", Math.min(weight - 1, 11) * 1.5 + "px");
+
+            var force = Game.Config.game.shakeForce;
+            if (typeof force !== "number") force = 1;
+            if (force <= 0) return;
+
+            board.style.setProperty(
+                "--shake",
+                Math.min(weight - 1, 11) * 1.5 * force + "px"
+            );
             restart(board, "is-shaken");
         },
 
