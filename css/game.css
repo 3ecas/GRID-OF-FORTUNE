@@ -13,12 +13,23 @@
     padding: 30px 20px 78px;
 }
 
+/* The scoreboard grows into the empty band above the board and centres the
+   number in it. This spacer takes the same share below the hand, so the board
+   itself stays exactly where it was. The negative margin cancels the flex gap
+   the spacer would otherwise add. */
+.table::after {
+    content: "";
+    flex: 1 0 auto;
+    margin-top: -16px;
+}
+
 .scoreboard {
     z-index: 20;
+    flex: 1 0 auto;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 1px;
     min-height: 52px;
     margin-bottom: 6px;
