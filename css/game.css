@@ -909,3 +909,20 @@
     filter: grayscale(1);
     transform: scale(0.94);
 }
+
+.tile.tint-star .tile__art {
+    animation: star-shine 2.2s ease-in-out infinite;
+    transform-origin: 50% 50%;
+}
+
+@keyframes star-shine {
+    0%,
+    100% {
+        transform: scale(1) rotate(0deg);
+        filter: drop-shadow(0 0 2px var(--i-star-halo));
+    }
+    50% {
+        transform: scale(1.09) rotate(8deg);
+        filter: drop-shadow(0 0 7px var(--i-star));
+    }
+}

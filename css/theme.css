@@ -26,9 +26,10 @@
     --i-tnt-fuse: #8f866f;
     --i-tnt-spark: #e2b75c;
 
-    --i-lode: #7e8aa6;
-    --i-lode-deep: #5d6884;
-    --i-lode-tip: #c56b60;
+    --i-star: #ffc93f;
+    --i-star-light: #fff3b8;
+    --i-star-deep: #e09a12;
+    --i-star-halo: rgba(255, 214, 92, 0.28);
 
     --i-rock: #b2b5af;
     --i-rock-light: #d0d3cd;
@@ -50,9 +51,9 @@
     --i-silver-light: #e8eef4;
     --i-silver-deep: #8f9dab;
 
-    --i-gold: #e2b75c;
-    --i-gold-light: #f8dc99;
-    --i-gold-deep: #b78d33;
+    --i-gold: #cf9c33;
+    --i-gold-light: #ecc470;
+    --i-gold-deep: #9a7118;
 
     --i-topaz: #e5a95c;
     --i-topaz-light: #f6cb96;
@@ -77,6 +78,93 @@
     --i-diamond: #bfdff0;
     --i-diamond-light: #e9f7ff;
     --i-diamond-deep: #93b8cd;
+
+    --i-citrine: #f2cc2e;
+    --i-citrine-light: #fbe986;
+    --i-citrine-deep: #c19c10;
+
+    --i-peridot: #a8c85a;
+    --i-peridot-light: #cbe28f;
+    --i-peridot-deep: #7a9a33;
+
+    --i-aqua: #7fd0dc;
+    --i-aqua-light: #b6ebf2;
+    --i-aqua-deep: #4a9dad;
+
+    --i-tanzanite: #8a6fd8;
+    --i-tanzanite-light: #b7a3ef;
+    --i-tanzanite-deep: #5f45a3;
+
+    --i-opal: #4c4265;
+    --i-opal-light: #6d6088;
+    --i-opal-deep: #2e2740;
+    --i-opal-fire: #3fd6c0;
+    --i-opal-glow: #f07ab8;
+    --i-opal-spark: #ffd873;
+
+    --i-alexandrite: #6fc2b0;
+    --i-alexandrite-light: #a7ded1;
+    --i-alexandrite-deep: #a9548b;
+
+    --i-paraiba: #2fd6d0;
+    --i-paraiba-light: #86f1ed;
+    --i-paraiba-deep: #159f9b;
+
+    --i-platinum: #c9bda6;
+    --i-platinum-light: #e9e1cd;
+    --i-platinum-deep: #9a8f79;
+
+    --i-rhodium: #a4b0d0;
+    --i-rhodium-light: #dee5f5;
+    --i-rhodium-deep: #71809f;
+
+    --i-coal: #4a4746;
+    --i-coal-light: #706b6a;
+    --i-coal-deep: #2a2726;
+
+    --i-zinc: #a9adc4;
+    --i-zinc-light: #d0d3e2;
+    --i-zinc-deep: #7f8399;
+
+    --i-bronze: #96793a;
+    --i-bronze-light: #bda164;
+    --i-bronze-deep: #6b5320;
+
+    --i-titanium: #7a7486;
+    --i-titanium-light: #a49eb0;
+    --i-titanium-deep: #56515f;
+
+    --i-iridium: #5a6a78;
+    --i-iridium-light: #8494a2;
+    --i-iridium-deep: #3a4652;
+
+    --i-quartz: #efb7c4;
+    --i-quartz-light: #fbdbe3;
+    --i-quartz-deep: #c98a99;
+
+    --i-turquoise: #4ec3bd;
+    --i-turquoise-light: #8ee0dc;
+    --i-turquoise-deep: #2e9691;
+
+    --i-garnet: #a33246;
+    --i-garnet-light: #c8586c;
+    --i-garnet-deep: #74202f;
+
+    --i-lapis: #35569f;
+    --i-lapis-deep: #1f3670;
+    --i-lapis-fleck: #e8c25c;
+
+    --i-tourmaline: #7cc47a;
+    --i-tourmaline-light: #a9dda6;
+    --i-tourmaline-deep: #d76a9c;
+
+    --i-jadeite: #8cc23a;
+    --i-jadeite-light: #b3dd77;
+    --i-jadeite-deep: #63912a;
+
+    --i-beryl: #cf2547;
+    --i-beryl-light: #ec6b87;
+    --i-beryl-deep: #9a1433;
 
     --i-shine: rgba(255, 255, 255, 0.55);
 

@@ -49,9 +49,9 @@
     background: #f6e2dd;
 }
 
-.tint-lode {
-    color: #5d6884;
-    background: #e6e9f1;
+.tint-star {
+    color: #c9860a;
+    background: #fdf1cf;
 }
 
 .tint-rock {
@@ -62,11 +62,6 @@
 .tint-iron {
     color: #4d5666;
     background: #e6e9ee;
-}
-
-.tint-ore {
-    color: #8981b4;
-    background: #eeecf8;
 }
 
 .tint-tin {
@@ -85,18 +80,8 @@
 }
 
 .tint-gold {
-    color: #b8901f;
-    background: #fbf0d2;
-}
-
-.tint-coins {
-    color: #8a6a14;
-    background: #f4e8c8;
-}
-
-.tint-ingot {
-    color: #cdae5c;
-    background: #fcf4dd;
+    color: #9a7415;
+    background: #f7ecca;
 }
 
 .tint-topaz {
@@ -129,19 +114,114 @@
     background: #e6f6fa;
 }
 
+.tint-platinum {
+    color: #94856a;
+    background: #f4f0e6;
+}
+
+.tint-rhodium {
+    color: #6f7fa8;
+    background: #ecf0f9;
+}
+
+.tint-citrine {
+    color: #cfae06;
+    background: #fdf7d2;
+}
+
+.tint-peridot {
+    color: #6f9126;
+    background: #eff7dc;
+}
+
+.tint-aqua {
+    color: #3494a6;
+    background: #e0f5f9;
+}
+
+.tint-tanzanite {
+    color: #6a49b5;
+    background: #ece7f9;
+}
+
+.tint-opal {
+    color: #4c4265;
+    background: #e9e6f0;
+}
+
+.tint-alexandrite {
+    color: #9c4f83;
+    background: #f5e9f1;
+}
+
+.tint-paraiba {
+    color: #0d918d;
+    background: #dcf9f7;
+}
+
+.tint-coal {
+    color: #3d3a39;
+    background: #e5e3e2;
+}
+
+.tint-zinc {
+    color: #737799;
+    background: #eaeaf3;
+}
+
+.tint-bronze {
+    color: #7a6320;
+    background: #f2ecd6;
+}
+
+.tint-titanium {
+    color: #665f73;
+    background: #ecebf1;
+}
+
+.tint-iridium {
+    color: #3f5566;
+    background: #e4eaf0;
+}
+
+.tint-quartz {
+    color: #c96f86;
+    background: #fce9ef;
+}
+
+.tint-turquoise {
+    color: #1f9a94;
+    background: #dcf6f4;
+}
+
+.tint-garnet {
+    color: #932c40;
+    background: #f7dee3;
+}
+
+.tint-lapis {
+    color: #2a4794;
+    background: #e2e7f8;
+}
+
+.tint-tourmaline {
+    color: #b8557f;
+    background: #f9e6ee;
+}
+
+.tint-jadeite {
+    color: #6a9c17;
+    background: #eef6da;
+}
+
+.tint-beryl {
+    color: #b81f42;
+    background: #fadee5;
+}
+
 .tint-crown {
     color: #caa227;
     background: #fdf3da;
-}
-
-.tint-treasure {
-    color: #9c5628;
-    background: #f8e5d3;
-}
-
-.tint-vault {
-    color: #545f6e;
-    background: #ebeef3;
 }
 
 .float {
