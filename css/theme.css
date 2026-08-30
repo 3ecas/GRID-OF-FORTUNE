@@ -1,3 +1,40 @@
+/* Device frame.
+
+   iOS reserves strips of the screen for the notch / Dynamic Island and the
+   home indicator. With viewport-fit=cover the page is drawn underneath them,
+   so every measurement that should line up with what the player can actually
+   see has to subtract these. They resolve to 0px on any device without them,
+   which is what makes one set of rules cover every screen. */
+:root {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+
+    /* Breathing room inside the safe area. Overridden per breakpoint; every
+       rule reads these rather than repeating numbers, so a screen size is
+       described in one place only. */
+    --frame-top: 30px;
+    --frame-bottom: 78px;
+    --frame-side: 20px;
+    --stack-gap: 16px;
+
+    /* Height the player can actually see. */
+    --stage: calc(100vh - var(--safe-top) - var(--safe-bottom));
+
+    /* Vertical space the grid is NOT allowed to take: the frame, the score,
+       the hand, the gaps between them, and enough slack that the grid never
+       touches either. Derived from the tokens above, so changing a frame
+       value re-sizes the grid to match instead of drifting out of step. */
+    --board-reserve: calc(
+        var(--frame-top) + var(--frame-bottom)
+        + 58px
+        + 2 * var(--stack-gap)
+        + 76px
+        + 56px
+    );
+}
+
 :root {
     --bg: #f5efe3;
     --bg-deep: #efe7d8;

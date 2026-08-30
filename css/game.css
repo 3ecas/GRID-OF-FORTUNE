@@ -1,16 +1,22 @@
 .game {
     min-height: 100vh;
+    min-height: 100dvh;
 }
 
 .table {
     position: relative;
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 16px;
-    padding: 30px 20px 78px;
+    gap: var(--stack-gap);
+    padding:
+        calc(var(--frame-top) + var(--safe-top))
+        calc(var(--frame-side) + var(--safe-right))
+        calc(var(--frame-bottom) + var(--safe-bottom))
+        calc(var(--frame-side) + var(--safe-left));
 }
 
 /* The scoreboard grows into the empty band above the board and centres the
@@ -20,7 +26,7 @@
 .table::after {
     content: "";
     flex: 1 0 auto;
-    margin-top: -16px;
+    margin-top: calc(-1 * var(--stack-gap));
 }
 
 .scoreboard {
@@ -72,8 +78,8 @@
 
 .back {
     position: fixed;
-    top: calc(18px + env(safe-area-inset-top));
-    left: calc(18px + env(safe-area-inset-left));
+    top: calc(18px + var(--safe-top));
+    left: calc(18px + var(--safe-left));
     z-index: 30;
     display: none;
     place-items: center;
@@ -107,7 +113,7 @@
 .rungs {
     position: fixed;
     left: 50%;
-    bottom: calc(20px + env(safe-area-inset-bottom));
+    bottom: calc(20px + var(--safe-bottom));
     z-index: 30;
     display: grid;
     place-items: center;
@@ -372,7 +378,10 @@
     --gap: 7px;
     --tile: clamp(
         34px,
-        min(12.5vmin, calc((100vh - 330px) / var(--cols))),
+        min(
+            12.5vmin,
+            calc((var(--stage) - var(--board-reserve)) / var(--cols))
+        ),
         94px
     );
 
@@ -895,9 +904,13 @@
 }
 
 @media (max-width: 700px) {
-    .table {
-        padding: 26px 12px 58px;
-        gap: 12px;
+    /* Retune the frame, not the rules: .table keeps its single padding
+       declaration and picks the safe-area insets up with it. */
+    :root {
+        --frame-top: 26px;
+        --frame-bottom: 58px;
+        --frame-side: 12px;
+        --stack-gap: 12px;
     }
 
     .track {
@@ -905,7 +918,18 @@
     }
 
     .board {
-        --tile: clamp(26px, calc((100vw - 40px) / var(--cols) - 6px), 94px);
+        /* Width-driven, but never taller than the visible screen allows. */
+        --tile: clamp(
+            26px,
+            min(
+                calc(
+                    (100vw - var(--safe-left) - var(--safe-right) - 40px)
+                    / var(--cols) - 6px
+                ),
+                calc((var(--stage) - var(--board-reserve)) / var(--cols))
+            ),
+            94px
+        );
     }
 }
 
