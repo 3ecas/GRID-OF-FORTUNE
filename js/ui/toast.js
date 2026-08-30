@@ -6,7 +6,6 @@ window.Game = window.Game || {};
     }
 
     Game.Toast = {
-
         autoRemove: function (element, fallbackMs) {
             element.addEventListener("animationend", function () {
                 drop(element);
@@ -16,12 +15,8 @@ window.Game = window.Game || {};
             }, fallbackMs);
         },
 
-        /* How long a gain takes to reach the score. The score waits for it. */
         FLY_MS: 430,
 
-        /* The merge pays out where it happened, then the number is thrown at
-           the score — so the board and the number at the top are visibly the
-           same thing rather than two unrelated readouts. */
         toScore: function (anchor, text, iconName, tintClass) {
             if (!anchor) return;
 

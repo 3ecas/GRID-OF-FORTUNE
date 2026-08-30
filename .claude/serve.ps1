@@ -1,7 +1,7 @@
 param(
-    # the game sits at the repo root now, so Pages can serve it as-is
-    [string]$Root = "D:\TESTING_GAMING\METROPOLIS",
-    [int]$Port = 4173
+    # repo root, resolved from this script so the path is never stale
+    [string]$Root = (Split-Path -Parent $PSScriptRoot),
+    [int]$Port = 4174
 )
 
 $listener = New-Object System.Net.HttpListener

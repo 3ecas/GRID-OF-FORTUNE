@@ -1,5 +1,4 @@
 :root {
-
     --bg: #f5efe3;
     --bg-deep: #efe7d8;
     --panel: #fffdf8;
@@ -106,9 +105,6 @@ body {
     height: 100%;
 }
 
-/* A double tap on a board tile is two drops, never a zoom. `manipulation`
-   drops the double-tap gesture (and the click delay that came with it), and
-   nothing here is text worth selecting or long-pressing. */
 html {
     -webkit-text-size-adjust: 100%;
     touch-action: manipulation;

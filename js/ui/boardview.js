@@ -75,10 +75,8 @@ window.Game = window.Game || {};
         if (cell.x === litColumn) classes.push("is-column");
         if (litCell === id) classes.push("is-landing");
 
-        /* a stick close to the end of its fuse starts twitching */
         if (Game.Board.fuseAt(id) >= 0.6) classes.push("is-fizzing");
 
-        /* while a lodestone waits, anything on the board is a choice */
         if (choosing && shown[id]) classes.push("is-pickable");
 
         var next = classes.join(" ");
@@ -139,9 +137,6 @@ window.Game = window.Game || {};
             .filter(Boolean);
     }
 
-    /* A run can give back more than one piece. They all pop, but the one the
-       run was found from carries the weight — the shake, the gain, the ring —
-       so a big merge stays one event rather than several small ones. */
     function madeCells(step) {
         return step.cells && step.cells.length ? step.cells : [step.cell.id];
     }
@@ -298,8 +293,6 @@ window.Game = window.Game || {};
             return;
         }
 
-        /* A lodestone waking is a lift, not a payout — it leaves the board and
-           the game waits on the player, so it gets its own short beat. */
         if (step.type === "wake") {
             paintBoard(step.board);
             step.cells.forEach(function (id) {
@@ -320,7 +313,6 @@ window.Game = window.Game || {};
             paintBoard(step.board);
             playClear(step);
 
-            /* a blast is louder than a line coming out */
             if (step.type === "blast") {
                 Game.Effects.shake(host, 11, 1);
                 Game.Effects.flash(10);
@@ -335,7 +327,6 @@ window.Game = window.Game || {};
 
         var made = Game.Pieces.byId(step.piece);
         if (!made) {
-            /* a step type the view does not know — skip it rather than stop */
             if (step.board) paintBoard(step.board);
             playSteps(steps, index + 1, chain);
             return;
@@ -374,9 +365,6 @@ window.Game = window.Game || {};
         return tile ? Number(tile.dataset.column) : -1;
     }
 
-    /* The column lights up on the tap that chooses it and then lets go —
-       there is no hover on a phone, and a highlight that follows the cursor
-       around was reading as part of the board. */
     function unlight() {
         if (litColumn === -1 && litCell === -1) return;
         litColumn = -1;
@@ -403,7 +391,6 @@ window.Game = window.Game || {};
         var tile = event.target.closest("[data-column]");
         if (!tile) return;
 
-        /* a woken lodestone turns the next click into a choice of kind */
         if (choosing) {
             var picked = shown[Number(tile.dataset.cell)];
             if (!picked) return;

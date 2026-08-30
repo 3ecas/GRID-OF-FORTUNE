@@ -18,8 +18,6 @@ window.Game = window.Game || {};
         };
     }
 
-    /* `game` is the run in progress, so Continue can pick it up after a
-       reload. It is dropped the moment a run ends. */
     function writeSave(game) {
         Game.Storage.write(settings().saveKey, {
             best: state.best,
@@ -54,9 +52,6 @@ window.Game = window.Game || {};
         writeSave(null);
     }
 
-    /* The hand will not offer the same piece more than `sameInRow` times
-       running. Rejection sampling keeps randomFor's weighting intact; the
-       guard is there because a window can be one piece wide at the start. */
     function nextDeal() {
         var most = settings().sameInRow || 0;
         var piece = Game.Pieces.randomFor(state.highest);
@@ -99,9 +94,6 @@ window.Game = window.Game || {};
         return Math.random() < rubbleChance();
     }
 
-    /* Dynamite arrives on score, not on how far up the ladder you are: it is
-       there to answer a board that has knotted up, and that is what a score
-       this side of 500 means. */
     function dynamiteNow() {
         var s = settings();
         if (state.score < s.dynamiteFrom) return false;
@@ -143,9 +135,6 @@ window.Game = window.Game || {};
         return level ? level.count : 0;
     }
 
-    /* The starting pieces fall in one at a time rather than being there from
-       the first frame. They pay nothing — the board settling is not a play —
-       so their steps are stripped of points before the view animates them. */
     function open() {
         if (!state || !state.opening) return;
 
@@ -159,10 +148,6 @@ window.Game = window.Game || {};
             }
             if (!free.length) break;
 
-            /* The board is being laid out, not played — a piece that would
-               join something on the way in goes somewhere else, so the run
-               starts from what you were dealt rather than from a merge you
-               did not make. */
             var piece = Game.Pieces.randomFor(1);
             var calm = free.filter(function (col) {
                 return !Game.Board.wouldJoin(col, piece.id);
@@ -217,9 +202,6 @@ window.Game = window.Game || {};
                 ? Game.Pieces.rubble
                 : Game.Pieces.randomFor(state.highest);
 
-            /* Dynamite and lodestones want room: two of either landing on top
-               of one another, or side by side, is one blast doing the work of
-               two. Spread them out where the board allows it. */
             var pool = open;
             if (stone || stick) {
                 var apart = open.filter(function (col) {
@@ -284,8 +266,6 @@ window.Game = window.Game || {};
 
         Game.Events.emit("game:dealing", { lowest: after });
 
-        /* Off by default: a rung that stops being dealt leaves whatever is
-           standing on it exactly where it is. See growStranded in config. */
         if (!settings().growStranded) return;
 
         state.hand = state.hand.map(function (piece) {
@@ -377,11 +357,8 @@ window.Game = window.Game || {};
             window.setTimeout(open, settings().introPause);
         },
 
-        /* What the save holds, without needing a run to be under way — the
-           menu needs the best score before anything has started. */
         peek: readSave,
 
-        /* Is there a run sitting in the save that Continue could pick up? */
         saved: function () {
             var save = readSave();
             return !!(save.game && Array.isArray(save.game.board));
@@ -421,9 +398,6 @@ window.Game = window.Game || {};
             return true;
         },
 
-        /* The hand shows two but only ever plays the first, so there is
-           nothing to pick and nothing to swap — the second slot is a look at
-           what is coming, not a second option. */
         pick: function () {},
 
         cycle: function () {},
@@ -476,7 +450,6 @@ window.Game = window.Game || {};
             return result;
         },
 
-        /* The player has picked a kind for a woken lodestone to draw out. */
         choose: function (pieceId) {
             if (!state || !state.running) return null;
             if (Game.Board.owes() <= 0) return null;

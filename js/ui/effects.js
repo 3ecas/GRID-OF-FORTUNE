@@ -18,7 +18,6 @@ window.Game = window.Game || {};
     }
 
     Game.Effects = {
-
         land: function (tile, neighbours) {
             if (!tile) return;
             restart(tile, "is-landed");

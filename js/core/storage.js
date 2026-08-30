@@ -42,7 +42,6 @@ window.Game = window.Game || {};
             try {
                 window.localStorage.removeItem(key);
             } catch (err) {
-
             }
         }
     };

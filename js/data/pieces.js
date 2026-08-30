@@ -1,9 +1,7 @@
 window.Game = window.Game || {};
 
 (function () {
-
     var ladder = [
-
         { id: "dirt", name: "Dirt", icon: "dirt", tint: "tint-dirt", points: 1 },
         { id: "stone", name: "Stone", icon: "rock", tint: "tint-rock", points: 2 },
         { id: "iron", name: "Iron", icon: "iron", tint: "tint-iron", points: 3 },
@@ -44,8 +42,6 @@ window.Game = window.Game || {};
         points: 0
     };
 
-    /* Like rubble, dynamite joins nothing — next is null, so nextGroup walks
-       straight past it. What it does, it does when a merge lands beside it. */
     var dynamite = {
         id: "dynamite",
         name: "Dynamite",
@@ -56,9 +52,6 @@ window.Game = window.Game || {};
         points: 0
     };
 
-    /* Set off the same way dynamite is — by a merge landing against it —
-       but instead of blowing a hole it asks you which kind to draw out, and
-       takes every one of that kind wherever it is on the board. */
     var lodestone = {
         id: "lodestone",
         name: "Lodestone",
@@ -83,8 +76,11 @@ window.Game = window.Game || {};
 
     function windowTop(highestTier) {
         var behind = Game.Config.game.dealBehind;
-        var reach = (highestTier || 1) - behind;
-        return Math.max(WINDOW, Math.min(reach, ladder.length - 2));
+        var peak = ladder.length;
+        var made = highestTier || 1;
+        var reach = made >= peak ? peak : made - behind;
+
+        return Math.max(WINDOW, Math.min(reach, peak - (made >= peak ? 0 : 2)));
     }
 
     Game.Pieces = {

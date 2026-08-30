@@ -92,7 +92,7 @@ window.Game = window.Game || {};
                 if (!cell.piece) continue;
 
                 var piece = Game.Pieces.byId(cell.piece);
-                if (!piece || !piece.next) continue;
+                if (!piece || !piece.tier) continue;
 
                 var taking = reach(cell, need);
                 if (taking) {
@@ -121,8 +121,6 @@ window.Game = window.Game || {};
         return hit;
     }
 
-    /* Dynamite is set off the same way rubble is broken: by a merge landing
-       against it. */
     function fuseLit(cells) {
         var lit = [];
         var seen = {};
@@ -141,8 +139,6 @@ window.Game = window.Game || {};
         return lit;
     }
 
-    /* Lodestones a merge has landed against. They are lifted off the board
-       here; what they draw out waits on the player choosing a kind. */
     function stonesWoken(cells) {
         var woken = [];
         var seen = {};
@@ -161,9 +157,6 @@ window.Game = window.Game || {};
         return woken;
     }
 
-    /* Everything in the eight squares around a lit stick goes, the stick with
-       it. A stick caught in another's blast goes off in turn, so a line of
-       them runs. */
     function blast(sticks) {
         var gone = {};
         var fired = {};
@@ -259,10 +252,59 @@ window.Game = window.Game || {};
                     });
 
                 var over = Game.Config.game;
+                var times = Math.min(
+                    over.chainMost,
+                    1 + (chain - 1) * over.chainStep
+                );
+
+                if (!pair.piece.next) {
+                    var haul = Math.round(
+                        (pair.piece.points || 0) *
+                            pair.eat.length *
+                            over.cashBonus *
+                            times
+                    );
+
+                    pair.eat.forEach(function (cell) {
+                        cell.piece = null;
+                    });
+
+                    var scarred = rubbleAround(pair.eat);
+                    scarred.forEach(function (cell) {
+                        cell.piece = null;
+                    });
+
+                    if (over.cashLeaves) {
+                        pair.keep.piece = Game.Pieces.rubble.id;
+                    }
+
+                    steps.push({
+                        type: "cash",
+                        cells: [pair.keep.id],
+                        piece: pair.piece.id,
+                        took: pair.eat.length,
+                        fuse: fuse,
+                        lit: lit,
+                        spent: over.cashLeaves,
+                        chain: chain,
+                        times: times,
+                        points: haul,
+                        board: snapshot()
+                    });
+
+                    var settled = fall();
+                    if (settled.length) {
+                        steps.push({
+                            type: "fall",
+                            moves: settled,
+                            board: snapshot()
+                        });
+                    }
+                    continue;
+                }
+
                 var grown = Game.Pieces.byId(pair.piece.next);
 
-                /* how many pieces the run gives back — one, unless the
-                   surplus is kept (see surplusStays in config) */
                 var makes = 1;
                 if (over.surplusStays) {
                     var need = over.mergeAt || 2;
@@ -272,17 +314,9 @@ window.Game = window.Game || {};
                     }
                 }
 
-                /* eat[0] is the cell the run was found from, and the rest are
-                   in breadth-first order out from it, so the kept pieces stay
-                   packed together where the run began */
                 pair.eat.forEach(function (cell, i) {
                     cell.piece = i < makes ? grown.id : null;
                 });
-
-                var times = Math.min(
-                    over.chainMost,
-                    1 + (chain - 1) * over.chainStep
-                );
 
                 steps.push({
                     type: "merge",
@@ -350,23 +384,6 @@ window.Game = window.Game || {};
                         type: "blast",
                         cells: wrecked,
                         points: Math.round(salvage * (over.blastPays || 0)),
-                        board: snapshot()
-                    });
-                }
-
-                if (!grown.next && Game.Config.game.cashTop) {
-                    pair.keep.piece = Game.Config.game.cashLeaves
-                        ? Game.Pieces.rubble.id
-                        : null;
-
-                    steps.push({
-                        type: "cash",
-                        cells: [pair.keep.id],
-                        piece: grown.id,
-                        spent: Game.Config.game.cashLeaves,
-                        points: Math.round(
-                            (grown.points || 0) * Game.Config.game.cashBonus
-                        ),
                         board: snapshot()
                     });
                 }
@@ -479,14 +496,10 @@ window.Game = window.Game || {};
             return cells;
         },
 
-        /* Would dropping this piece into this column complete a run? Used by
-           the opening, which lays the board out without setting anything off. */
-        /* How many lodestone choices the board is waiting on. */
         owes: function () {
             return owed;
         },
 
-        /* Draw every piece of one kind off the board. */
         sweep: function (pieceId) {
             if (owed <= 0) return null;
             owed -= 1;
@@ -519,9 +532,6 @@ window.Game = window.Game || {};
             );
         },
 
-        /* One drop's worth of burning. Any stick that reaches the end of its
-           fuse goes off where it stands, which is what stops a stick stranded
-           among unmergeable pieces from becoming one of them. */
         burn: function () {
             var limit = Game.Config.game.dynamiteFuse || 0;
             if (!limit) return null;
@@ -560,8 +570,6 @@ window.Game = window.Game || {};
             );
         },
 
-        /* How close a stick is to going off, 0 to 1. The view uses it to
-           show the fuse burning down. */
         fuseAt: function (id) {
             var limit = Game.Config.game.dynamiteFuse || 0;
             var cell = cells[id];
@@ -569,9 +577,6 @@ window.Game = window.Game || {};
             return Math.min(1, (cell.fuse || 0) / limit);
         },
 
-        /* Is the landing spot in this column at least `gap` squares clear of
-           every piece of this kind? Chebyshev, so diagonals count — two
-           sticks touching corner to corner is still two sticks together. */
         spacedFrom: function (column, pieceId, gap) {
             var spot = this.landing(column);
             if (!spot) return false;
@@ -592,7 +597,7 @@ window.Game = window.Game || {};
             if (!spot) return false;
 
             var piece = Game.Pieces.byId(pieceId);
-            if (!piece || !piece.next) return false;
+            if (!piece || !piece.tier) return false;
 
             var was = spot.piece;
             spot.piece = pieceId;

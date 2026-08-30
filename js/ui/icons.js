@@ -1,7 +1,6 @@
 window.Game = window.Game || {};
 
 (function () {
-
     var line = {
         place:
             '<rect x="3.4" y="3.4" width="17.2" height="17.2" rx="4.4"/>' +
@@ -26,7 +25,6 @@ window.Game = window.Game || {};
     };
 
     var art = {
-
         dirt:
             '<path d="M2.6 18.8c0-4.4 4.2-7.6 9.4-7.6s9.4 3.2 9.4 7.6Z" ' +
             'fill="var(--i-dirt)"/>' +

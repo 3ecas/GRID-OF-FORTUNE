@@ -16,9 +16,6 @@
 .scoreboard {
     position: fixed;
 
-    /* Sits in the middle of the room above the board rather than pinned to
-       the top edge — proportional, so it stays centred in that gap as the
-       screen changes, with a floor and a ceiling so it never runs off. */
     top: calc(env(safe-area-inset-top) + clamp(28px, 10.5vh, 120px));
     left: 50%;
     z-index: 20;
@@ -64,8 +61,6 @@
     }
 }
 
-/* Top left, and only while there is a game to come back from. The sound
-   control it used to be paired with now lives in the menu. */
 .back {
     position: fixed;
     top: calc(18px + env(safe-area-inset-top));
@@ -100,7 +95,6 @@
     height: 20px;
 }
 
-/* ---- the ladder button, out of the way in the bottom corner ----------- */
 .rungs {
     position: fixed;
     left: 50%;
@@ -129,7 +123,6 @@
 .rungs:active { transform: translateX(-50%) scale(0.96); }
 .rungs svg.icon { width: 28px; height: 28px; }
 
-/* ---- the ladder sheet -------------------------------------------------- */
 .sheet {
     position: fixed;
     inset: 0;
@@ -164,7 +157,6 @@
     color: var(--ink-faint);
 }
 
-/* ---- the menu ---------------------------------------------------------- */
 .menu {
     position: fixed;
     inset: 0;
@@ -173,8 +165,6 @@
     place-items: center;
     padding: 20px;
 
-    /* Its own ground rather than a pane over the board: a warm floor with the
-       light coming from above, so the title sits in the bright part. */
     background:
         radial-gradient(
             120% 80% at 50% 8%,
@@ -231,7 +221,6 @@
     margin-top: 6px;
 }
 
-/* Words, not boxes. */
 .word {
     padding: 2px 4px;
     border: 0;
@@ -264,8 +253,6 @@
     height: 22px;
 }
 
-/* The ladder used to stand along the bottom of the screen. It lives in the
-   sheet now, on end and scrollable, so the board keeps the room. */
 .track {
     display: flex;
     flex-direction: column;
@@ -301,7 +288,6 @@
     background: var(--panel-soft);
 }
 
-/* Below the window: made, and never coming round again. */
 .step.is-past {
     opacity: 0.5;
     filter: grayscale(1);
@@ -344,8 +330,6 @@
     color: var(--ink-faint);
 }
 
-/* While a lodestone waits, every piece on the board is a thing you could
-   name. They lift and brighten so the board reads as a menu, not a grid. */
 .tile.is-pickable {
     cursor: pointer;
     box-shadow: 0 0 0 2px var(--accent-deep);
@@ -357,7 +341,6 @@
     transform: translateY(-2px) scale(1.04);
 }
 
-/* The last few drops of a fuse. Quick and small — a warning, not a display. */
 .tile.is-fizzing {
     animation: fizz 0.5s ease-in-out infinite;
 }
@@ -777,7 +760,6 @@
     padding: 9px 14px;
 }
 
-/* No pill behind it any more, so it holds the space on its own. */
 .slot {
     display: grid;
     place-items: center;
@@ -823,7 +805,7 @@
     display: none;
     place-items: center;
     padding: 20px;
-    /* the board stays readable behind it — just enough blur to push it back */
+
     background: rgba(245, 239, 227, 0.55);
     backdrop-filter: blur(2.5px);
 }
@@ -916,4 +898,14 @@
     .board {
         --tile: clamp(26px, calc((100vw - 40px) / var(--cols) - 6px), 94px);
     }
+}
+
+.hand.is-waiting {
+    pointer-events: none;
+}
+
+.hand.is-waiting .slot {
+    opacity: 0.22;
+    filter: grayscale(1);
+    transform: scale(0.94);
 }

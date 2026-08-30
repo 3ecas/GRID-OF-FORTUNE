@@ -178,8 +178,6 @@
     height: 1.2em;
 }
 
-/* The flying gain drops the pill chrome — it reads as a thin number crossing
-   the screen rather than a badge being dragged. */
 .float--fly {
     padding: 0;
     border: 0;

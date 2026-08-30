@@ -9,9 +9,6 @@ window.Game = window.Game || {};
     var target = 0;
     var frame = null;
 
-    /* Points that have left a merge but not yet reached the score. The settle
-       must not reconcile past them or they would be counted twice; `era` lets
-       a new game throw away numbers still in flight from the old one. */
     var pending = 0;
     var era = 0;
 
@@ -89,7 +86,6 @@ window.Game = window.Game || {};
                 var mine = era;
                 pending += points;
 
-                /* the score counts it as the number lands, not before */
                 window.setTimeout(function () {
                     if (mine !== era) return;
                     pending -= points;

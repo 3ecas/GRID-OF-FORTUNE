@@ -20,16 +20,12 @@ window.Game = window.Game || {};
         return live;
     }
 
-    /* Top rung first, so the ladder reads downwards to dirt at the foot of
-       the list — the strip stood on end, which is what it always was. */
     function renderTrack() {
         var round = Game.Round.get();
         if (!trackHost || !round) return;
 
         var live = dealingNow();
 
-        /* Anything below the window is never dealt again — struck through, so
-           you can see at a glance what is gone rather than hoping for it. */
         var dealt = Game.Pieces.dealing(round.highest);
         var lowest = dealt.length ? dealt[0].tier : 1;
 
@@ -68,7 +64,6 @@ window.Game = window.Game || {};
         renderTrack();
         sheetHost.classList.add("is-open");
 
-        /* land on the rungs being dealt rather than the top of the ladder */
         var live = trackHost && trackHost.querySelector(".is-dealing");
         if (live && live.scrollIntoView) {
             live.scrollIntoView({ block: "center" });
@@ -77,6 +72,11 @@ window.Game = window.Game || {};
 
     function closeSheet() {
         if (sheetHost) sheetHost.classList.remove("is-open");
+    }
+
+    function waiting(on) {
+        if (!handHost) return;
+        handHost.classList.toggle("is-waiting", !!on);
     }
 
     function renderHand() {
@@ -139,8 +139,6 @@ window.Game = window.Game || {};
         overHost.innerHTML = "";
     }
 
-    /* Continue leads when there is a run to pick up, so Play cannot quietly
-       throw away a game you were in the middle of. */
     function renderMenu() {
         if (!menuHost) return;
 
@@ -171,7 +169,6 @@ window.Game = window.Game || {};
 
         menuHost.classList.add("is-open");
 
-        /* the control is rebuilt with the menu, so it has to be bound again */
         if (Game.Sound && Game.Sound.button) Game.Sound.button();
         if (backBtn) backBtn.classList.remove("is-on");
     }
@@ -196,8 +193,6 @@ window.Game = window.Game || {};
             backBtn = document.getElementById("backBtn");
             if (backBtn) {
                 backBtn.addEventListener("click", function () {
-                    /* the run is already written after every drop, so this
-                       costs nothing — Continue picks it straight back up */
                     closeSheet();
                     renderMenu();
                 });
@@ -205,7 +200,6 @@ window.Game = window.Game || {};
 
             if (sheetHost) {
                 sheetHost.addEventListener("click", function (event) {
-                    /* anywhere off the card closes it */
                     if (!event.target.closest(".sheet__card")) closeSheet();
                 });
             }
@@ -224,18 +218,25 @@ window.Game = window.Game || {};
                 if (event.key === "Escape") closeSheet();
             });
 
-
             Game.Events.on("game:started", function () {
                 hideOver();
                 hideMenu();
                 closeSheet();
                 if (backBtn) backBtn.classList.add("is-on");
+                waiting(false);
                 renderHand();
                 renderTrack();
             });
 
             Game.Events.on("game:hand", renderHand);
             Game.Events.on("game:placed", renderTrack);
+
+            Game.Events.on("game:choosing", function () {
+                waiting(true);
+            });
+            Game.Events.on("game:chosen", function () {
+                waiting(false);
+            });
 
             Game.Events.on("game:dealing", renderTrack);
 
