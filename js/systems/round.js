@@ -3,6 +3,7 @@ window.Game = window.Game || {};
 (function () {
     var config = null;
     var state = null;
+    var held = null;
 
     function settings() {
         return config || (config = Game.Config.game);
@@ -12,20 +13,78 @@ window.Game = window.Game || {};
         var save = Game.Storage.read(settings().saveKey) || {};
         return {
             best: save.best || 0,
-            found: Array.isArray(save.found) ? save.found : []
+            found: Array.isArray(save.found) ? save.found : [],
+            game: save.game || null
         };
     }
 
-    function writeSave() {
+    /* `game` is the run in progress, so Continue can pick it up after a
+       reload. It is dropped the moment a run ends. */
+    function writeSave(game) {
         Game.Storage.write(settings().saveKey, {
             best: state.best,
-            found: state.found
+            found: state.found,
+            game: typeof game === "undefined" ? held : game
         });
+    }
+
+    function snapshotGame() {
+        return {
+            score: state.score,
+            placed: state.placed,
+            tally: state.tally,
+            highest: state.highest,
+            sinceFall: state.sinceFall,
+            picked: state.picked,
+            runId: state.runId,
+            runLen: state.runLen,
+            hand: state.hand.map(function (piece) { return piece.id; }),
+            board: Game.Board.snapshot()
+        };
+    }
+
+    function keep() {
+        if (!state || !state.running) return;
+        held = snapshotGame();
+        writeSave(held);
+    }
+
+    function drop() {
+        held = null;
+        writeSave(null);
+    }
+
+    /* The hand will not offer the same piece more than `sameInRow` times
+       running. Rejection sampling keeps randomFor's weighting intact; the
+       guard is there because a window can be one piece wide at the start. */
+    function nextDeal() {
+        var most = settings().sameInRow || 0;
+        var piece = Game.Pieces.randomFor(state.highest);
+
+        if (most > 0 && state.runId === piece.id && state.runLen >= most) {
+            var options = Game.Pieces.dealing(state.highest).filter(function (other) {
+                return other.id !== state.runId;
+            });
+            if (options.length) {
+                var guard = 0;
+                while (piece.id === state.runId && guard++ < 24) {
+                    piece = Game.Pieces.randomFor(state.highest);
+                }
+                if (piece.id === state.runId) {
+                    piece = options[Math.floor(Math.random() * options.length)];
+                }
+            }
+        }
+
+        if (piece.id === state.runId) state.runLen += 1;
+        else { state.runId = piece.id; state.runLen = 1; }
+
+        return piece;
     }
 
     function fillHand() {
         while (state.hand.length < settings().handSize) {
-            state.hand.push(Game.Pieces.randomFor(state.highest));
+            state.hand.push(nextDeal());
         }
     }
 
@@ -38,6 +97,21 @@ window.Game = window.Game || {};
 
     function rubbleNow() {
         return Math.random() < rubbleChance();
+    }
+
+    /* Dynamite arrives on score, not on how far up the ladder you are: it is
+       there to answer a board that has knotted up, and that is what a score
+       this side of 500 means. */
+    function dynamiteNow() {
+        var s = settings();
+        if (state.score < s.dynamiteFrom) return false;
+        return Math.random() < s.dynamiteChance;
+    }
+
+    function lodestoneNow() {
+        var s = settings();
+        if (state.score < s.lodestoneFrom) return false;
+        return Math.random() < s.lodestoneChance;
     }
 
     function seam() {
@@ -69,12 +143,54 @@ window.Game = window.Game || {};
         return level ? level.count : 0;
     }
 
+    /* The starting pieces fall in one at a time rather than being there from
+       the first frame. They pay nothing — the board settling is not a play —
+       so their steps are stripped of points before the view animates them. */
+    function open() {
+        if (!state || !state.opening) return;
+
+        var steps = [];
+        var wide = Game.Board.size().cols;
+
+        for (var i = 0; i < settings().seedPieces; i++) {
+            var free = [];
+            for (var col = 0; col < wide; col++) {
+                if (Game.Board.landing(col)) free.push(col);
+            }
+            if (!free.length) break;
+
+            /* The board is being laid out, not played — a piece that would
+               join something on the way in goes somewhere else, so the run
+               starts from what you were dealt rather than from a merge you
+               did not make. */
+            var piece = Game.Pieces.randomFor(1);
+            var calm = free.filter(function (col) {
+                return !Game.Board.wouldJoin(col, piece.id);
+            });
+            var pool = calm.length ? calm : free;
+
+            var where = pool[Math.floor(Math.random() * pool.length)];
+            var result = Game.Board.drop(where, piece.id);
+            if (result) steps = steps.concat(result.steps);
+        }
+
+        steps.forEach(function (step) {
+            step.points = 0;
+        });
+
+        state.opening = false;
+        Game.Events.emit("board:steps", { steps: steps });
+        keep();
+    }
+
     function rain() {
         var count = fallCount();
         var made = [];
         var steps = [];
         var points = 0;
         var dirt = 0;
+        var sticks = 0;
+        var stones = 0;
 
         for (var i = 0; i < count; i++) {
             var open = [];
@@ -83,13 +199,40 @@ window.Game = window.Game || {};
             }
             if (!open.length) break;
 
-            var where = open[Math.floor(Math.random() * open.length)];
-            var spoilt = dirt < settings().rubbleCap && rubbleNow();
+            var stone = stones < settings().lodestoneCap && lodestoneNow();
+            if (stone) stones++;
+
+            var stick = !stone && sticks < settings().dynamiteCap && dynamiteNow();
+            if (stick) sticks++;
+
+            var spoilt =
+                !stone && !stick && dirt < settings().rubbleCap && rubbleNow();
             if (spoilt) dirt++;
 
-            var piece = spoilt
+            var piece = stone
+                ? Game.Pieces.lodestone
+                : stick
+                ? Game.Pieces.dynamite
+                : spoilt
                 ? Game.Pieces.rubble
                 : Game.Pieces.randomFor(state.highest);
+
+            /* Dynamite and lodestones want room: two of either landing on top
+               of one another, or side by side, is one blast doing the work of
+               two. Spread them out where the board allows it. */
+            var pool = open;
+            if (stone || stick) {
+                var apart = open.filter(function (col) {
+                    return Game.Board.spacedFrom(
+                        col,
+                        piece.id,
+                        settings().blastSpacing
+                    );
+                });
+                if (apart.length) pool = apart;
+            }
+
+            var where = pool[Math.floor(Math.random() * pool.length)];
             var result = Game.Board.drop(where, piece.id);
             if (!result) continue;
 
@@ -141,6 +284,10 @@ window.Game = window.Game || {};
 
         Game.Events.emit("game:dealing", { lowest: after });
 
+        /* Off by default: a rung that stops being dealt leaves whatever is
+           standing on it exactly where it is. See growStranded in config. */
+        if (!settings().growStranded) return;
+
         state.hand = state.hand.map(function (piece) {
             return grownTo(piece, after.tier);
         });
@@ -174,7 +321,7 @@ window.Game = window.Game || {};
 
         var record = state.score > state.best;
         if (record) state.best = state.score;
-        writeSave();
+        drop();
 
         var top = Game.Pieces.top;
         var crowns = Game.Board.cells().filter(function (cell) {
@@ -206,10 +353,10 @@ window.Game = window.Game || {};
             var save = state ? state : readSave();
 
             Game.Board.build(settings().cols, settings().rows);
-            Game.Board.seed(settings().seedPieces, 1);
 
             state = {
                 running: true,
+                opening: true,
                 score: 0,
                 placed: 0,
                 tally: 0,
@@ -218,6 +365,8 @@ window.Game = window.Game || {};
                 seam: null,
                 hand: [],
                 picked: 0,
+                runId: null,
+                runLen: 0,
                 best: save.best,
                 found: save.found
             };
@@ -225,31 +374,71 @@ window.Game = window.Game || {};
             fillHand();
 
             Game.Events.emit("game:started", {});
+            window.setTimeout(open, settings().introPause);
         },
 
-        pick: function (index) {
-            if (!state || index < 0 || index >= state.hand.length) return;
-            state.picked = index;
-            Game.Events.emit("game:hand", {});
+        /* What the save holds, without needing a run to be under way — the
+           menu needs the best score before anything has started. */
+        peek: readSave,
+
+        /* Is there a run sitting in the save that Continue could pick up? */
+        saved: function () {
+            var save = readSave();
+            return !!(save.game && Array.isArray(save.game.board));
         },
 
-        cycle: function (step) {
-            if (!state || !state.running || state.hand.length < 2) return;
-            var count = state.hand.length;
-            this.pick((state.picked + step + count) % count);
+        resume: function () {
+            var save = readSave();
+            var game = save.game;
+            if (!game || !Array.isArray(game.board)) return false;
+
+            Game.Board.build(settings().cols, settings().rows);
+            if (!Game.Board.load(game.board)) return false;
+
+            state = {
+                running: true,
+                opening: false,
+                score: game.score || 0,
+                placed: game.placed || 0,
+                tally: game.tally || 0,
+                highest: game.highest || 1,
+                sinceFall: game.sinceFall || 0,
+                seam: null,
+                hand: (game.hand || [])
+                    .map(function (id) { return Game.Pieces.byId(id); })
+                    .filter(Boolean),
+                picked: game.picked || 0,
+                runId: game.runId || null,
+                runLen: game.runLen || 0,
+                best: save.best,
+                found: save.found
+            };
+            state.seam = seam();
+            fillHand();
+            keep();
+
+            Game.Events.emit("game:started", {});
+            return true;
         },
+
+        /* The hand shows two but only ever plays the first, so there is
+           nothing to pick and nothing to swap — the second slot is a look at
+           what is coming, not a second option. */
+        pick: function () {},
+
+        cycle: function () {},
 
         play: function (column) {
-            if (!state || !state.running) return null;
+            if (!state || !state.running || state.opening) return null;
+            if (Game.Board.owes() > 0) return null;
 
-            var index = Math.min(state.picked, state.hand.length - 1);
-            var piece = state.hand[index];
+            var piece = state.hand[0];
             if (!piece) return null;
 
             var result = Game.Board.drop(column, piece.id);
             if (!result) return null;
 
-            state.hand.splice(index, 1);
+            state.hand.shift();
             state.picked = 0;
             state.placed += 1;
             checkSeam();
@@ -265,12 +454,48 @@ window.Game = window.Game || {};
                 rain();
             }
 
+            var blown = Game.Board.burn();
+            if (blown && blown.steps.length) {
+                Game.Events.emit("game:rain", {
+                    steps: blown.steps,
+                    count: 0
+                });
+                absorb(blown, 0);
+            }
+
             Game.Events.emit("game:placed", { result: result });
             Game.Events.emit("game:hand", {});
 
+            if (Game.Board.owes() > 0) {
+                Game.Events.emit("game:choosing", { owed: Game.Board.owes() });
+            }
+
             if (Game.Board.isFull()) finish("full");
+            else keep();
 
             return result;
+        },
+
+        /* The player has picked a kind for a woken lodestone to draw out. */
+        choose: function (pieceId) {
+            if (!state || !state.running) return null;
+            if (Game.Board.owes() <= 0) return null;
+
+            var out = Game.Board.sweep(pieceId);
+            if (!out) return null;
+
+            Game.Events.emit("board:steps", { steps: out.steps });
+            absorb(out, 0);
+
+            if (Game.Board.owes() > 0) {
+                Game.Events.emit("game:choosing", { owed: Game.Board.owes() });
+            } else {
+                Game.Events.emit("game:chosen", {});
+            }
+
+            keep();
+            if (Game.Board.isFull()) finish("full");
+            return out;
         },
 
         give: function () {

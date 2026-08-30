@@ -2,7 +2,9 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport"
+              content="width=device-width, initial-scale=1, maximum-scale=1,
+                       user-scalable=no, viewport-fit=cover" />
         <title>Grid of Fortune</title>
 
         <link rel="stylesheet" href="css/theme.css" />
@@ -15,17 +17,37 @@
             <span class="scoreboard__best"></span>
         </div>
 
-        <button class="mute" data-sound type="button" aria-label="Turn sound off"></button>
+        <button
+            class="back"
+            id="backBtn"
+            type="button"
+            data-icon="back"
+            aria-label="Back to menu"
+        ></button>
 
         <main class="table">
             <div class="board" id="board" aria-label="Board"></div>
+
             <div class="hand" id="hand"></div>
         </main>
 
-        <ol class="track" id="track" aria-label="What can be made"></ol>
+        <button
+            class="rungs"
+            id="rungsBtn"
+            type="button"
+            data-icon="ladder"
+            aria-label="What can be made"
+        ></button>
 
+        <div class="sheet" id="sheet">
+            <div class="sheet__card">
+                <span class="sheet__title">What can be made</span>
+                <ol class="track" id="track" aria-label="What can be made"></ol>
+            </div>
+        </div>
+
+        <div class="menu" id="menu"></div>
         <div class="over" id="over"></div>
-        <div class="notice-host" id="noticeHost" aria-live="polite"></div>
 
         <script src="js/core/config.js"></script>
         <script src="js/core/events.js"></script>

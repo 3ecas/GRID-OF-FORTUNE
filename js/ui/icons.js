@@ -16,7 +16,13 @@ window.Game = window.Game || {};
 
         mute:
             '<path d="M4 9.4h3.3L11.8 5.5v13L7.3 14.6H4z"/>' +
-            '<path d="M15.4 9.9 20 14.5M20 9.9l-4.6 4.6"/>'
+            '<path d="M15.4 9.9 20 14.5M20 9.9l-4.6 4.6"/>',
+
+        ladder: '<path d="M9 6.2h6M7.5 12h9M6 17.8h12"/>',
+
+        back: '<path d="M18.4 12H6.2M11.4 6.8 6.2 12l5.2 5.2"/>',
+
+        play: '<path d="M8.6 5.9 18.4 12l-9.8 6.1Z" fill="currentColor" stroke="none"/>'
     };
 
     var art = {
@@ -165,6 +171,26 @@ window.Game = window.Game || {};
             'fill="var(--i-silver-deep)"/>' +
             '<circle cx="12" cy="12" r="5.6" fill="var(--i-silver-light)"/>' +
             '<circle cx="12" cy="12" r="2.2" fill="var(--i-gold)"/>',
+
+        dynamite:
+            '<path d="M5.6 10.8h12.8a1.8 1.8 0 0 1 1.8 1.8v4.6a1.8 1.8 0 0 1 ' +
+            '-1.8 1.8H5.6a1.8 1.8 0 0 1-1.8-1.8v-4.6a1.8 1.8 0 0 1 1.8-1.8Z" ' +
+            'fill="var(--i-tnt)"/>' +
+            '<path d="M12 10.8h6.4a1.8 1.8 0 0 1 1.8 1.8v4.6a1.8 1.8 0 0 1 ' +
+            '-1.8 1.8H12Z" fill="var(--i-tnt-deep)"/>' +
+            '<path d="M3.8 13.4h16.4v2.2H3.8Z" fill="var(--i-tnt-light)"/>' +
+            '<path d="M11 10.8V8.4a2.6 2.6 0 0 1 2.6-2.6h.6v1.6h-.6a1 1 0 0 ' +
+            '0-1 1v2.4Z" fill="var(--i-tnt-fuse)"/>' +
+            '<path d="M15.2 4.2a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z" ' +
+            'fill="var(--i-tnt-spark)"/>',
+
+        lodestone:
+            '<path d="M6.2 4.6h4v8.2a1.8 1.8 0 0 0 3.6 0V4.6h4v8.2a5.4 5.4 0 ' +
+            '0 1-11.6 0Z" fill="var(--i-lode)"/>' +
+            '<path d="M13.8 4.6h4v8.2a5.4 5.4 0 0 1-5.8 5.4v-3.8a1.8 1.8 0 0 ' +
+            '0 1.8-1.6Z" fill="var(--i-lode-deep)"/>' +
+            '<path d="M6.2 4.6h4v3.2h-4ZM13.8 4.6h4v3.2h-4Z" ' +
+            'fill="var(--i-lode-tip)"/>',
 
         rubble:
             '<path d="M2.6 19.8 5 15.4l4 1 2.2 3.4Z" fill="var(--i-rock)"/>' +

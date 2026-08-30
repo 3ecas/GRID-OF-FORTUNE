@@ -9,6 +9,12 @@ window.Game = window.Game || {};
     var target = 0;
     var frame = null;
 
+    /* Points that have left a merge but not yet reached the score. The settle
+       must not reconcile past them or they would be counted twice; `era` lets
+       a new game throw away numbers still in flight from the old one. */
+    var pending = 0;
+    var era = 0;
+
     var COUNT_MS = 420;
 
     function paint() {
@@ -66,6 +72,8 @@ window.Game = window.Game || {};
             bestEl = host.querySelector(".scoreboard__best");
 
             Game.Events.on("game:started", function () {
+                era += 1;
+                pending = 0;
                 if (frame) window.cancelAnimationFrame(frame);
                 frame = null;
                 shown = 0;
@@ -75,15 +83,26 @@ window.Game = window.Game || {};
             });
 
             Game.Events.on("board:merged", function (detail) {
-                if (!detail.step.points) return;
-                target += detail.step.points;
-                pop(detail.step.points);
-                run();
+                var points = detail.step.points;
+                if (!points) return;
+
+                var mine = era;
+                pending += points;
+
+                /* the score counts it as the number lands, not before */
+                window.setTimeout(function () {
+                    if (mine !== era) return;
+                    pending -= points;
+                    target += points;
+                    pop(points);
+                    run();
+                }, Game.Toast.FLY_MS - 60);
             });
 
             Game.Events.on("board:settled", function () {
                 var round = Game.Round.get();
-                if (!round || target === round.score) return;
+                if (!round || pending > 0) return;
+                if (target === round.score) return;
                 target = round.score;
                 run();
             });
