@@ -163,11 +163,19 @@ Where every column would join, it lands anyway and scores nothing — about one
 opening in fifty.
 
 **A run keeps itself.** The arrow in the top left goes back to the menu at any
-point and costs you nothing. The menu offers Play, and Continue when there is a
-run in progress — every drop is written to `localStorage`, so closing the tab is
-not the same as losing. Continue leads whenever it is there, so Play cannot
-quietly throw away a game you were in the middle of. Reaching a full board ends
-the run and clears it.
+point and costs you nothing. The menu offers Play, and when there is a run in
+progress it offers Continue and, below it and quieter, New game — every drop is
+written to `localStorage`, so closing the tab is not the same as losing.
+Continue leads whenever it is there, and the one that starts over says so in
+words. It used to be a bare play triangle, the one glyph on the screen that
+reads as *resume*, sitting directly under Continue; pressing it threw the run
+away without a word. Reaching a full board ends the run and clears it.
+
+**The score comes back with the run.** The scoreboard counts up as merges land,
+so it has to be told where a resumed run left off — nothing is animating when
+one starts, and the event that normally re-syncs the counter never fires. Left
+to itself it read zero on a restored board until the next merge, which looked
+exactly like the run had been thrown away when it had not.
 
 ## Layout
 

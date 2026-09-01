@@ -255,6 +255,18 @@
     transform: translateY(-1px);
 }
 
+/* With a run in progress this button starts a fresh one and the old one is
+   gone for good, so it says so. It used to be a bare play triangle sitting
+   directly under Continue - the one glyph on the screen that reads as "resume"
+   - and pressing it threw the run away without a word. */
+.word--fresh {
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
 .word--quiet {
     display: grid;
     place-items: center;

@@ -156,11 +156,9 @@ window.Game = window.Game || {};
                 ? '<button type="button" class="word" id="goOn">Continue</button>'
                 : "") +
             '<button type="button" class="word' +
-            (going ? " word--arrow" : "") +
-            '" id="playNew" aria-label="' +
+            (going ? " word--fresh" : "") +
+            '" id="playNew">' +
             (going ? "New game" : "Play") +
-            '">' +
-            (going ? Game.Icons.svg("play") : "Play") +
             "</button>" +
             '<button type="button" class="word word--quiet" data-sound' +
             ' aria-label="Sound"></button>' +
