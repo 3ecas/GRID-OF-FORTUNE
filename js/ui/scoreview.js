@@ -1,39 +1,9 @@
-            Game.Events.on("board:veining", function () {
-                if (!veinEl || !veinFillEl) return;
-
-                // the meter is the clock: it is stepped down by the pour
-                // itself, so it empties exactly as the last piece lands
-                veinEl.classList.remove("is-armed");
-                veinEl.classList.add("is-running");
-                veinFillEl.style.transition = "none";
-                veinFillEl.style.width = "100%";
-                void veinFillEl.offsetWidth;
-            });
-
-            Game.Events.on("board:veinstep", function (detail) {
-                if (!veinFillEl) return;
-
-                var ms = Math.max(16, Math.round(detail.ms || 0));
-                veinFillEl.style.transition = "width " + ms + "ms linear";
-                veinFillEl.style.width = Math.max(0, detail.left * 100) + "%";
-
-                if (detail.left <= 0 && veinEl) {
-                    window.setTimeout(function () {
-                        if (!veinEl || !veinFillEl) return;
-                        veinFillEl.style.transition = "";
-                        veinEl.classList.remove("is-running");
-                    }, ms + 40);
-                }
-            });
-
 window.Game = window.Game || {};
 
 (function () {
     var host = null;
     var valueEl = null;
     var bestEl = null;
-    var veinEl = null;
-    var veinFillEl = null;
 
     var shown = 0;
     var target = 0;
@@ -80,16 +50,6 @@ window.Game = window.Game || {};
         frame = window.requestAnimationFrame(step);
     }
 
-    function paintVein(charge, of, armed) {
-        if (!veinEl || !veinFillEl) return;
-
-        var share = of > 0 ? Math.min(1, charge / of) : 0;
-        veinFillEl.style.transition = "";
-        veinFillEl.style.width = Math.round(share * 100) + "%";
-        veinEl.classList.remove("is-running");
-        veinEl.classList.toggle("is-armed", !!armed);
-    }
-
     function pop(points) {
         if (!valueEl) return;
         var weight = Math.min(1, points / 3000);
@@ -107,51 +67,24 @@ window.Game = window.Game || {};
 
             valueEl = host.querySelector(".scoreboard__value");
             bestEl = host.querySelector(".scoreboard__best");
-            veinEl = host.querySelector(".vein");
-            veinFillEl = host.querySelector(".vein__fill");
 
             Game.Events.on("game:started", function () {
                 era += 1;
                 pending = 0;
                 if (frame) window.cancelAnimationFrame(frame);
                 frame = null;
-                shown = 0;
-                target = 0;
+
+                // A resumed run starts here too, and nothing is enqueued when
+                // it does - no steps means no board:settled, which is the only
+                // other thing that re-syncs this counter. Zeroing it blindly
+                // left the board and the ladder right and the score reading 0
+                // until the next merge.
+                var round = Game.Round.get();
+                shown = round ? round.score : 0;
+                target = shown;
+
                 paint();
                 paintBest();
-                paintVein(0, 1, false);
-            });
-
-            Game.Events.on("game:charge", function (detail) {
-                paintVein(detail.charge, detail.of, detail.armed);
-            });
-
-            Game.Events.on("game:armed", function () {
-                paintVein(1, 1, true);
-                Game.Toast.float(veinEl, "Seam charged", null, "tint-star");
-            });
-
-            Game.Events.on("board:veining", function (detail) {
-                if (!veinEl || !veinFillEl) return;
-
-                // the meter is the timer: it runs down over exactly as long as
-                // the pour takes to watch
-                var span = Math.max(400, Math.round(detail.span || 0));
-
-                veinEl.classList.remove("is-armed");
-                veinEl.classList.add("is-running");
-
-                veinFillEl.style.transition = "none";
-                veinFillEl.style.width = "100%";
-                void veinFillEl.offsetWidth;
-                veinFillEl.style.transition = "width " + span + "ms linear";
-                veinFillEl.style.width = "0%";
-
-                window.setTimeout(function () {
-                    if (!veinEl || !veinFillEl) return;
-                    veinFillEl.style.transition = "";
-                    veinEl.classList.remove("is-running");
-                }, span + 80);
             });
 
             Game.Events.on("board:merged", function (detail) {

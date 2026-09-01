@@ -33,8 +33,6 @@ window.Game = window.Game || {};
             tally: state.tally,
             highest: state.highest,
             sinceFall: state.sinceFall,
-            charge: state.charge,
-            armed: state.armed,
             picked: state.picked,
             runId: state.runId,
             runLen: state.runLen,
@@ -260,216 +258,6 @@ window.Game = window.Game || {};
         absorb({ made: made, points: points }, 0);
     }
 
-    function veinAdd(made) {
-        if (state.pouring) return;
-
-        var need = settings().mergeAt || 2;
-        var gain = 0;
-
-        made.forEach(function (step) {
-            var took = step.took || need;
-            gain += Math.max(1, took - need + 1);
-        });
-
-        if (!gain) return;
-        state.charge = Math.min(settings().veinCharge, state.charge + gain);
-
-        if (state.charge < settings().veinCharge || state.armed) {
-            Game.Events.emit("game:charge", {
-                charge: state.charge,
-                of: settings().veinCharge,
-                armed: state.armed
-            });
-            return;
-        }
-
-        state.armed = true;
-        Game.Events.emit("game:armed", {});
-    }
-
-    function dealable() {
-        return Game.Pieces.dealing(state.highest).map(function (piece) {
-            return piece.id;
-        });
-    }
-
-    // One aimed drop. Anything standing on the board may be *finished* - that
-    // is what clears a stranded pair no deal can reach any more. Only the
-    // rungs the hand draws from may be *built* from nothing: allow the pour to
-    // build with anything and it will manufacture two of the top piece on the
-    // board, merge them, and climb the ladder for free.
-    function aimed(build, finish, holding) {
-        var need = settings().mergeAt || 2;
-        var wide = Game.Board.size().cols;
-        var best = null;
-
-        function consider(id, mayBuild) {
-            for (var col = 0; col < wide; col++) {
-                if (!Game.Board.landing(col)) continue;
-
-                var size = Game.Board.joinSize(col, id);
-                if (size < 1) continue;
-
-                var done = size >= need;
-                if (!done && !mayBuild) continue;
-                if (done && holding) continue;
-
-                var worth = done ? 1000 + size : size;
-                if (!best || worth > best.worth) {
-                    best = {
-                        piece: id,
-                        column: col,
-                        worth: worth,
-                        finishes: done
-                    };
-                }
-            }
-        }
-
-        finish.forEach(function (id) { consider(id, false); });
-        build.forEach(function (id) { consider(id, true); });
-
-        return best;
-    }
-
-    // What the board view will take to play these steps. The pour is budgeted
-    // in watching time rather than in pieces, so the frenzy always runs for
-    // veinTime however much of it turns out to be merges.
-    function spanOf(steps) {
-        var s = settings();
-        var ms = 0;
-
-        steps.forEach(function (step) {
-            if (step.type === "fall") {
-                ms += s.stepFall;
-                return;
-            }
-
-            if (step.type !== "merge") {
-                ms += s.stepClear;
-                return;
-            }
-
-            // the view holds longer on the high rungs and walks the fuse trail
-            // a tile at a time; both have to be counted here or the pour runs
-            // past the four seconds it was budgeted for
-            var made = Game.Pieces.byId(step.piece);
-            ms += s.stepMerge + (made && made.tier >= 7 ? s.stepHigh : 0);
-
-            if (step.lit && step.fuse) {
-                var kept = step.cells || [];
-                ms += step.fuse.filter(function (id) {
-                    return kept.indexOf(id) === -1;
-                }).length * s.stepFuse;
-            }
-        });
-
-        return ms * s.veinRush;
-    }
-
-    function vein() {
-        var s = settings();
-
-        state.armed = false;
-        state.charge = 0;
-
-        var steps = [];
-        var made = [];
-        var points = 0;
-        var poured = 0;
-        var span = 0;
-
-        state.pouring = true;
-
-        // it pours until the meter has run down, which is the same thing as
-        // saying it pours for veinTime and then stops
-        while (span < s.veinTime && Game.Board.empties().length > 1) {
-            // Once it has taken the board down to a workable level it stops
-            // taking pieces off and only puts them on, until the board is back
-            // over the floor and it can clear again. It spends the whole four
-            // seconds either way; what the floor stops is the pour stripping
-            // out the position the run had spent three hundred drops building.
-            var holding = Game.Board.density() <= (s.veinFloor || 0);
-            var pick = aimed(dealable(), Game.Board.kindsOn(), holding);
-
-            // With the board nearly full it may still finish runs - that only
-            // ever clears squares - but it may not start new ones. Looking
-            // again for a finisher matters: giving up here was what made the
-            // pour die after two or three pieces.
-            if (pick && !pick.finishes &&
-                Game.Board.empties().length <= (s.veinRoom || 0)) {
-                pick = aimed([], Game.Board.kindsOn());
-            }
-
-            if (!pick) break;
-
-            var result = Game.Board.drop(pick.column, pick.piece);
-            if (!result) break;
-
-            poured += 1;
-            span += spanOf(result.steps);
-            steps = steps.concat(result.steps);
-            made = made.concat(result.made);
-            points += result.points;
-        }
-
-        // leave something to play on rather than a bare board
-        var seed = s.veinSeed;
-        var standing = Game.Board.cells().filter(function (cell) {
-            return !!cell.piece;
-        }).length;
-
-        for (var i = standing; i < seed; i++) {
-            var free = [];
-            for (var col = 0; col < Game.Board.size().cols; col++) {
-                if (Game.Board.landing(col)) free.push(col);
-            }
-            if (!free.length) break;
-
-            var piece = Game.Pieces.randomFor(state.highest);
-            var calm = free.filter(function (col) {
-                return !Game.Board.wouldJoin(col, piece.id);
-            });
-            var pool = calm.length ? calm : free;
-
-            var out = Game.Board.drop(
-                pool[Math.floor(Math.random() * pool.length)],
-                piece.id
-            );
-            if (out) {
-                steps = steps.concat(out.steps);
-                made = made.concat(out.made);
-                points += out.points;
-            }
-        }
-
-        state.pouring = false;
-
-        if (!steps.length) return;
-
-        // A frenzy is one long chain and pays like one. Without this the vein
-        // is a bad trade: it spends high pieces the board had already climbed
-        // to and hands back cheap merges off the dealt rungs, so it costs run
-        // length and returns no score for it.
-        var times = typeof s.veinPays === "number" ? s.veinPays : 1;
-        if (times !== 1) {
-            points = Math.round(points * times);
-            steps.forEach(function (step) {
-                if (step.points) step.points = Math.round(step.points * times);
-            });
-        }
-
-        Game.Events.emit("game:vein", {
-            steps: steps,
-            poured: poured,
-            span: span
-        });
-
-        state.pouring = true;
-        absorb({ made: made, points: points }, 0);
-        state.pouring = false;
-    }
-
     function grownTo(piece, tier) {
         while (piece && piece.tier < tier && piece.next) {
             piece = Game.Pieces.byId(piece.next);
@@ -481,7 +269,6 @@ window.Game = window.Game || {};
         state.score += result.points;
         state.tally += result.made.length;
         record(result.made);
-        if (!depth) veinAdd(result.made);
         raise(result.made, depth || 0);
     }
 
@@ -584,9 +371,6 @@ window.Game = window.Game || {};
                 tally: 0,
                 highest: 1,
                 sinceFall: 0,
-                charge: 0,
-                armed: false,
-                pouring: false,
                 seam: null,
                 hand: [],
                 picked: 0,
@@ -625,9 +409,6 @@ window.Game = window.Game || {};
                 tally: game.tally || 0,
                 highest: game.highest || 1,
                 sinceFall: game.sinceFall || 0,
-                charge: game.charge || 0,
-                armed: !!game.armed,
-                pouring: false,
                 seam: null,
                 hand: (game.hand || [])
                     .map(function (id) { return Game.Pieces.byId(id); })
@@ -674,15 +455,6 @@ window.Game = window.Game || {};
             if (state.sinceFall >= fallGap()) {
                 state.sinceFall = 0;
                 rain();
-            }
-
-            // Only when the board is genuinely closing in. Measured over
-            // thirty runs with the vein off, a board at 68% full killed 0% of
-            // runs inside the next fifteen drops - it is not danger, it is
-            // just full-ish, and spending the save there is what made the
-            // game easy. At 83% it is 27%, and at 90% it is 60%.
-            if (state.armed && Game.Board.density() >= settings().veinFires) {
-                vein();
             }
 
             var blown = Game.Board.burn();
