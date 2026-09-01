@@ -18,6 +18,15 @@ window.Game = window.Game || {};
     var CLEAR_MS = 240;
     var FUSE_MS = 58;
 
+    var rushing = false;
+    var rushQueued = 0;
+
+    function beat(ms) {
+        if (!rushing) return ms;
+        var share = Game.Config.game.veinRush;
+        return Math.round(ms * (typeof share === "number" ? share : 1));
+    }
+
     function build() {
         var size = Game.Board.size();
         host.style.setProperty("--cols", size.cols);
@@ -289,7 +298,7 @@ window.Game = window.Game || {};
             playFall(step.moves);
             window.setTimeout(function () {
                 playSteps(steps, index + 1, chain);
-            }, FALL_MS);
+            }, beat(FALL_MS));
             return;
         }
 
@@ -305,7 +314,7 @@ window.Game = window.Game || {};
             Game.Effects.flash(7);
             window.setTimeout(function () {
                 playSteps(steps, index + 1, chain);
-            }, CLEAR_MS);
+            }, beat(CLEAR_MS));
             return;
         }
 
@@ -321,7 +330,7 @@ window.Game = window.Game || {};
             Game.Events.emit("board:merged", { step: step, chain: chain });
             window.setTimeout(function () {
                 playSteps(steps, index + 1, chain);
-            }, CLEAR_MS);
+            }, beat(CLEAR_MS));
             return;
         }
 
@@ -337,19 +346,21 @@ window.Game = window.Game || {};
         playFuse(step, chain, function () {
             window.setTimeout(function () {
                 playSteps(steps, index + 1, chain + 1);
-            }, hold);
+            }, beat(hold));
         });
     }
 
-    function enqueue(steps) {
+    function enqueue(steps, rush) {
         if (!steps || !steps.length) return;
-        pending.push(steps);
+        if (rush) rushQueued += 1;
+        pending.push({ steps: steps, rush: !!rush });
         if (!busy) advance();
     }
 
     function advance() {
         if (!pending.length) {
             busy = false;
+            rushing = false;
             paintHover();
             Game.Events.emit("board:settled", {});
             return;
@@ -357,7 +368,16 @@ window.Game = window.Game || {};
 
         busy = true;
         seenThisDrop = {};
-        playSteps(pending.shift(), 0, 0);
+
+        var next = pending.shift();
+        if (next.rush) {
+            rushing = true;
+            rushQueued -= 1;
+        } else if (rushQueued <= 0) {
+            rushing = false;
+        }
+
+        playSteps(next.steps, 0, 0);
     }
 
     function columnOf(event) {
@@ -418,6 +438,8 @@ window.Game = window.Game || {};
                 litCell = -1;
                 busy = false;
                 pending = [];
+                rushing = false;
+                rushQueued = 0;
                 build();
             });
 
@@ -445,6 +467,10 @@ window.Game = window.Game || {};
 
             Game.Events.on("game:rain", function (detail) {
                 enqueue(detail.steps);
+            });
+
+            Game.Events.on("game:vein", function (detail) {
+                enqueue(detail.steps, true);
             });
         },
 

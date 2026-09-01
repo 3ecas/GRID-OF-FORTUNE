@@ -333,9 +333,7 @@ window.Game = window.Game || {};
                     times: times,
                     makes: makes,
                     points: Math.round(
-                        (grown.points || 0) *
-                            (over.surplusPays === false ? 1 : makes) *
-                            times
+                        (pair.piece.points || 0) * pair.eat.length * times
                     ),
                     board: snapshot()
                 });
@@ -590,6 +588,34 @@ window.Game = window.Game || {};
                 if (Math.max(dx, dy) < gap) return false;
             }
             return true;
+        },
+
+        joinSize: function (column, pieceId) {
+            var spot = this.landing(column);
+            if (!spot) return 0;
+
+            var piece = Game.Pieces.byId(pieceId);
+            if (!piece || !piece.tier) return 0;
+
+            var was = spot.piece;
+            spot.piece = pieceId;
+            var group = reach(spot, 1);
+            spot.piece = was;
+
+            return group ? group.length : 0;
+        },
+
+        kindsOn: function () {
+            var seen = {};
+            var kinds = [];
+            cells.forEach(function (cell) {
+                if (!cell.piece || seen[cell.piece]) return;
+                var piece = Game.Pieces.byId(cell.piece);
+                if (!piece || !piece.tier) return;
+                seen[cell.piece] = true;
+                kinds.push(cell.piece);
+            });
+            return kinds;
         },
 
         wouldJoin: function (column, pieceId) {

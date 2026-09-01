@@ -63,6 +63,54 @@
     color: var(--ink-faint);
 }
 
+/* The vein meter. Big merges fill it; it holds full until the board closes in
+   far enough to be worth spending on, which is what the pulse is saying. */
+.vein {
+    width: 76px;
+    height: 3px;
+    margin-top: 4px;
+    border-radius: 2px;
+    background: var(--ink-faint);
+    opacity: 0.25;
+    overflow: hidden;
+    transition: opacity 0.3s ease;
+}
+
+.vein__fill {
+    display: block;
+    height: 100%;
+    width: 0%;
+    border-radius: 2px;
+    background: var(--ink);
+    transform-origin: left center;
+    transition: width 0.45s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.vein.is-armed {
+    opacity: 1;
+    animation: vein-hold 1.15s ease-in-out infinite;
+}
+
+.vein.is-armed .vein__fill {
+    background: #c9860a;
+}
+
+.vein.is-running {
+    opacity: 1;
+    animation: none;
+}
+
+@keyframes vein-hold {
+    0%, 100% {
+        opacity: 0.45;
+        transform: scaleY(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scaleY(2);
+    }
+}
+
 @keyframes score-up {
     0% {
         transform: scale(1);

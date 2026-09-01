@@ -15,6 +15,13 @@ what was above drops into the gap, which can set off another merge — so one
 piece can start a long chain. A run longer than three joins all at once,
 however far it has grown.
 
+**Every piece in a run pays for itself.** A merge scores the worth of each
+piece it consumes, at the rung they were standing on: three coal pay three
+coal, five pay five. Size is worth something on its own now — before, a run of
+six scored exactly what a run of three did, because the payout was read off the
+one piece that came back rather than off the pile that went in. Rubble is worth
+nothing and pays nothing wherever it is destroyed.
+
 **A run gives back what it is worth.** Three become one, four become two, five
 become three — a run of any length hands back all but two of itself, one rung
 up. Before that a run of six gave back exactly what a run of three did, so
@@ -109,6 +116,19 @@ last step instead of dying short of it.
 into columns you did not pick. They come from the rungs already in your hand,
 so they are never unmergeable — what they cost you is the choice of where.
 
+**The seam reads the board before it gives.** It will not drop more than a
+quarter of the free squares at once, so a scheduled burst of four arrives whole
+on an open board and arrives as one piece on a board with four squares left.
+The schedule sets the pressure; this only stops the schedule from finishing a
+game the player was still in. Without it the same burst was harmless at a third
+full and fatal at three-quarters, which is variance the player cannot read or
+plan around.
+
+**The seam fills the shallow columns first.** A burst picks among the columns
+with the most room rather than uniformly, so it can no longer land three of its
+four pieces on the one stack already near the ceiling. You still do not choose
+where it goes — you just no longer lose to it landing all in one place.
+
 **A lodestone draws out a kind.** Rarer than dynamite and answering a
 different problem: dynamite clears a *place*, a lodestone clears a *kind*. A
 merge landing against one wakes it, the board stops and lights up, and whatever
@@ -116,19 +136,50 @@ piece you name is pulled off it wherever it happens to be — which is the only
 thing that shifts one stranded here and another stranded three columns over.
 It pays the same salvage a blast does.
 
-**Dynamite is the way out.** Once you are past 500 points it starts coming in
+**Dynamite is the way out.** Once you are past 1,250 points it starts coming in
 with the seam. It joins nothing, and a merge landing against it sets it off:
 everything in the eight squares around it goes, the stick with it. It waits twelve drops and then goes off
 whether or not a merge has reached it — without that, a stick landing among
 pieces too old to merge waits forever and becomes part of the very problem it
-exists to solve. It pays back about a third of what it destroyed — not the full value, because the ladder climbs by
-half again a rung while a blast takes three pieces to a merge's three, so
-paying in full would make blowing a run up worth twice merging it. A third
-leaves building clearly better while still handing something back for pieces
-you could no longer use, which matters with nothing growing up behind the
-window any more: a stick is the only thing that shifts a piece you can never
-complete. One caught in another's blast goes off in turn, so a
+exists to solve. It pays the full worth of everything it destroys, the same
+rule a merge pays under — a blast of three pieces and a merge of three pieces
+are worth the same. Building stays clearly better anyway: a merge also climbs a
+rung and can chain, and a chain pays up to five times over, neither of which a
+blast does. What the full payout buys is that a stick is no longer a bad trade
+for the pieces it is there to solve — with nothing growing up behind the
+window, it is the only thing that shifts a piece you can never complete. One caught in another's blast goes off in turn, so a
 line of them runs.
+
+**Big merges charge the vein.** A plain three adds one, and every piece past
+three adds one more — a four adds two, a five adds three. Size is what fills
+it, so the one merge in five that is bigger than the minimum does most of the
+work. Fill the meter under the score and the vein is
+*armed*, but nothing happens yet. It holds.
+
+**It runs when the board closes in.** The first drop that leaves the board
+about seven-tenths full breaks it open, and for a few seconds the seam pours in
+aimed: every piece lands where it finishes a run, the runs go off as fast as
+they land, and what was a board you were about to lose on comes back at about a
+quarter full. It is deliberately not a button. The whole game is one question —
+which column — and a spend key would be a second one. Charging it is the skill;
+when it pays out is the board's business.
+
+**The vein finishes anything and builds only what the hand deals.** Those are
+different permissions and the difference is the whole mechanic. Finishing is
+allowed against any piece standing on the board, which is what lets it clear a
+stranded pair no deal can reach any more. Building a run from nothing is
+allowed only from the rungs the hand itself draws from — because a pour that
+may build with anything will make two of the highest piece on the board, merge
+them, make two of what *that* returns, and climb the ladder for free. Measured
+with that rule off, a single vein paid one and three-quarter million points and
+left the board fuller than it found it. With it on, the pour cannot manufacture
+its way upward: it only ever spends a dealt piece to take real pieces off.
+
+**It never leaves you worse off, or with nothing.** A piece that finishes a run
+is always welcome; a piece that only builds one is welcome only while the board
+still has room for it, so the rescue can never be the thing that fills the
+board. When the pour stops, whatever it has left standing is what you play on,
+topped back up to a few pieces if it cleared you out entirely.
 
 **Nothing ends the game but a full board.** The vault has nothing above it, so
 it simply sits there taking a square — reaching the top is not a win, it is the
@@ -185,35 +236,56 @@ announce events, **ui** listens and draws.
 ## Balance
 
 Measured with a greedy bot that weighs every column each turn — it plays worse
-than the column-weighing bot the older figures came from, so read these as a
-floor. A person jams long before any of them.
+than a person, so read these as a floor. A person jams long before it does.
+Both columns below come from the same bot on the same seeds, so the comparison
+holds even where the absolute numbers are pessimistic.
 
-Fifteen runs at the current rules (merge-3, one piece in hand, nothing growing
-up behind the window):
+Forty runs at the current rules (merge-3, one piece in hand, nothing growing
+up behind the window), with the previous rules re-measured on the same seeds by
+the same bot so the two columns compare like for like:
 
-| | |
-| --- | --- |
-| Game length | ~340 drops median |
-| Score | ~20,000 median |
-| Ladder reached | sapphire, median |
-| Board | sits about 40% full; nearly bare a seventh of the time |
-| Falls | opens at two every five; a run reaches step 6 of 8 |
+| | before | now |
+| --- | --- | --- |
+| Game length | ~354 drops median | ~453 drops median |
+| Score | ~13,000 median | ~54,000 median |
+| Board | 44% full | 43% full |
+| Biggest single seam burst | 5 pieces | 4 pieces |
+| Pieces per burst | 3.3 average | 2.6 average |
+| Dynamite unlocks | 32% into the run | 29% into the run |
 
-How full the board sits is not a dial. It settles near 40% under every falls
-schedule tried — gentle, flat or harsh — because it is set by the merge rule
-giving back all but two squares, not by what falls in. What *is* a dial is how
-often the board looks bare, and that is almost entirely the opening: starting
-at two every five rather than one every eight cut it from a fifth of the run to
-a seventh. It costs about a third of the run and, because score is exponential
-in how high you climb, most of the score with it.
+Every run in both columns ended on a genuinely full board. The "now" column is
+without the vein, so the seam changes and the scoring change are read on their
+own; the vein on top of them takes the median score to about 102,000 while
+adding only ten drops to the run — it pays, it does not rescue.
 
-Keeping the surplus is the biggest single lever in the game. Measured against
-throwing it away, over fifteen runs each: runs about a third shorter, score
-about three and a half times higher, and a median run reaches diamond instead
-of topaz — 84% of the ladder rather than 58%. Paying for every piece a run
-gives back rather than just one (`surplusPays`) multiplies score by ten rather
-than three and a half, and puts a median run at treasure; it is off for that
-reason.
+**The seam schedule no longer ends in a cliff.** Its last step used to double
+the rate in one move — five pieces every drop, against a hand of one, six
+squares filling per drop on a board that gives back two per merge. Nothing
+survives that, so the top of the schedule was not difficulty, it was a wall
+with a fixed position. The steps through drop 250 are unchanged; only the last
+three are softened, and the largest step-to-step rise is now half rather than
+double. The rate tops out at two pieces a drop instead of five.
+
+**Rain is fuel as much as threat, which is why cutting it backfires.** Softening
+the schedule *alone* measured 15% *shorter* runs, not longer: fewer pieces means
+less to merge, which means less score, which means the `dynamiteFrom` gate
+arrives later, which means fewer sticks to open a jammed board. What actually
+helps is leaving the supply roughly intact and changing how it is delivered —
+the quarter-of-free-squares limit and the shallow-column bias together, which
+is where nearly all of the extra run length above comes from.
+
+How full the board sits is still not a dial. It settles near 40% under every
+falls schedule tried — gentle, flat or harsh — because it is set by the merge
+rule giving back all but two squares, not by what falls in. What *is* a dial is
+how often the board looks bare, and that is almost entirely the opening:
+starting at two every five rather than one every eight cut it from a fifth of
+the run to a seventh.
+
+Keeping the surplus is still the biggest single lever in the game: measured
+against throwing it away, runs about a third shorter and score several times
+lower. Paying per piece consumed rather than per piece returned made the old
+`surplusPays` knob meaningless — every piece in a run is now paid for by
+definition — so it is gone.
 
 Roughly four merges in five are still plain threes, so all of that comes from
 the one in five that is bigger.
@@ -221,7 +293,20 @@ the one in five that is bigger.
 **Score and survival are coupled** through `dynamiteFrom`. That gate is read
 off the score, so anything that changes scoring also changes when the first
 stick falls — and dynamite is what keeps a jammed board playable. A change
-that only looks like scoring will move run length too.
+that only looks like scoring will move run length too. Paying per piece
+consumed made the score curve about two and a half times steeper, which pulled
+the first stick from 32% of the way into a run down to 14%; `dynamiteFrom` and
+`lodestoneFrom` were scaled by the same factor, to 1,250 and 6,250, to put both
+specials back where they were in the shape of a run rather than on the
+scoreboard.
+
+**The vein is a payout, not a lifeline.** Measured over forty runs it fires
+about twice, takes the board from roughly two-thirds full to a quarter, and
+close to doubles the median score — while run length moves by ten drops. That
+split is the point, and it is what the arming threshold buys: at a tenth of the
+current `veinCharge` it fired eighteen times a run, score ran to seven figures
+and games stopped ending. What makes it a reward rather than a crutch is that
+it is rare and it is spent on the score, not on survival.
 
 ## Save data
 

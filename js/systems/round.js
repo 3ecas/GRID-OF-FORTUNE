@@ -33,6 +33,8 @@ window.Game = window.Game || {};
             tally: state.tally,
             highest: state.highest,
             sinceFall: state.sinceFall,
+            charge: state.charge,
+            armed: state.armed,
             picked: state.picked,
             runId: state.runId,
             runLen: state.runLen,
@@ -168,8 +170,35 @@ window.Game = window.Game || {};
         keep();
     }
 
+    function roomFor(count) {
+        var s = settings();
+        var free = Game.Board.empties().length;
+        var allowed = Math.max(s.fallLeast || 1, Math.ceil(free * s.fallRoom));
+        return Math.min(count, allowed);
+    }
+
+    function evened(pool) {
+        if (!settings().fallEven || pool.length < 3) return pool;
+
+        var most = 0;
+        var depth = pool.map(function (col) {
+            var spot = Game.Board.landing(col);
+            var room = spot ? spot.y + 1 : 0;
+            if (room > most) most = room;
+            return { col: col, room: room };
+        });
+
+        var roomy = depth.filter(function (item) {
+            return item.room >= most - 1;
+        });
+
+        return (roomy.length ? roomy : depth).map(function (item) {
+            return item.col;
+        });
+    }
+
     function rain() {
-        var count = fallCount();
+        var count = roomFor(fallCount());
         var made = [];
         var steps = [];
         var points = 0;
@@ -214,6 +243,8 @@ window.Game = window.Game || {};
                 if (apart.length) pool = apart;
             }
 
+            pool = evened(pool);
+
             var where = pool[Math.floor(Math.random() * pool.length)];
             var result = Game.Board.drop(where, piece.id);
             if (!result) continue;
@@ -229,6 +260,156 @@ window.Game = window.Game || {};
         absorb({ made: made, points: points }, 0);
     }
 
+    function veinAdd(made) {
+        if (state.pouring) return;
+
+        var need = settings().mergeAt || 2;
+        var gain = 0;
+
+        made.forEach(function (step) {
+            var took = step.took || need;
+            gain += Math.max(1, took - need + 1);
+        });
+
+        if (!gain) return;
+        state.charge += gain;
+
+        if (state.charge < settings().veinCharge || state.armed) {
+            Game.Events.emit("game:charge", {
+                charge: state.charge,
+                of: settings().veinCharge,
+                armed: state.armed
+            });
+            return;
+        }
+
+        state.armed = true;
+        Game.Events.emit("game:armed", {});
+    }
+
+    function dealable() {
+        return Game.Pieces.dealing(state.highest).map(function (piece) {
+            return piece.id;
+        });
+    }
+
+    // One aimed drop. Anything standing on the board may be *finished* - that
+    // is what clears a stranded pair no deal can reach any more. Only the
+    // rungs the hand draws from may be *built* from nothing: allow the pour to
+    // build with anything and it will manufacture two of the top piece on the
+    // board, merge them, and climb the ladder for free.
+    function aimed(build, finish) {
+        var need = settings().mergeAt || 2;
+        var wide = Game.Board.size().cols;
+        var best = null;
+
+        function consider(id, mayBuild) {
+            for (var col = 0; col < wide; col++) {
+                if (!Game.Board.landing(col)) continue;
+
+                var size = Game.Board.joinSize(col, id);
+                if (size < 1) continue;
+
+                var done = size >= need;
+                if (!done && !mayBuild) continue;
+
+                var worth = done ? 1000 + size : size;
+                if (!best || worth > best.worth) {
+                    best = {
+                        piece: id,
+                        column: col,
+                        worth: worth,
+                        finishes: done
+                    };
+                }
+            }
+        }
+
+        finish.forEach(function (id) { consider(id, false); });
+        build.forEach(function (id) { consider(id, true); });
+
+        return best;
+    }
+
+    function vein() {
+        state.armed = false;
+        state.charge = 0;
+
+        var most = settings().veinPours;
+
+        // it may never end the board fuller than it found it: pieces that
+        // finish a run are always welcome, pieces that only build one are
+        // only welcome while there is room for them
+        var ceiling = Game.Board.density();
+
+        var steps = [];
+        var made = [];
+        var points = 0;
+        var poured = 0;
+
+        state.pouring = true;
+
+        while (poured < most && Game.Board.empties().length > 1) {
+            var pick = aimed(dealable(), Game.Board.kindsOn());
+            if (!pick) break;
+
+            if (!pick.finishes && Game.Board.density() > ceiling) break;
+
+            var result = Game.Board.drop(pick.column, pick.piece);
+            if (!result) break;
+
+            poured += 1;
+            steps = steps.concat(result.steps);
+            made = made.concat(result.made);
+            points += result.points;
+        }
+
+        // leave something to play on rather than a bare board
+        var seed = settings().veinSeed;
+        var standing = Game.Board.cells().filter(function (cell) {
+            return !!cell.piece;
+        }).length;
+
+        for (var i = standing; i < seed; i++) {
+            var free = [];
+            for (var col = 0; col < Game.Board.size().cols; col++) {
+                if (Game.Board.landing(col)) free.push(col);
+            }
+            if (!free.length) break;
+
+            var piece = Game.Pieces.randomFor(state.highest);
+            var calm = free.filter(function (col) {
+                return !Game.Board.wouldJoin(col, piece.id);
+            });
+            var pool = calm.length ? calm : free;
+
+            var out = Game.Board.drop(
+                pool[Math.floor(Math.random() * pool.length)],
+                piece.id
+            );
+            if (out) {
+                steps = steps.concat(out.steps);
+                made = made.concat(out.made);
+                points += out.points;
+            }
+        }
+
+        state.pouring = false;
+
+        if (!steps.length) return;
+
+        Game.Events.emit("game:vein", { steps: steps, poured: poured });
+        state.pouring = true;
+        absorb({ made: made, points: points }, 0);
+        state.pouring = false;
+
+        Game.Events.emit("game:charge", {
+            charge: state.charge,
+            of: settings().veinCharge,
+            armed: false
+        });
+    }
+
     function grownTo(piece, tier) {
         while (piece && piece.tier < tier && piece.next) {
             piece = Game.Pieces.byId(piece.next);
@@ -240,6 +421,7 @@ window.Game = window.Game || {};
         state.score += result.points;
         state.tally += result.made.length;
         record(result.made);
+        if (!depth) veinAdd(result.made);
         raise(result.made, depth || 0);
     }
 
@@ -342,6 +524,9 @@ window.Game = window.Game || {};
                 tally: 0,
                 highest: 1,
                 sinceFall: 0,
+                charge: 0,
+                armed: false,
+                pouring: false,
                 seam: null,
                 hand: [],
                 picked: 0,
@@ -380,6 +565,9 @@ window.Game = window.Game || {};
                 tally: game.tally || 0,
                 highest: game.highest || 1,
                 sinceFall: game.sinceFall || 0,
+                charge: game.charge || 0,
+                armed: !!game.armed,
+                pouring: false,
                 seam: null,
                 hand: (game.hand || [])
                     .map(function (id) { return Game.Pieces.byId(id); })
@@ -426,6 +614,10 @@ window.Game = window.Game || {};
             if (state.sinceFall >= fallGap()) {
                 state.sinceFall = 0;
                 rain();
+            }
+
+            if (state.armed && Game.Board.density() >= settings().veinFires) {
+                vein();
             }
 
             var blown = Game.Board.burn();

@@ -4,6 +4,8 @@ window.Game = window.Game || {};
     var host = null;
     var valueEl = null;
     var bestEl = null;
+    var veinEl = null;
+    var veinFillEl = null;
 
     var shown = 0;
     var target = 0;
@@ -50,6 +52,15 @@ window.Game = window.Game || {};
         frame = window.requestAnimationFrame(step);
     }
 
+    function paintVein(charge, of, armed) {
+        if (!veinEl || !veinFillEl) return;
+
+        var share = of > 0 ? Math.min(1, charge / of) : 0;
+        veinFillEl.style.width = Math.round(share * 100) + "%";
+        veinEl.classList.remove("is-running");
+        veinEl.classList.toggle("is-armed", !!armed);
+    }
+
     function pop(points) {
         if (!valueEl) return;
         var weight = Math.min(1, points / 3000);
@@ -67,6 +78,8 @@ window.Game = window.Game || {};
 
             valueEl = host.querySelector(".scoreboard__value");
             bestEl = host.querySelector(".scoreboard__best");
+            veinEl = host.querySelector(".vein");
+            veinFillEl = host.querySelector(".vein__fill");
 
             Game.Events.on("game:started", function () {
                 era += 1;
@@ -77,6 +90,22 @@ window.Game = window.Game || {};
                 target = 0;
                 paint();
                 paintBest();
+                paintVein(0, 1, false);
+            });
+
+            Game.Events.on("game:charge", function (detail) {
+                paintVein(detail.charge, detail.of, detail.armed);
+            });
+
+            Game.Events.on("game:armed", function () {
+                paintVein(1, 1, true);
+                Game.Toast.float(veinEl, "Seam charged", null, "tint-star");
+            });
+
+            Game.Events.on("game:vein", function () {
+                if (!veinEl) return;
+                veinEl.classList.remove("is-armed");
+                veinEl.classList.add("is-running");
             });
 
             Game.Events.on("board:merged", function (detail) {

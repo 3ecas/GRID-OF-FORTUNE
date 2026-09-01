@@ -21,25 +21,34 @@ Game.Config = {
 
         surplusStays: true,
 
-        surplusPays: false,
-
         surplusMost: 0,
 
         falls: [
             { after: 0, count: 2, every: 5 },
             { after: 110, count: 3, every: 5 },
             { after: 150, count: 3, every: 4 },
-            { after: 200, count: 3, every: 3 },
+            { after: 200, count: 2, every: 2 },
             { after: 250, count: 4, every: 3 },
-            { after: 310, count: 4, every: 2 },
-            { after: 370, count: 5, every: 2 },
-            { after: 430, count: 5, every: 1 }
+            { after: 310, count: 3, every: 2 },
+            { after: 370, count: 2, every: 1 },
+            { after: 430, count: 3, every: 1 }
         ],
+
+        fallRoom: 0.25,
+        fallLeast: 1,
+
+        fallEven: true,
+
+        veinCharge: 160,
+        veinFires: 0.68,
+        veinPours: 48,
+        veinSeed: 5,
+        veinRush: 0.4,
 
         clearColumns: false,
         clearRows: false,
         clearBonus: 3,
-
+
         cashBonus: 2,
         cashLeaves: true,
 
@@ -48,18 +57,18 @@ Game.Config = {
 
         shakeForce: 0.6,
 
-        blastPays: 0.35,
+        blastPays: 1,
 
         dynamiteFuse: 12,
 
         blastSpacing: 2,
 
-        dynamiteFrom: 500,
+        dynamiteFrom: 1250,
 
         dynamiteChance: 0.07,
         dynamiteCap: 1,
 
-        lodestoneFrom: 2500,
+        lodestoneFrom: 6250,
         lodestoneChance: 0.015,
         lodestoneCap: 1,
 
