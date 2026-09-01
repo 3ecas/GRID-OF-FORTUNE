@@ -340,9 +340,28 @@ window.Game = window.Game || {};
         var ms = 0;
 
         steps.forEach(function (step) {
-            if (step.type === "fall") ms += s.stepFall;
-            else if (step.type === "merge") ms += s.stepMerge;
-            else ms += s.stepClear;
+            if (step.type === "fall") {
+                ms += s.stepFall;
+                return;
+            }
+
+            if (step.type !== "merge") {
+                ms += s.stepClear;
+                return;
+            }
+
+            // the view holds longer on the high rungs and walks the fuse trail
+            // a tile at a time; both have to be counted here or the pour runs
+            // past the four seconds it was budgeted for
+            var made = Game.Pieces.byId(step.piece);
+            ms += s.stepMerge + (made && made.tier >= 7 ? s.stepHigh : 0);
+
+            if (step.lit && step.fuse) {
+                var kept = step.cells || [];
+                ms += step.fuse.filter(function (id) {
+                    return kept.indexOf(id) === -1;
+                }).length * s.stepFuse;
+            }
         });
 
         return ms * s.veinRush;
@@ -432,7 +451,7 @@ window.Game = window.Game || {};
         // is a bad trade: it spends high pieces the board had already climbed
         // to and hands back cheap merges off the dealt rungs, so it costs run
         // length and returns no score for it.
-        var times = s.veinPays || 1;
+        var times = typeof s.veinPays === "number" ? s.veinPays : 1;
         if (times !== 1) {
             points = Math.round(points * times);
             steps.forEach(function (step) {
@@ -657,7 +676,14 @@ window.Game = window.Game || {};
                 rain();
             }
 
-            if (state.armed) vein();
+            // Only when the board is genuinely closing in. Measured over
+            // thirty runs with the vein off, a board at 68% full killed 0% of
+            // runs inside the next fifteen drops - it is not danger, it is
+            // just full-ish, and spending the save there is what made the
+            // game easy. At 83% it is 27%, and at 90% it is 60%.
+            if (state.armed && Game.Board.density() >= settings().veinFires) {
+                vein();
+            }
 
             var blown = Game.Board.burn();
             if (blown && blown.steps.length) {

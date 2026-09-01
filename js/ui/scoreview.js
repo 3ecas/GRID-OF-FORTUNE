@@ -1,3 +1,31 @@
+            Game.Events.on("board:veining", function () {
+                if (!veinEl || !veinFillEl) return;
+
+                // the meter is the clock: it is stepped down by the pour
+                // itself, so it empties exactly as the last piece lands
+                veinEl.classList.remove("is-armed");
+                veinEl.classList.add("is-running");
+                veinFillEl.style.transition = "none";
+                veinFillEl.style.width = "100%";
+                void veinFillEl.offsetWidth;
+            });
+
+            Game.Events.on("board:veinstep", function (detail) {
+                if (!veinFillEl) return;
+
+                var ms = Math.max(16, Math.round(detail.ms || 0));
+                veinFillEl.style.transition = "width " + ms + "ms linear";
+                veinFillEl.style.width = Math.max(0, detail.left * 100) + "%";
+
+                if (detail.left <= 0 && veinEl) {
+                    window.setTimeout(function () {
+                        if (!veinEl || !veinFillEl) return;
+                        veinFillEl.style.transition = "";
+                        veinEl.classList.remove("is-running");
+                    }, ms + 40);
+                }
+            });
+
 window.Game = window.Game || {};
 
 (function () {

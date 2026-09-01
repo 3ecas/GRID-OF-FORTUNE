@@ -16,21 +16,47 @@ window.Game = window.Game || {};
     var FALL_MS = Game.Config.game.stepFall;
     var MERGE_MS = Game.Config.game.stepMerge;
     var CLEAR_MS = Game.Config.game.stepClear;
-    var FUSE_MS = 58;
+    var FUSE_MS = Game.Config.game.stepFuse;
 
     var rushing = false;
     var rushQueued = 0;
+    var veinTotal = 0;
+    var veinLeft = 0;
 
     // how long a batch will take to watch, so the vein meter can run down in
     // step with the pour rather than from the moment the model announced it
+    function costOf(step) {
+        if (step.type === "fall") return beat(FALL_MS);
+
+        if (step.type !== "merge") return beat(CLEAR_MS);
+
+        var made = Game.Pieces.byId(step.piece);
+        if (!made) return 0;
+
+        // playSteps holds longer on the high rungs, and walks the fuse trail a
+        // tile at a time before the merge lands. Both have to be counted or the
+        // meter runs out before the pour does.
+        var ms = beat(MERGE_MS + (made.tier >= 7 ? Game.Config.game.stepHigh : 0));
+
+        if (step.lit) {
+            var kept = madeCells(step);
+            var trail = (step.fuse || []).filter(function (id) {
+                return kept.indexOf(id) === -1;
+            });
+            ms += trail.length * beat(FUSE_MS);
+        }
+
+        return ms;
+    }
+
     function spanOf(steps) {
-        var ms = 0;
-        steps.forEach(function (step) {
-            if (step.type === "fall") ms += FALL_MS;
-            else if (step.type === "merge") ms += MERGE_MS;
-            else ms += CLEAR_MS;
-        });
-        return Math.round(ms * share());
+        var was = rushing;
+        rushing = true;
+        var ms = steps.reduce(function (sum, step) {
+            return sum + costOf(step);
+        }, 0);
+        rushing = was;
+        return ms;
     }
 
     function share() {
@@ -273,7 +299,7 @@ window.Game = window.Game || {};
                 paintContents(id, null);
                 paintState(id);
                 burn();
-            }, FUSE_MS);
+            }, beat(FUSE_MS));
         }
 
         burn();
@@ -308,11 +334,20 @@ window.Game = window.Game || {};
 
     function playSteps(steps, index, chain) {
         if (index >= steps.length) {
+            if (rushing) Game.Events.emit("board:veinstep", { left: 0 });
             advance();
             return;
         }
 
         var step = steps[index];
+
+        if (rushing && veinTotal > 0) {
+            veinLeft = Math.max(0, veinLeft - costOf(step));
+            Game.Events.emit("board:veinstep", {
+                left: veinLeft / veinTotal,
+                ms: costOf(step)
+            });
+        }
 
         if (step.type === "fall") {
             paintBoard(step.board);
@@ -362,7 +397,7 @@ window.Game = window.Game || {};
             return;
         }
 
-        var hold = MERGE_MS + (made.tier >= 7 ? 110 : 0);
+        var hold = MERGE_MS + (made.tier >= 7 ? Game.Config.game.stepHigh : 0);
 
         playFuse(step, chain, function () {
             window.setTimeout(function () {
@@ -394,7 +429,9 @@ window.Game = window.Game || {};
         if (next.rush) {
             setBeat(true);
             rushQueued -= 1;
-            Game.Events.emit("board:veining", { span: spanOf(next.steps) });
+            veinTotal = spanOf(next.steps);
+            veinLeft = veinTotal;
+            Game.Events.emit("board:veining", { span: veinTotal });
         } else if (rushQueued <= 0) {
             setBeat(false);
         }

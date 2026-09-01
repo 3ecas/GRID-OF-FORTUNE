@@ -153,25 +153,68 @@ line of them runs.
 **Big merges charge the vein.** A plain three adds one, and every piece past
 three adds one more — a four adds two, a five adds three. Size is what fills
 it, so the one merge in five that is bigger than the minimum does most of the
-work. The meter under the score is the whole of it: fill it and the vein runs
-on that same drop.
+work. A full meter is a save in the bank, not a payout waiting to happen: it
+sits there, and it can sit there a long time.
+
+**It spends itself only when the board is genuinely closing in.** Where that
+line sits is measured, not guessed. Over thirty runs with the vein off, a board
+at 68% full killed nothing at all — 0% of runs ended within fifteen drops of
+first reaching it. It is not danger, it is just full-ish. At 75% it is 3%, at
+83% it is 27%, and at 90% it is 60%. So 83% is the line. Every run reaches it,
+but only about 3% of drops are spent there, which is what keeps the save rare
+without ever leaving it stranded.
+
+Firing it any earlier is what makes the game easy, and that is not a guess
+either: spending it the moment the meter filled, wherever the board happened to
+be, meant the board was simply never under pressure. Gated at 83% the pressure
+curve is indistinguishable from having no vein at all — the same share of drops
+above every fill band, and reaching 83% is still fatal 30% of the time against
+27% without it.
 
 **It runs for four seconds and the meter is the clock.** The seam pours in
 aimed — every piece lands where it finishes a run, the runs go off as fast as
 they land, and it keeps pouring, clearing, and pouring again the whole time.
-The meter runs down as it goes; when it reaches nothing the pour stops and you
-carry on. About a hundred and thirty pieces and sixty-five merges go through in
-those four seconds — better than thirty pieces a second.
+About a hundred and twenty pieces and sixty merges go through in those four
+seconds, better than thirty a second. It is deliberately not a button: the
+whole game is one question — which column — and a spend key would be a second
+one.
 
-**It clears down to a working board and then holds there.** Once the board is
-down to about a third full the pour stops taking pieces off and only puts them
-on, until it is back over that line and can clear again. It spends the whole
-four seconds either way and pours the same hundred and thirty pieces; what the
-floor stops is the pour stripping out the position a run spent three hundred
-drops building. Without it the same four seconds took a board from three-fifths
-full down to a quarter and kept going — the frenzy was eating the run. With it,
-a board at two-thirds comes back to a third and then oscillates there, measured
-live at 33–39% for the rest of the pour.
+**The meter is the clock, and it is stepped by the pour itself.** Not by a
+timer running alongside it — the board view subtracts each step's real cost as
+that step plays, so the bar reaches nothing exactly as the last piece lands.
+Estimating it instead was wrong twice over: the view holds an extra 110ms on
+merges at the top of the ladder, and the fuse trail was walking a tile at a time
+at its full 58ms because it was the one timer the shortened beat did not touch.
+Together those made the pour outlast its own meter by 1.4 seconds on average —
+the bar emptied around the three second mark and the rain kept going. Both
+constants now live in config where the pour's budget and the view's playback
+read the same numbers, and the two finish within 15ms of each other.
+
+**It pays nothing.** Not a penny for sixty merges. This is the difference
+between a save and a reward, and without it the vein is simply easy mode with a
+timer: paid at face value it lifted a median run from 54,000 to 155,000, most of
+which the player did not earn — the pour makes those merges, not you. Scores do
+still rise, from 54,000 to 93,000, but every point of that comes from surviving
+to climb further rather than from the rescue itself. The score counter does not
+move while the board is being saved, and that reads correctly.
+
+**It clears to breathing room, not to a clean board.** Once the board is down to
+about 55% the pour stops taking pieces off and only puts them on, until it is
+back over that line and can clear again. Measured live from a board at 92% full
+— deep in the range that kills three runs in five — it settles and then holds,
+oscillating in the low fifties for the rest of the pour. You come out of it
+alive and still crowded, which is the point. An earlier floor of a third left
+the board clean every time, and clean is what made it easy.
+
+**The vein finishes anything and builds only what the hand deals.** Those are
+different permissions and the difference is the whole mechanic. Finishing is
+allowed against any piece standing on the board, which is what lets it clear a
+stranded pair no deal can reach any more. Building a run from nothing is
+allowed only from the rungs the hand itself draws from — because a pour that
+may build with anything will make two of the highest piece on the board, merge
+them, make two of what *that* returns, and climb the ladder for free. Measured
+with that rule off, a single vein paid one and three-quarter million points and
+left the board fuller than it found it.
 
 **The board runs on a shortened beat while it pours.** The step timers and the
 tile animations both read `--beat`, so a fall that takes 260ms in ordinary play
@@ -182,34 +225,9 @@ drops were smearing over each other and none of them ever completed. The floor
 is one frame — at `veinRush` much below 0.15 the steps are shorter than 16ms
 and the browser cannot draw them separately.
 
-It is deliberately not a button. The whole game is one question — which column
-— and a spend key would be a second one. The pour is budgeted in watching time
-rather than in pieces, so it always runs the same four seconds however much of
-it turns out to be merges.
-
-**The vein finishes anything and builds only what the hand deals.** Those are
-different permissions and the difference is the whole mechanic. Finishing is
-allowed against any piece standing on the board, which is what lets it clear a
-stranded pair no deal can reach any more. Building a run from nothing is
-allowed only from the rungs the hand itself draws from — because a pour that
-may build with anything will make two of the highest piece on the board, merge
-them, make two of what *that* returns, and climb the ladder for free. Measured
-with that rule off, a single vein paid one and three-quarter million points and
-left the board fuller than it found it. With it on, the pour cannot manufacture
-its way upward: it only ever spends a dealt piece to take real pieces off.
-
-**A frenzy is one long chain and pays like one.** Its merges pay double. That
-is not a flourish — it is the point where the vein stops costing run length.
-Paid flat it spends high pieces the board had already climbed to and hands back
-cheap merges off the dealt rungs, and measured that way runs came in ten drops
-under a run with no vein at all. Trebled they come in no longer than doubled, so
-the third multiple is only score and it is not taken.
-
-**It never leaves you worse off, or with nothing.** A piece that finishes a run
-is always welcome; a piece that only builds one is welcome only while the board
-still has room for it, so the rescue can never be the thing that fills the
-board. When the pour stops, whatever it has left standing is what you play on,
-topped back up to a few pieces if it cleared you out entirely.
+**It never leaves you worse off.** A piece that finishes a run is always
+welcome; a piece that only builds one is welcome only while the board still has
+room for it, so the rescue can never be the thing that fills the board.
 
 **Nothing ends the game but a full board.** The vault has nothing above it, so
 it simply sits there taking a square — reaching the top is not a win, it is the
@@ -285,8 +303,9 @@ the same bot so the two columns compare like for like:
 
 Every run in both columns ended on a genuinely full board. The "now" column is
 without the vein, so the seam changes and the scoring change are read on their
-own; the vein on top of them takes the median score to about 163,000 while leaving
-run length where it was — it pays, it does not rescue.
+own; the vein on top of them takes the median score to about 93,000 and the run to
+493 drops — all of it from surviving longer, since the pour itself pays
+nothing.
 
 **The seam schedule no longer ends in a cliff.** Its last step used to double
 the rate in one move — five pieces every drop, against a hand of one, six
@@ -330,24 +349,30 @@ the first stick from 32% of the way into a run down to 14%; `dynamiteFrom` and
 specials back where they were in the shape of a run rather than on the
 scoreboard.
 
-**The vein is a payout, not a lifeline.** Over forty runs it fires about twice,
-takes the board from roughly half full down to a third and holds it there, and
-lifts the median score from 54,000 to 163,000 — while run length barely moves
-at all, 448 against 453. That split is the point, and the arming threshold is
-what buys it: at a tenth of the current `veinCharge` it fired eighteen times a
-run, score ran to seven figures and games stopped ending at all. What keeps it
-a reward rather than a crutch is that it is rare, and that it is spent on the
-score rather than on survival.
+**The vein is a save, not a payout.** Over forty runs it fires about one and a
+half times, only ever with the board around three-quarters full, and takes it
+back to roughly half. It pays nothing for the sixty merges it makes. Median
+score still moves, 54,000 to 93,000, but that is entirely the value of being
+alive longer — 493 drops against 453 — rather than anything the pour handed
+over.
 
-**Clearing a board that was not in trouble costs you.** An earlier version held
-the charge until the board crossed seven-tenths full before spending it, on the
-reasoning that a rescue should arrive when it rescues something. Firing on a
-board that is only half full instead measured runs about fifteen percent
-shorter — the pour takes off material the run had already climbed to and hands
-back merges off the low rungs, so the ladder stops climbing. Doubling what the
-pour pays is what makes it worth doing anyway; seeding the board back up
-afterwards was tried first and did nothing, which is what pointed at the real
-cause.
+**Where the danger actually is, measured.** Vein off, thirty runs, by how full
+the board is and whether the run ended within fifteen drops of first getting
+there:
+
+| board | share of drops | ran out within 15 drops |
+| --- | --- | --- |
+| 55% full | 28% | 0% |
+| 68% full | 11% | 0% |
+| 75% full | 7% | 3% |
+| 83% full | 3% | 27% |
+| 90% full | 1% | 60% |
+
+Two things fall out of this. A board at two-thirds is not in trouble, whatever
+it looks like — so a save spent there is a save wasted, and worse, it is what
+turns the game into a procession of clean boards. And the top two rows are
+narrow enough that gating on them keeps the save genuinely rare while every run
+still reaches them.
 
 ## Save data
 
