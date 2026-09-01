@@ -40,10 +40,16 @@ Game.Config = {
         fallEven: true,
 
         veinCharge: 160,
-        veinFires: 0.68,
-        veinPours: 48,
+        veinTime: 4000,
+        veinPays: 2,
+        veinFloor: 0.35,
+        veinRoom: 4,
         veinSeed: 5,
-        veinRush: 0.4,
+        veinRush: 0.15,
+
+        stepFall: 140,
+        stepMerge: 125,
+        stepClear: 240,
 
         clearColumns: false,
         clearRows: false,

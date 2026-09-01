@@ -56,6 +56,7 @@ window.Game = window.Game || {};
         if (!veinEl || !veinFillEl) return;
 
         var share = of > 0 ? Math.min(1, charge / of) : 0;
+        veinFillEl.style.transition = "";
         veinFillEl.style.width = Math.round(share * 100) + "%";
         veinEl.classList.remove("is-running");
         veinEl.classList.toggle("is-armed", !!armed);
@@ -102,10 +103,27 @@ window.Game = window.Game || {};
                 Game.Toast.float(veinEl, "Seam charged", null, "tint-star");
             });
 
-            Game.Events.on("game:vein", function () {
-                if (!veinEl) return;
+            Game.Events.on("board:veining", function (detail) {
+                if (!veinEl || !veinFillEl) return;
+
+                // the meter is the timer: it runs down over exactly as long as
+                // the pour takes to watch
+                var span = Math.max(400, Math.round(detail.span || 0));
+
                 veinEl.classList.remove("is-armed");
                 veinEl.classList.add("is-running");
+
+                veinFillEl.style.transition = "none";
+                veinFillEl.style.width = "100%";
+                void veinFillEl.offsetWidth;
+                veinFillEl.style.transition = "width " + span + "ms linear";
+                veinFillEl.style.width = "0%";
+
+                window.setTimeout(function () {
+                    if (!veinEl || !veinFillEl) return;
+                    veinFillEl.style.transition = "";
+                    veinEl.classList.remove("is-running");
+                }, span + 80);
             });
 
             Game.Events.on("board:merged", function (detail) {

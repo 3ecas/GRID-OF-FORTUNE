@@ -63,6 +63,11 @@
     color: var(--ink-faint);
 }
 
+/* While the vein pours, the board runs on a shortened beat: the step timers in
+   boardview.js and these animations read the same --beat, so the tiles finish
+   falling and clearing at the rate the pour is actually advancing rather than
+   smearing several drops deep. */
+
 /* The vein meter. Big merges fill it; it holds full until the board closes in
    far enough to be worth spending on, which is what the pulse is saying. */
 .vein {
@@ -497,21 +502,23 @@
 }
 
 .tile__art.is-falling {
-    animation: fall-in 0.26s cubic-bezier(0.45, 0, 0.6, 1);
+    animation: fall-in calc(0.26s * var(--beat, 1))
+        cubic-bezier(0.45, 0, 0.6, 1);
 }
 
 .tile.is-made {
-    animation: tile-made 0.32s cubic-bezier(0.28, 1.9, 0.5, 1);
+    animation: tile-made calc(0.32s * var(--beat, 1))
+        cubic-bezier(0.28, 1.9, 0.5, 1);
     z-index: 2;
 }
 
 .tile.is-fused {
-    animation: fused 0.16s ease-out;
+    animation: fused calc(0.16s * var(--beat, 1)) ease-out;
     z-index: 3;
 }
 
 .tile.is-fused .tile__art {
-    animation: fused-art 0.16s ease-in forwards;
+    animation: fused-art calc(0.16s * var(--beat, 1)) ease-in forwards;
 }
 
 @keyframes fused {
@@ -601,7 +608,8 @@
 }
 
 .tile.is-cleared {
-    animation: cleared 0.42s ease-out var(--wait, 0ms) both;
+    animation: cleared calc(0.42s * var(--beat, 1)) ease-out
+        calc(var(--wait, 0ms) * var(--beat, 1)) both;
     z-index: 3;
 }
 

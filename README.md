@@ -153,16 +153,39 @@ line of them runs.
 **Big merges charge the vein.** A plain three adds one, and every piece past
 three adds one more — a four adds two, a five adds three. Size is what fills
 it, so the one merge in five that is bigger than the minimum does most of the
-work. Fill the meter under the score and the vein is
-*armed*, but nothing happens yet. It holds.
+work. The meter under the score is the whole of it: fill it and the vein runs
+on that same drop.
 
-**It runs when the board closes in.** The first drop that leaves the board
-about seven-tenths full breaks it open, and for a few seconds the seam pours in
-aimed: every piece lands where it finishes a run, the runs go off as fast as
-they land, and what was a board you were about to lose on comes back at about a
-quarter full. It is deliberately not a button. The whole game is one question —
-which column — and a spend key would be a second one. Charging it is the skill;
-when it pays out is the board's business.
+**It runs for four seconds and the meter is the clock.** The seam pours in
+aimed — every piece lands where it finishes a run, the runs go off as fast as
+they land, and it keeps pouring, clearing, and pouring again the whole time.
+The meter runs down as it goes; when it reaches nothing the pour stops and you
+carry on. About a hundred and thirty pieces and sixty-five merges go through in
+those four seconds — better than thirty pieces a second.
+
+**It clears down to a working board and then holds there.** Once the board is
+down to about a third full the pour stops taking pieces off and only puts them
+on, until it is back over that line and can clear again. It spends the whole
+four seconds either way and pours the same hundred and thirty pieces; what the
+floor stops is the pour stripping out the position a run spent three hundred
+drops building. Without it the same four seconds took a board from three-fifths
+full down to a quarter and kept going — the frenzy was eating the run. With it,
+a board at two-thirds comes back to a third and then oscillates there, measured
+live at 33–39% for the rest of the pour.
+
+**The board runs on a shortened beat while it pours.** The step timers and the
+tile animations both read `--beat`, so a fall that takes 260ms in ordinary play
+takes 39ms here and finishes before the next piece lands. Getting that wrong is
+what makes a fast pour look slow: the timers alone were already advancing every
+40ms while the animations were still authored at full length, so five or six
+drops were smearing over each other and none of them ever completed. The floor
+is one frame — at `veinRush` much below 0.15 the steps are shorter than 16ms
+and the browser cannot draw them separately.
+
+It is deliberately not a button. The whole game is one question — which column
+— and a spend key would be a second one. The pour is budgeted in watching time
+rather than in pieces, so it always runs the same four seconds however much of
+it turns out to be merges.
 
 **The vein finishes anything and builds only what the hand deals.** Those are
 different permissions and the difference is the whole mechanic. Finishing is
@@ -174,6 +197,13 @@ them, make two of what *that* returns, and climb the ladder for free. Measured
 with that rule off, a single vein paid one and three-quarter million points and
 left the board fuller than it found it. With it on, the pour cannot manufacture
 its way upward: it only ever spends a dealt piece to take real pieces off.
+
+**A frenzy is one long chain and pays like one.** Its merges pay double. That
+is not a flourish — it is the point where the vein stops costing run length.
+Paid flat it spends high pieces the board had already climbed to and hands back
+cheap merges off the dealt rungs, and measured that way runs came in ten drops
+under a run with no vein at all. Trebled they come in no longer than doubled, so
+the third multiple is only score and it is not taken.
 
 **It never leaves you worse off, or with nothing.** A piece that finishes a run
 is always welcome; a piece that only builds one is welcome only while the board
@@ -255,8 +285,8 @@ the same bot so the two columns compare like for like:
 
 Every run in both columns ended on a genuinely full board. The "now" column is
 without the vein, so the seam changes and the scoring change are read on their
-own; the vein on top of them takes the median score to about 102,000 while
-adding only ten drops to the run — it pays, it does not rescue.
+own; the vein on top of them takes the median score to about 163,000 while leaving
+run length where it was — it pays, it does not rescue.
 
 **The seam schedule no longer ends in a cliff.** Its last step used to double
 the rate in one move — five pieces every drop, against a hand of one, six
@@ -300,13 +330,24 @@ the first stick from 32% of the way into a run down to 14%; `dynamiteFrom` and
 specials back where they were in the shape of a run rather than on the
 scoreboard.
 
-**The vein is a payout, not a lifeline.** Measured over forty runs it fires
-about twice, takes the board from roughly two-thirds full to a quarter, and
-close to doubles the median score — while run length moves by ten drops. That
-split is the point, and it is what the arming threshold buys: at a tenth of the
-current `veinCharge` it fired eighteen times a run, score ran to seven figures
-and games stopped ending. What makes it a reward rather than a crutch is that
-it is rare and it is spent on the score, not on survival.
+**The vein is a payout, not a lifeline.** Over forty runs it fires about twice,
+takes the board from roughly half full down to a third and holds it there, and
+lifts the median score from 54,000 to 163,000 — while run length barely moves
+at all, 448 against 453. That split is the point, and the arming threshold is
+what buys it: at a tenth of the current `veinCharge` it fired eighteen times a
+run, score ran to seven figures and games stopped ending at all. What keeps it
+a reward rather than a crutch is that it is rare, and that it is spent on the
+score rather than on survival.
+
+**Clearing a board that was not in trouble costs you.** An earlier version held
+the charge until the board crossed seven-tenths full before spending it, on the
+reasoning that a rescue should arrive when it rescues something. Firing on a
+board that is only half full instead measured runs about fifteen percent
+shorter — the pour takes off material the run had already climbed to and hands
+back merges off the low rungs, so the ladder stops climbing. Doubling what the
+pour pays is what makes it worth doing anyway; seeding the board back up
+afterwards was tried first and did nothing, which is what pointed at the real
+cause.
 
 ## Save data
 

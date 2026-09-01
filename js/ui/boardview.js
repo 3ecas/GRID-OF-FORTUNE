@@ -13,18 +13,39 @@ window.Game = window.Game || {};
     var seenThisDrop = {};
     var pending = [];
 
-    var FALL_MS = 140;
-    var MERGE_MS = 125;
-    var CLEAR_MS = 240;
+    var FALL_MS = Game.Config.game.stepFall;
+    var MERGE_MS = Game.Config.game.stepMerge;
+    var CLEAR_MS = Game.Config.game.stepClear;
     var FUSE_MS = 58;
 
     var rushing = false;
     var rushQueued = 0;
 
+    // how long a batch will take to watch, so the vein meter can run down in
+    // step with the pour rather than from the moment the model announced it
+    function spanOf(steps) {
+        var ms = 0;
+        steps.forEach(function (step) {
+            if (step.type === "fall") ms += FALL_MS;
+            else if (step.type === "merge") ms += MERGE_MS;
+            else ms += CLEAR_MS;
+        });
+        return Math.round(ms * share());
+    }
+
+    function share() {
+        var v = Game.Config.game.veinRush;
+        return typeof v === "number" ? v : 1;
+    }
+
     function beat(ms) {
-        if (!rushing) return ms;
-        var share = Game.Config.game.veinRush;
-        return Math.round(ms * (typeof share === "number" ? share : 1));
+        return rushing ? Math.max(1, Math.round(ms * share())) : ms;
+    }
+
+    // the tile animations read --beat, so they shorten with the step timers
+    function setBeat(on) {
+        rushing = on;
+        if (host) host.style.setProperty("--beat", on ? share() : 1);
     }
 
     function build() {
@@ -130,7 +151,7 @@ window.Game = window.Game || {};
             });
 
             if (landed) Game.Events.emit("board:landed", { count: landed });
-        }, FALL_MS - 60);
+        }, Math.max(1, beat(FALL_MS) - beat(60)));
     }
 
     function around(cell) {
@@ -360,7 +381,7 @@ window.Game = window.Game || {};
     function advance() {
         if (!pending.length) {
             busy = false;
-            rushing = false;
+            setBeat(false);
             paintHover();
             Game.Events.emit("board:settled", {});
             return;
@@ -371,10 +392,11 @@ window.Game = window.Game || {};
 
         var next = pending.shift();
         if (next.rush) {
-            rushing = true;
+            setBeat(true);
             rushQueued -= 1;
+            Game.Events.emit("board:veining", { span: spanOf(next.steps) });
         } else if (rushQueued <= 0) {
-            rushing = false;
+            setBeat(false);
         }
 
         playSteps(next.steps, 0, 0);
@@ -438,9 +460,9 @@ window.Game = window.Game || {};
                 litCell = -1;
                 busy = false;
                 pending = [];
-                rushing = false;
                 rushQueued = 0;
                 build();
+                setBeat(false);
             });
 
             Game.Events.on("board:steps", function (detail) {
