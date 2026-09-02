@@ -184,6 +184,8 @@ window.Game = window.Game || {};
             '<button type="button" class="word word--quiet" data-sound' +
             ' aria-label="Sound"></button>' +
             "</nav>" +
+            '<button type="button" class="how__ask" id="howBtn"' +
+            ' aria-label="How to play">!</button>' +
             "</div>";
 
         menuHost.classList.add("is-open");
@@ -225,6 +227,9 @@ window.Game = window.Game || {};
 
             if (menuHost) {
                 menuHost.addEventListener("click", function (event) {
+                    if (event.target.closest("#howBtn")) {
+                        return Game.HowTo && Game.HowTo.open();
+                    }
                     if (event.target.closest("#goOn")) {
                         if (!Game.Round.resume()) Game.Round.start();
                     } else if (event.target.closest("#playNew")) {

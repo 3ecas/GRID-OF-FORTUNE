@@ -195,6 +195,173 @@
         );
 }
 
+/* ---- how to play ------------------------------------------------------- */
+
+/* the ! sits under the menu, quiet until you want it */
+.how__ask {
+    width: 26px;
+    height: 26px;
+    margin-top: 18px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    font: inherit;
+    font-size: 0.86rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--ink-faint);
+    background: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: color 0.16s ease, background 0.16s ease, transform 0.16s ease;
+}
+
+.how__ask:hover,
+.how__ask:focus-visible {
+    color: var(--ink);
+    background: #fff;
+    transform: translateY(-1px);
+}
+
+.how {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: none;
+    place-items: center;
+    padding: 20px;
+    background: rgba(38, 34, 28, 0.34);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+
+.how.is-open {
+    display: grid;
+    animation: over-in 0.22s ease;
+}
+
+.how__card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: min(330px, 100%);
+    padding: 18px 20px 16px;
+    border-radius: var(--radius-lg);
+    background: var(--panel);
+    box-shadow: var(--shadow-2, 0 18px 40px rgba(0, 0, 0, 0.18));
+    text-align: center;
+}
+
+.how__shut {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    font-size: 1.15rem;
+    line-height: 1;
+    color: var(--ink-faint);
+    background: none;
+    cursor: pointer;
+    transition: color 0.16s ease, background 0.16s ease;
+}
+
+.how__shut:hover,
+.how__shut:focus-visible {
+    color: var(--ink);
+    background: var(--panel-soft);
+}
+
+/* the little board each mechanic is played out on */
+.how__stage {
+    display: grid;
+    grid-template-columns: repeat(var(--how-cols, 5), 1fr);
+    gap: 5px;
+    width: 100%;
+    padding: 9px;
+    border-radius: var(--radius-sm);
+    background: var(--panel-soft);
+    cursor: pointer;
+}
+
+.how__cell {
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.42);
+    transition: background 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
+}
+
+.how__cell.is-full {
+    background: #fff;
+}
+
+.how__cell svg.icon {
+    width: 78%;
+    height: 78%;
+}
+
+/* a piece on its way in */
+.how__cell.is-lit {
+    background: #fff;
+    transform: scale(1.06);
+    box-shadow: 0 0 0 2px var(--accent-deep);
+}
+
+/* a piece on its way out */
+.how__cell.is-going {
+    background: var(--accent, #dfe8d8);
+    transform: scale(0.82);
+    opacity: 0.45;
+}
+
+.how__title {
+    margin: 14px 0 0;
+    font-size: 1.02rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+}
+
+.how__line {
+    margin: 5px 0 0;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    color: var(--ink-faint);
+}
+
+.how__dots {
+    display: flex;
+    gap: 7px;
+    margin-top: 15px;
+}
+
+.how__dot {
+    width: 7px;
+    height: 7px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--ink-faint);
+    opacity: 0.28;
+    cursor: pointer;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.how__dot:hover {
+    opacity: 0.6;
+}
+
+.how__dot.is-here {
+    opacity: 1;
+    transform: scale(1.25);
+}
+
 .menu.is-open {
     display: grid;
     animation: over-in 0.25s ease;
