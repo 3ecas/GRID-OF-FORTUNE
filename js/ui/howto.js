@@ -63,10 +63,12 @@ window.Game = window.Game || {};
         {
             title: "One merge sets off the next",
             line: "What a run hands back can finish another. That is a chain, and it pays more each link.",
-            hold: 560,
+            hold: 520,
             frames: [
                 board({ 15: "rock", 16: "rock", 17: "dirt", 18: "dirt" }),
                 board({ 4: "dirt", 15: "rock", 16: "rock", 17: "dirt", 18: "dirt" }, [], [4]),
+                board({ 9: "dirt", 15: "rock", 16: "rock", 17: "dirt", 18: "dirt" }, [], [9]),
+                board({ 14: "dirt", 15: "rock", 16: "rock", 17: "dirt", 18: "dirt" }, [], [14]),
                 board({ 15: "rock", 16: "rock", 17: "dirt", 18: "dirt", 19: "dirt" }),
                 board({ 15: "rock", 16: "rock", 17: "dirt", 18: "dirt", 19: "dirt" }, [17, 18, 19]),
                 board({ 15: "rock", 16: "rock", 17: "rock" }, [], [17]),
@@ -78,43 +80,44 @@ window.Game = window.Game || {};
         {
             title: "The seam gives way",
             line: "Every few drops, pieces fall in on their own - into columns you did not pick.",
-            hold: 560,
+            hold: 540,
             frames: [
                 board({ 16: "dirt", 18: "rock" }),
                 board({ 1: "coal", 3: "dirt", 16: "dirt", 18: "rock" }, [], [1, 3]),
-                board({ 6: "coal", 8: "dirt", 16: "dirt", 18: "rock" }),
+                board({ 6: "coal", 8: "dirt", 16: "dirt", 18: "rock" }, [], [6, 8]),
+                board({ 11: "coal", 13: "dirt", 16: "dirt", 18: "rock" }, [], [11, 13]),
                 board({ 11: "coal", 13: "dirt", 16: "dirt", 18: "rock" }),
-                board({ 15: "coal", 16: "dirt", 17: "dirt", 18: "rock" }),
-                board({ 15: "coal", 16: "dirt", 17: "dirt", 18: "rock" })
+                board({ 11: "coal", 13: "dirt", 16: "dirt", 18: "rock" })
             ]
         },
         {
             title: "Dynamite is the way out",
-            line: "It joins nothing. A merge landing beside it sets it off, and everything around it goes.",
-            hold: 620,
+            line: "It joins nothing. A merge landing beside it sets it off, and the eight squares around it go with it.",
+            hold: 560,
             frames: [
-                board({ 15: "dirt", 16: "dirt", 18: "dynamite", 13: "rock" }),
-                board({ 2: "dirt", 15: "dirt", 16: "dirt", 18: "dynamite", 13: "rock" }, [], [2]),
-                board({ 12: "dirt", 15: "dirt", 16: "dirt", 18: "dynamite", 13: "rock" }),
-                board({ 15: "dirt", 16: "dirt", 17: "dirt", 18: "dynamite", 13: "rock" }),
-                board({ 15: "dirt", 16: "dirt", 17: "dirt", 18: "dynamite", 13: "rock" }, [15, 16, 17], [18]),
-                board({ 16: "rock", 18: "dynamite", 13: "rock" }, [13, 16, 17, 18, 19]),
-                board({}),
-                board({})
+                board({ 13: "rock", 14: "rock", 15: "dirt", 16: "dirt", 18: "dynamite", 19: "coal" }),
+                board({ 2: "dirt", 13: "rock", 14: "rock", 15: "dirt", 16: "dirt", 18: "dynamite", 19: "coal" }, [], [2]),
+                board({ 12: "dirt", 13: "rock", 14: "rock", 15: "dirt", 16: "dirt", 18: "dynamite", 19: "coal" }, [], [12]),
+                board({ 13: "rock", 14: "rock", 15: "dirt", 16: "dirt", 17: "dirt", 18: "dynamite", 19: "coal" }),
+                board({ 13: "rock", 14: "rock", 15: "dirt", 16: "dirt", 17: "dirt", 18: "dynamite", 19: "coal" }, [15, 16, 17], [18]),
+                board({ 13: "rock", 14: "rock", 16: "rock", 18: "dynamite", 19: "coal" }, [], [18]),
+                board({ 13: "rock", 14: "rock", 16: "rock", 18: "dynamite", 19: "coal" }, [13, 14, 18, 19]),
+                board({ 16: "rock" }),
+                board({ 16: "rock" })
             ]
         },
         {
             title: "A star draws out a kind",
             line: "Wake it with a merge, name a piece, and every one of them is pulled off the board.",
-            hold: 620,
+            hold: 560,
             frames: [
-                board({ 5: "coal", 9: "coal", 13: "coal", 15: "dirt", 16: "dirt", 18: "lodestone" }),
-                board({ 2: "dirt", 5: "coal", 9: "coal", 13: "coal", 15: "dirt", 16: "dirt", 18: "lodestone" }, [], [2]),
-                board({ 12: "dirt", 5: "coal", 9: "coal", 13: "coal", 15: "dirt", 16: "dirt", 18: "lodestone" }),
-                board({ 5: "coal", 9: "coal", 13: "coal", 15: "dirt", 16: "dirt", 17: "dirt", 18: "lodestone" }),
-                board({ 5: "coal", 9: "coal", 13: "coal", 15: "dirt", 16: "dirt", 17: "dirt", 18: "lodestone" }, [15, 16, 17], [18]),
-                board({ 5: "coal", 9: "coal", 13: "coal", 16: "rock" }, [], [5, 9, 13]),
-                board({ 5: "coal", 9: "coal", 13: "coal", 16: "rock" }, [5, 9, 13]),
+                board({ 9: "coal", 14: "coal", 15: "dirt", 16: "dirt", 18: "lodestone", 19: "coal" }),
+                board({ 2: "dirt", 9: "coal", 14: "coal", 15: "dirt", 16: "dirt", 18: "lodestone", 19: "coal" }, [], [2]),
+                board({ 12: "dirt", 9: "coal", 14: "coal", 15: "dirt", 16: "dirt", 18: "lodestone", 19: "coal" }, [], [12]),
+                board({ 9: "coal", 14: "coal", 15: "dirt", 16: "dirt", 17: "dirt", 18: "lodestone", 19: "coal" }),
+                board({ 9: "coal", 14: "coal", 15: "dirt", 16: "dirt", 17: "dirt", 18: "lodestone", 19: "coal" }, [15, 16, 17], [18]),
+                board({ 9: "coal", 14: "coal", 16: "rock", 18: "lodestone", 19: "coal" }, [], [9, 14, 19]),
+                board({ 9: "coal", 14: "coal", 16: "rock", 18: "lodestone", 19: "coal" }, [9, 14, 18, 19]),
                 board({ 16: "rock" }),
                 board({ 16: "rock" })
             ]
