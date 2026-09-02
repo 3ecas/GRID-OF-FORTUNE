@@ -145,9 +145,30 @@ window.Game = window.Game || {};
         var save = Game.Round.peek();
         var going = Game.Round.saved();
 
+        // A strip of the ladder itself, dug from the bottom up: what the run
+        // starts on, a couple of rungs it passes through, and the thing at the
+        // top it is aiming at. Struck through once, it says the whole game
+        // without a line of explanation.
+        var ladder = Game.Pieces.list;
+        var seam = [0, 6, 13, 22, ladder.length - 1]
+            .map(function (i) { return ladder[i]; })
+            .filter(Boolean)
+            .map(function (piece) {
+                var found = Game.Round.found(piece.id);
+                return '<span class="seam__bit' + (found ? " is-found" : "") +
+                       '" title="' + piece.name + '">' +
+                       Game.Icons.svg(piece.icon) + "</span>";
+            })
+            .join('<span class="seam__gap"></span>');
+
         menuHost.innerHTML =
             '<div class="menu__inner">' +
-            '<span class="menu__title">Grid of Fortune</span>' +
+            '<div class="menu__mark">' +
+            '<span class="menu__grid">Grid</span>' +
+            '<span class="menu__of">of</span>' +
+            '<span class="menu__fortune">Fortune</span>' +
+            "</div>" +
+            '<div class="seam">' + seam + "</div>" +
             (save.best
                 ? '<span class="menu__best">Best ' + save.best + "</span>"
                 : '<span class="menu__best">Three of a kind, touching</span>') +

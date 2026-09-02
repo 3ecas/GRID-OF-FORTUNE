@@ -248,16 +248,47 @@ body {
     font-size: 15px;
     line-height: 1.55;
     color: var(--ink);
+    /* The page is a cut through the ground: daylight at the top, topsoil under
+       it, then clay, then the rock the good things come out of. It is the
+       ladder stood on end - you are looking at where the run is going.
+
+       Kept pale and soft on purpose. Hard-edged seam lines read as banding
+       rather than geology, and a cold grey floor leaves the hand sitting in
+       mud, so the layers are feathered over several percent and the bottom
+       stays warm. */
     background: var(--bg);
-    background-image: radial-gradient(
-            circle at 12% 8%,
-            rgba(255, 255, 255, 0.7),
-            transparent 42%
+    background-image:
+        /* light coming in at the surface */
+        radial-gradient(120% 44% at 50% -8%, rgba(255, 255, 255, 0.9), transparent 72%),
+        radial-gradient(62% 26% at 88% 0%, rgba(232, 240, 222, 0.6), transparent 74%),
+        /* mineral flecks caught in the deeper layers */
+        radial-gradient(circle at 15% 64%, rgba(176, 138, 99, 0.1), transparent 11%),
+        radial-gradient(circle at 84% 73%, rgba(140, 146, 157, 0.09), transparent 10%),
+        radial-gradient(circle at 31% 88%, rgba(207, 156, 51, 0.08), transparent 9%),
+        radial-gradient(circle at 70% 94%, rgba(126, 138, 166, 0.08), transparent 10%),
+        /* where one layer gives way to the next, feathered so it is a hint */
+        linear-gradient(
+            180deg,
+            transparent 30%,
+            rgba(150, 121, 88, 0.07) 35%,
+            transparent 40%,
+            transparent 55%,
+            rgba(126, 130, 138, 0.06) 60%,
+            transparent 65%,
+            transparent 78%,
+            rgba(110, 116, 126, 0.05) 83%,
+            transparent 88%
         ),
-        radial-gradient(
-            circle at 88% 0%,
-            rgba(232, 240, 222, 0.75),
-            transparent 46%
+        /* the strata themselves */
+        linear-gradient(
+            180deg,
+            #fdfaf4 0%,
+            #f8f2e6 24%,
+            #f1e7d6 42%,
+            #eadfcb 60%,
+            #e4dac6 76%,
+            #ded5c4 90%,
+            #d8d1c3 100%
         );
     background-attachment: fixed;
     -webkit-font-smoothing: antialiased;

@@ -180,23 +180,19 @@
     place-items: center;
     padding: 20px;
 
+    /* the same ground the game is dug out of, lit from the top */
     background:
-        radial-gradient(
-            120% 80% at 50% 8%,
-            #fffdf8 0%,
-            rgba(255, 253, 248, 0) 62%
-        ),
-        radial-gradient(
-            90% 60% at 12% 100%,
-            rgba(226, 183, 92, 0.16) 0%,
-            rgba(226, 183, 92, 0) 70%
-        ),
-        radial-gradient(
-            90% 60% at 88% 96%,
-            rgba(126, 138, 166, 0.14) 0%,
-            rgba(126, 138, 166, 0) 70%
-        ),
-        linear-gradient(180deg, #f7f2e8 0%, #ece2cf 100%);
+        radial-gradient(110% 44% at 50% -4%, #fffdf8 0%, rgba(255, 253, 248, 0) 66%),
+        radial-gradient(70% 34% at 14% 104%, rgba(207, 156, 51, 0.16) 0%, rgba(207, 156, 51, 0) 72%),
+        radial-gradient(70% 34% at 86% 100%, rgba(126, 138, 166, 0.15) 0%, rgba(126, 138, 166, 0) 72%),
+        linear-gradient(
+            180deg,
+            #fbf7ef 0%,
+            #f4eddf 30%,
+            #e9dcc6 56%,
+            #ddd6c6 78%,
+            #cdcbc7 100%
+        );
 }
 
 .menu.is-open {
@@ -213,12 +209,82 @@
     text-align: center;
 }
 
-.menu__title {
-    font-size: 1.6rem;
+.menu__mark {
+    display: grid;
+    justify-items: center;
+    gap: 0;
+    margin-bottom: 2px;
+}
+
+.menu__grid,
+.menu__fortune {
     font-weight: 800;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
+    line-height: 0.94;
+    letter-spacing: -0.035em;
     color: var(--ink);
+}
+
+.menu__grid {
+    font-size: 3.1rem;
+}
+
+/* the small word does the work: it sets the two big ones apart and gives the
+   mark somewhere to breathe, which one long line never had */
+.menu__of {
+    margin: 2px 0 1px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.42em;
+    text-indent: 0.42em;
+    text-transform: uppercase;
+    color: var(--i-gold, #cf9c33);
+}
+
+.menu__fortune {
+    font-size: 2.35rem;
+    letter-spacing: 0.01em;
+}
+
+/* a seam of the ladder: where a run starts, what it passes, what it is for */
+.seam {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 12px 0 2px;
+    padding: 7px 11px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Unfound rungs are greyed rather than hidden, so the strip reads as art on a
+   first run instead of five blanks - and fills in with colour as you turn each
+   one up. */
+.seam__bit {
+    display: grid;
+    place-items: center;
+    width: 27px;
+    height: 27px;
+    opacity: 0.55;
+    filter: grayscale(1) contrast(0.85);
+    transition: opacity 0.25s ease, filter 0.25s ease;
+}
+
+.seam__bit.is-found {
+    opacity: 1;
+    filter: none;
+}
+
+.seam__bit svg.icon {
+    width: 100%;
+    height: 100%;
+}
+
+.seam__gap {
+    width: 14px;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    opacity: 0.16;
 }
 
 .menu__best {

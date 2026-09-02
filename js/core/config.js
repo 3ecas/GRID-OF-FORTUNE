@@ -39,6 +39,9 @@ Game.Config = {
 
         fallEven: true,
 
+        liveArt: ["dirt"],
+        liveArtWait: 1500,
+
         clearColumns: false,
         clearRows: false,
         clearBonus: 3,
