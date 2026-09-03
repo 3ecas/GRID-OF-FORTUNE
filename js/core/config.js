@@ -39,7 +39,7 @@ Game.Config = {
 
         fallEven: true,
 
-        liveArt: [],
+        liveArt: true,      // read ICONS/EXPORT/ on every load
         liveArtWait: 1500,
 
         clearColumns: false,

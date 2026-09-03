@@ -10,6 +10,11 @@ window.Game = window.Game || {};
    Files there are named by ladder position — 01_DIRT.svg, 02_ROCK.svg — so the
    folder reads in the order the game plays. The bare name still works.
 
+   With liveArt: true the page asks the server for the folder itself and reads
+   whatever SVGs are in it, so a new piece needs no config entry — draw it,
+   export it, refresh. A host that does not list directories (a built site)
+   answers with nothing usable, and the art baked into icons.js stands.
+
    Whatever the folder does not have keeps the art baked into icons.js. That is what
    the iOS build ships, so turning liveArt off in config changes nothing about
    how the game looks — it only stops it looking for files.
@@ -50,6 +55,15 @@ window.Game = window.Game || {};
             if (list[i].icon === icon) { tier = list[i].tier; break; }
         }
         return (tier < 10 ? "0" : "") + tier + "_" + icon.toUpperCase();
+    }
+
+    /* 01_DIRT.svg -> dirt. The ladder number is decoration, and a piece filed
+       under another name answers to both, so STONE.svg and ROCK.svg reach rock. */
+    function iconFor(file) {
+        var stem = file.replace(/\.svg$/i, "").replace(/^\d+[_-]/, "").toLowerCase();
+        if (Game.Icons.has(stem)) return stem;
+        var piece = Game.Pieces && Game.Pieces.byId(stem);
+        return piece && piece.icon ? piece.icon : null;
     }
 
     function box(svg) {
@@ -163,6 +177,26 @@ window.Game = window.Game || {};
         }).catch(function () { return null; });
     }
 
+    /* Ask the server what is in the folder. A plain static server answers a
+       request for a directory with an HTML index, which is all this needs — no
+       manifest to keep up to date and no list in config. Anything else, and the
+       page quietly keeps the baked-in art. */
+    function fromFolder() {
+        return fetchText(FOLDER).then(function (html) {
+            var wanted = {};
+            if (!html) return wanted;
+
+            var link = /href="([^"]+\.svg)"/gi;
+            var hit;
+            while ((hit = link.exec(html))) {
+                var file = decodeURIComponent(hit[1].split("/").pop());
+                var key = iconFor(file);
+                if (key && !wanted[key]) wanted[key] = [file.replace(/\.svg$/i, "")];
+            }
+            return wanted;
+        });
+    }
+
     Game.LiveArt = {
         // resolve when every piece that has a file has been swapped in
         load: function () {
@@ -171,12 +205,13 @@ window.Game = window.Game || {};
                 return Promise.resolve(0);
             }
 
-            // Naming the pieces you have art for keeps this silent. Asking for
-            // all thirty-five and seeing what answers works too, but every
-            // piece without a file is a 404 in the console, which is a lot of
-            // red for a thing that is working correctly.
-            var asked = Array.isArray(s.liveArt) ? s.liveArt : Game.Icons.keys();
+            // liveArt: true reads the folder. An array instead names the pieces
+            // to look for, which is the way to run this on a host that will not
+            // list a directory — every piece without a file is a 404 in the
+            // console, so naming them keeps it quiet.
+            if (!Array.isArray(s.liveArt)) return fromFolder().then(read);
 
+            var asked = s.liveArt;
             var wanted = {};
             asked.forEach(function (name) {
                 var key = name.toLowerCase();
@@ -200,6 +235,12 @@ window.Game = window.Game || {};
                 wanted[piece.icon].push(piece.id.toUpperCase(), piece.id);
             });
 
+            return read(wanted);
+        }
+    };
+
+    /* fetch each candidate name in turn and swap in the first that answers */
+    function read(wanted) {
             var swapped = 0;
             var jobs = Object.keys(wanted).map(function (key) {
                 var names = wanted[key];
@@ -228,6 +269,5 @@ window.Game = window.Game || {};
                 }
                 return swapped;
             });
-        }
-    };
+    }
 })();

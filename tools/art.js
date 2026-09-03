@@ -247,6 +247,48 @@ if (flags.has("--tokens")) {
     }
 }
 
+/* ---------- keep whatever the root <svg> was painting ----------------------
+   The drawing is lifted out of its <svg> element, and everything that element
+   was setting for the whole picture goes with it. Two things then bite:
+
+     - SVG's own default fill is black, so a shape the artist never gave a fill
+       is meant to come out black. Inlined here it lands inside .icon--art,
+       which sets fill:none, and the shape simply disappears — usually the one
+       silhouette the whole piece is built on.
+     - Affinity and Illustrator both put fill-rule:evenodd on the root, and a
+       compound path drawn with holes needs it.
+
+   Both are fixed by putting the root's paint back onto the wrapper group.  */
+const ROOT_PAINT = ["fill", "fill-rule", "fill-opacity", "clip-rule", "stroke",
+                    "stroke-width", "stroke-linecap", "stroke-linejoin",
+                    "stroke-miterlimit", "opacity"];
+
+function rootPaint(text, at) {
+    const tag = text.slice(at, text.indexOf(">", at) + 1);
+    const paint = {};
+
+    const style = (tag.match(/style\s*=\s*"([^"]*)"/i) || [, ""])[1];
+    style.split(";").forEach(d => {
+        const i = d.indexOf(":");
+        if (i === -1) return;
+        const k = d.slice(0, i).trim();
+        if (ROOT_PAINT.indexOf(k) !== -1) paint[k] = d.slice(i + 1).trim();
+    });
+
+    ROOT_PAINT.forEach(k => {
+        const m = tag.match(new RegExp("\\s" + k + '\\s*=\\s*"([^"]*)"', "i"));
+        if (m) paint[k] = m[1];
+    });
+
+    if (!paint.fill) paint.fill = "#000";        // SVG's own default, made explicit
+    return paint;
+}
+
+const paint = rootPaint(svg, open);
+const painted = Object.keys(paint)
+    .map(k => " " + k + '="' + paint[k] + '"')
+    .join("");
+
 /* ---------- fit the canvas into the 24x24 box ------------------------------
    The canvas is the frame, not the drawing, and the scale is a fixed number
    rather than one fitted to this piece — that is what keeps the set in
@@ -271,7 +313,7 @@ const ty = (BOX - box.h * scale) / 2 - box.y * scale + (nudge[1] || 0);
 const round = n => (Math.round(n * 1e4) / 1e4).toString();
 
 const transform = "translate(" + round(tx) + " " + round(ty) + ") scale(" + round(scale) + ")";
-const inner = '<g transform="' + transform + '">' + body + "</g>";
+const inner = '<g transform="' + transform + '"' + painted + ">" + body + "</g>";
 
 /* ---------- emit it the way icons.js is written ---------------------------- */
 function asJs(str) {
