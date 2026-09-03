@@ -4,8 +4,9 @@
    -----------------------------------------------------------------------------
      npm run art:watch
 
-   Watches IMG/ and re-imports a piece the moment you export it from
-   Illustrator. Export, alt-tab, refresh — that is the whole loop.
+   Watches ICONS/EXPORT/ and re-imports a piece the moment you export it from
+   the drawing app. Export, alt-tab, refresh — that is the whole loop.
+   Pass another folder as an argument to watch that one instead.
 
    What it cannot do is press Export for you. Saving a .ai writes Illustrator's
    own format, which nothing here can read; the SVG only appears when you export
@@ -17,12 +18,14 @@
    of times and the iOS build has to carry every icon anyway. Regenerating on
    export gets the convenience without giving that up.
 
-   Naming: the file is matched against the art keys in icons.js first, then
-   against piece ids, so both STONE.svg and ROCK.svg land on the `rock` icon.
+   Naming: a leading ladder number is ignored, then the file is matched against
+   the art keys in icons.js and then against piece ids — so 02_ROCK.svg,
+   ROCK.svg and STONE.svg all land on the `rock` icon.
 
-   Per-piece tweaks live in IMG/art.json so a re-export does not undo them:
+   Per-piece tweaks live in art.json beside the art so a re-export does not undo
+   them, keyed by the file name as exported:
 
-     { "DIRT.svg": { "nudge": [0, 1.3], "zoom": 1.05, "tokens": false } }
+     { "01_DIRT.svg": { "nudge": [0, 1.3], "zoom": 1.05, "tokens": false } }
    ============================================================================= */
 
 const fs = require("fs");
@@ -31,7 +34,7 @@ const vm = require("vm");
 const { spawnSync } = require("child_process");
 
 const ROOT = path.join(__dirname, "..");
-const DIR = process.argv[2] || path.join(ROOT, "IMG");
+const DIR = process.argv[2] || path.join(ROOT, "ICONS", "EXPORT");
 const ART = path.join(ROOT, "tools", "art.js");
 const OPTS = path.join(DIR, "art.json");
 
@@ -56,7 +59,10 @@ function knownIcons() {
 const { art, byPiece } = knownIcons();
 
 function iconFor(file) {
-    const stem = path.basename(file).replace(/\.svg$/i, "").toLowerCase();
+    const stem = path.basename(file)
+        .replace(/\.svg$/i, "")
+        .replace(/^\d+[_-]/, "")                    // 02_ROCK.svg -> ROCK
+        .toLowerCase();
     if (art.has(stem)) return stem;                 // ROCK.svg  -> rock
     if (byPiece[stem]) return byPiece[stem];        // STONE.svg -> rock
     return null;
@@ -82,8 +88,9 @@ function bring(file) {
 
     if (!icon) {
         console.error("  ? " + base + " — no icon called \"" +
-            base.replace(/\.svg$/i, "").toLowerCase() + "\". Name it after the piece " +
-            "(DIRT.svg, STONE.svg) or after the art key in icons.js.");
+            base.replace(/\.svg$/i, "").replace(/^\d+[_-]/, "").toLowerCase() +
+            "\". Name it after the piece (01_DIRT.svg, DIRT.svg, STONE.svg) or after " +
+            "the art key in icons.js.");
         return;
     }
 

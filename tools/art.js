@@ -28,6 +28,13 @@ const fs = require("fs");
 const path = require("path");
 
 const BOX = 24;                                   // the viewBox every icon uses
+const CANVAS = 512;                               // the square the art is drawn on
+const FIT = 0.9;                                  // how much of the box that canvas fills
+
+/* Every piece is drawn on the same 512x512 canvas and dropped into the box at
+   one fixed scale, so a small gem stays small beside a big rock instead of both
+   being stretched to fill the tile. FIT leaves a margin so nothing touches the
+   edge of the cell. Change FIT and re-import the set; never for one piece. */
 const ICONS = path.join(__dirname, "..", "js", "ui", "icons.js");
 
 /* ---------- arguments ------------------------------------------------------ */
@@ -240,8 +247,25 @@ if (flags.has("--tokens")) {
     }
 }
 
-/* ---------- fit the artboard into the 24x24 box ---------------------------- */
-const scale = (BOX / Math.max(box.w, box.h)) * zoom;
+/* ---------- fit the canvas into the 24x24 box ------------------------------
+   The canvas is the frame, not the drawing, and the scale is a fixed number
+   rather than one fitted to this piece — that is what keeps the set in
+   proportion with itself.
+
+   A square export carries the whole canvas, so its own size is the frame,
+   whatever pixel size the document happens to be. A transparent export cropped
+   to the artwork has thrown the frame away; CANVAS stands in for it, which
+   still gives the right size, and centring puts the piece back where art drawn
+   in the middle of the canvas belongs.                                      */
+const square = Math.abs(box.w - box.h) <= 0.5;
+const canvas = square ? Math.max(box.w, box.h) : CANVAS;
+const scale = (BOX / canvas) * FIT * zoom;
+
+if (!square) {
+    console.error("  . export is " + box.w + "x" + box.h + ", cropped to the artwork rather than the");
+    console.error("    whole canvas, so it is placed as " + CANVAS + "x" + CANVAS + " art and centred. Export");
+    console.error("    the canvas instead if a piece is meant to sit off-centre.");
+}
 const tx = (BOX - box.w * scale) / 2 - box.x * scale + (nudge[0] || 0);
 const ty = (BOX - box.h * scale) / 2 - box.y * scale + (nudge[1] || 0);
 const round = n => (Math.round(n * 1e4) / 1e4).toString();
@@ -260,7 +284,7 @@ function asJs(str) {
 const entry = "        " + name + ":\n" + asJs(inner) + ",";
 
 if (!flags.has("--write")) {
-    console.error("\n" + src + "  artboard " + box.w + "x" + box.h + "  ->  24x24 at scale " + round(scale));
+    console.error("\n" + src + "  canvas " + canvas + "  ->  24x24 at scale " + round(scale));
     console.error("paste this into the `art` map in js/ui/icons.js:\n");
     console.log(entry);
     process.exit(0);
@@ -279,4 +303,4 @@ if (end === -1) { console.error("could not find the end of the " + name + " entr
 
 file = file.slice(0, start) + entry + file.slice(end + 3 - 1);
 fs.writeFileSync(ICONS, file);
-console.error(src + "  ->  icons.js art." + name + "  (artboard " + box.w + "x" + box.h + ", scale " + round(scale) + ")");
+console.error(src + "  ->  icons.js art." + name + "  (canvas " + canvas + ", scale " + round(scale) + ")");

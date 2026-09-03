@@ -3,11 +3,14 @@ window.Game = window.Game || {};
 /* =============================================================================
    LIVE ART
    -----------------------------------------------------------------------------
-   Reads the piece art straight out of IMG/ when the game boots, so exporting an
-   SVG from Illustrator and refreshing the page is the whole loop. No build step
-   and no terminal, which matters when the editor does not have one.
+   Reads the piece art straight out of ICONS/EXPORT/ when the game boots, so
+   exporting an SVG and refreshing the page is the whole loop. No build step and
+   no terminal, which matters when the editor does not have one.
 
-   Whatever IMG/ does not have keeps the art baked into icons.js. That is what
+   Files there are named by ladder position — 01_DIRT.svg, 02_ROCK.svg — so the
+   folder reads in the order the game plays. The bare name still works.
+
+   Whatever the folder does not have keeps the art baked into icons.js. That is what
    the iOS build ships, so turning liveArt off in config changes nothing about
    how the game looks — it only stops it looking for files.
 
@@ -19,8 +22,13 @@ window.Game = window.Game || {};
    ============================================================================= */
 
 (function () {
-    var FOLDER = "IMG/";
+    var FOLDER = "ICONS/EXPORT/";
     var BOX = 24;
+
+    // the same canvas and fit tools/art.js uses, so a piece looks identical
+    // whether it was read from the folder or baked into icons.js
+    var CANVAS = 512;
+    var FIT = 0.9;
 
     var PAINT = [
         "fill", "fill-opacity", "fill-rule",
@@ -32,6 +40,17 @@ window.Game = window.Game || {};
                  "stroke-width": "1px", "stroke-linecap": "butt",
                  "stroke-linejoin": "miter", "stroke-miterlimit": "4",
                  "stroke-dasharray": "none", "stroke-opacity": "1", "opacity": "1" };
+
+    /* 01_DIRT.svg, 02_ROCK.svg: the ladder position the piece sits at, so the
+       export folder sorts the way the game plays. Off-ladder pieces are 00. */
+    function numbered(icon) {
+        var list = Game.Pieces ? Game.Pieces.list : [];
+        var tier = 0;
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].icon === icon) { tier = list[i].tier; break; }
+        }
+        return (tier < 10 ? "0" : "") + tier + "_" + icon.toUpperCase();
+    }
 
     function box(svg) {
         var vb = (svg.getAttribute("viewBox") || "").trim().split(/[\s,]+/).map(Number);
@@ -126,7 +145,10 @@ window.Game = window.Game || {};
 
         markup = namespaceIds(markup.trim(), key);
 
-        var scale = BOX / Math.max(b.w, b.h);
+        // a square export carries the whole canvas; one cropped to the artwork
+        // has lost it, and CANVAS stands in — see tools/art.js
+        var canvas = Math.abs(b.w - b.h) <= 0.5 ? Math.max(b.w, b.h) : CANVAS;
+        var scale = (BOX / canvas) * FIT;
         var tx = (BOX - b.w * scale) / 2 - b.x * scale;
         var ty = (BOX - b.h * scale) / 2 - b.y * scale;
         var round = function (n) { return Math.round(n * 1e4) / 1e4; };
@@ -167,7 +189,7 @@ window.Game = window.Game || {};
                         "live art: there is no piece called \"" + name + "\" to replace");
                     return;
                 }
-                wanted[key] = [key.toUpperCase(), key];
+                wanted[key] = [numbered(key), key.toUpperCase(), key];
             });
             // a piece whose art is filed under another name should answer to
             // both, so STONE.svg and ROCK.svg each reach art.rock
