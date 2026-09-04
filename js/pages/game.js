@@ -2,12 +2,16 @@ window.Game = window.Game || {};
 
 document.addEventListener("DOMContentLoaded", function () {
     function boot() {
+        Game.Backdrop.init();
         Game.Icons.hydrate(document);
         Game.Sound.start();
 
         Game.BoardView.init();
         Game.RoundView.init();
         Game.ScoreView.init();
+
+        Game.Charges.init();
+        Game.ChargeView.init();
 
         Game.RoundView.menu();
     }

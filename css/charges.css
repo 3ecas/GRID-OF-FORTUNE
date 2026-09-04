@@ -1,0 +1,113 @@
+/* The two dials that flank the hand. Quiet by design: a disc that fills, the
+   piece on top, and a ring that only brightens once it is worth pressing. */
+
+.tray {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    justify-items: center;
+    gap: 14px;
+    width: 100%;
+}
+
+.tray .hand { grid-column: 2; }
+.tray .dial--star { justify-self: end; }
+.tray .dial--bomb { justify-self: start; }
+
+.dial {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    border: var(--ring) solid var(--line);
+    border-radius: 50%;
+    background: var(--panel-soft);
+    cursor: not-allowed;
+    transition: border-color 0.22s ease, box-shadow 0.22s ease,
+        transform 0.14s ease;
+}
+
+/* wider than the button on purpose: the ready-state sparks orbit outside the
+   rim, so the canvas has to reach past it */
+.dial__ink {
+    position: absolute;
+    inset: -15px;
+    width: calc(100% + 30px);
+    height: calc(100% + 30px);
+    pointer-events: none;
+}
+
+/* the piece stays grey until the dial is worth pressing */
+.dial__mark {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    opacity: 0.45;
+    filter: grayscale(1);
+    transition: opacity 0.22s ease, filter 0.3s ease;
+}
+
+.dial__mark svg.icon { width: 24px; height: 24px; }
+
+.dial.is-ready { cursor: pointer; }
+
+.dial.is-ready .dial__mark {
+    opacity: 1;
+    filter: none;
+}
+
+.dial--star.is-ready {
+    border-color: var(--i-star-deep);
+    box-shadow: 0 0 10px rgba(255, 201, 63, 0.4);
+}
+
+.dial--bomb.is-ready {
+    border-color: var(--i-tnt-deep);
+    box-shadow: 0 0 10px rgba(194, 112, 95, 0.4);
+}
+
+/* taken in hand: the board is waiting for the square it acts on */
+.dial.is-armed {
+    transform: translateY(-2px) scale(1.06);
+}
+
+.dial--star.is-armed {
+    border-color: var(--i-star-deep);
+    box-shadow: 0 0 16px rgba(255, 201, 63, 0.55);
+}
+
+.dial--bomb.is-armed {
+    border-color: var(--i-tnt-deep);
+    box-shadow: 0 0 16px rgba(194, 112, 95, 0.55);
+}
+
+.dial.is-ready:hover { transform: translateY(-2px); }
+.dial.is-ready:active { transform: translateY(0); }
+
+/* something just fed it: a short shudder, so a charge landing is felt as well
+   as seen. Filling up is the same move, bigger and slower. */
+.dial.is-fed { animation: dial-fed 0.34s ease-out; }
+.dial.is-filled { animation: dial-filled 0.62s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+@keyframes dial-fed {
+    0%   { transform: rotate(0deg) scale(1); }
+    28%  { transform: rotate(-5deg) scale(1.07); }
+    58%  { transform: rotate(4deg) scale(1.03); }
+    100% { transform: rotate(0deg) scale(1); }
+}
+
+@keyframes dial-filled {
+    0%   { transform: rotate(0deg) scale(1); }
+    22%  { transform: rotate(-9deg) scale(1.18); }
+    48%  { transform: rotate(7deg) scale(1.08); }
+    72%  { transform: rotate(-3deg) scale(1.12); }
+    100% { transform: rotate(0deg) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dial, .dial.is-ready:hover { transition: none; transform: none; }
+    .dial.is-fed, .dial.is-filled { animation: none; }
+}

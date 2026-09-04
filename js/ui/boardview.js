@@ -21,6 +21,7 @@ window.Game = window.Game || {};
     function build() {
         var size = Game.Board.size();
         host.style.setProperty("--cols", size.cols);
+        host.style.setProperty("--rows", size.rows);
         host.innerHTML = "";
         tiles = [];
         shown = [];
@@ -393,7 +394,16 @@ window.Game = window.Game || {};
         if (!tile) return;
 
         if (choosing) {
-            var picked = shown[Number(tile.dataset.cell)];
+            var cellId = Number(tile.dataset.cell);
+            var picked = shown[cellId];
+
+            // a dial taken in hand aims at the square itself; a sweep the board
+            // is owed still asks for a kind of piece
+            if (Game.Charges && Game.Charges.armed()) {
+                Game.Charges.aim(Game.Board.byId(cellId));
+                return;
+            }
+
             if (!picked) return;
             Game.Round.choose(picked);
             return;
@@ -456,6 +466,9 @@ window.Game = window.Game || {};
 
         refresh: function () {
             paintBoard(Game.Board.snapshot());
-        }
+        },
+
+        // the grid itself changed shape, not just what is standing on it
+        rebuild: build
     };
 })();

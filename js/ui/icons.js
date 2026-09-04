@@ -15,7 +15,17 @@ window.Game = window.Game || {};
 
         back: '<path d="M18.4 12H6.2M11.4 6.8 6.2 12l5.2 5.2"/>',
 
-        play: '<path d="M8.6 5.9 18.4 12l-9.8 6.1Z" fill="currentColor" stroke="none"/>'
+        play: '<path d="M8.6 5.9 18.4 12l-9.8 6.1Z" fill="currentColor" stroke="none"/>',
+
+        // carry on: the same triangle, stood against the mark you left off at
+        resume:
+            '<path d="M6.2 5.9v12.2"/>' +
+            '<path d="M10.2 6.3 19 12l-8.8 5.7Z" fill="currentColor" stroke="none"/>',
+
+
+        help:
+            '<path d="M9.2 9a2.85 2.85 0 1 1 3.7 3.35c-.75.3-1.05.9-1.05 1.7v.35"/>' +
+            '<path d="M11.85 17.5h.01"/>'
     };
 
     var art = {

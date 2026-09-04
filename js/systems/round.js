@@ -127,12 +127,24 @@ window.Game = window.Game || {};
 
     function fallGap() {
         var level = seam();
-        return level ? level.every : Infinity;
+        if (!level) return Infinity;
+
+        // fallSlower spaces the falls out by the same amount at every step of
+        // the table. One play between falls is the floor.
+        var s = settings();
+        return Math.max(1, level.every + (s.fallSlower || 0));
     }
 
     function fallCount() {
         var level = seam();
-        return level ? level.count : 0;
+        if (!level) return 0;
+
+        // fallFewer thins every fall by the same amount, so the pressure curve
+        // keeps its shape. A fall never drops nothing — that is what the gap
+        // between falls is for.
+        var s = settings();
+        var least = s.fallLeast || 1;
+        return Math.max(least, level.count - (s.fallFewer || 0));
     }
 
     function open() {
@@ -270,6 +282,54 @@ window.Game = window.Game || {};
         state.tally += result.made.length;
         record(result.made);
         raise(result.made, depth || 0);
+    }
+
+    /* What a move costs, either side of the pieces settling: it counts against
+       the seam table, and it brings the next fall closer. Anything that does
+       not spend a turn skips both halves. */
+    function openTurn() {
+        state.placed += 1;
+        checkSeam();
+    }
+
+    function closeTurn() {
+        state.sinceFall += 1;
+        if (state.sinceFall >= fallGap()) {
+            state.sinceFall = 0;
+            rain();
+        }
+    }
+
+    /* Everything that happens after a piece lands, whoever put it there.
+       `free` is for a piece that arrives without costing the player a move. */
+    function turn(result, free) {
+        state.picked = 0;
+        if (!free) openTurn();
+
+        Game.Events.emit("board:steps", { steps: result.steps });
+
+        absorb(result, 0);
+        fillHand();
+
+        if (!free) closeTurn();
+
+        var blown = Game.Board.burn();
+        if (blown && blown.steps.length) {
+            Game.Events.emit("game:rain", { steps: blown.steps, count: 0 });
+            absorb(blown, 0);
+        }
+
+        Game.Events.emit("game:placed", { result: result });
+        Game.Events.emit("game:hand", {});
+
+        if (Game.Board.owes() > 0) {
+            Game.Events.emit("game:choosing", { owed: Game.Board.owes() });
+        }
+
+        if (Game.Board.isFull()) finish("full");
+        else keep();
+
+        return result;
     }
 
     function checkSeam() {
@@ -442,41 +502,19 @@ window.Game = window.Game || {};
             if (!result) return null;
 
             state.hand.shift();
-            state.picked = 0;
-            state.placed += 1;
-            checkSeam();
+            return turn(result);
+        },
 
-            Game.Events.emit("board:steps", { steps: result.steps });
+        /* A piece put on the board by something other than the hand — the bomb
+           dial. It is free: the stick is the reward, and making the player pay
+           a move for it as well would mean the sky gets a fall out of the very
+           thing it gave you for being buried. */
+        place: function (column, pieceId) {
+            if (!state || !state.running || state.opening) return null;
+            if (Game.Board.owes() > 0) return null;
 
-            absorb(result, 0);
-            fillHand();
-
-            state.sinceFall += 1;
-            if (state.sinceFall >= fallGap()) {
-                state.sinceFall = 0;
-                rain();
-            }
-
-            var blown = Game.Board.burn();
-            if (blown && blown.steps.length) {
-                Game.Events.emit("game:rain", {
-                    steps: blown.steps,
-                    count: 0
-                });
-                absorb(blown, 0);
-            }
-
-            Game.Events.emit("game:placed", { result: result });
-            Game.Events.emit("game:hand", {});
-
-            if (Game.Board.owes() > 0) {
-                Game.Events.emit("game:choosing", { owed: Game.Board.owes() });
-            }
-
-            if (Game.Board.isFull()) finish("full");
-            else keep();
-
-            return result;
+            var result = Game.Board.drop(column, pieceId);
+            return result ? turn(result, true) : null;
         },
 
         choose: function (pieceId) {
@@ -492,6 +530,10 @@ window.Game = window.Game || {};
             if (Game.Board.owes() > 0) {
                 Game.Events.emit("game:choosing", { owed: Game.Board.owes() });
             } else {
+                // a sweep is the move: clearing a whole kind off the board is
+                // worth a turn, and the falls close in the same as any other
+                openTurn();
+                closeTurn();
                 Game.Events.emit("game:chosen", {});
             }
 

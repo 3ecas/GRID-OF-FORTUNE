@@ -5,15 +5,20 @@ Game.Config = {
         saveKey: "gridoffortune.save",
 
         cols: 6,
-        rows: 6,
+        rows: 9,
         seedPieces: 6,
         handSize: 1,
 
         introPause: 500,
 
+        // was 3. Two-of-a-kind makes each rung cost 2x the one below instead
+        // of 3x, which is what puts the top of the ladder in reach at all.
         mergeAt: 3,
 
-        dealBehind: 2,
+        // count the corners as touching too, not just the four sides
+        mergeDiagonals: false,
+
+        dealBehind: 1,   // was 2 — deal closer to your best piece
 
         growStranded: false,
 
@@ -33,6 +38,11 @@ Game.Config = {
             { after: 370, count: 2, every: 1 },
             { after: 430, count: 3, every: 1 }
         ],
+
+        // Two knobs over the table above, both keeping its shape: fallFewer
+        // takes pieces off every count, fallSlower puts plays between falls.
+        fallFewer: 1,
+        fallSlower: 1,
 
         fallRoom: 0.25,
         fallLeast: 1,
@@ -65,9 +75,23 @@ Game.Config = {
         dynamiteChance: 0.07,
         dynamiteCap: 1,
 
+        // The star is no longer dealt into the grid — it is charged on the
+        // meter under the board and spent from there. js/systems/starmeter.js
         lodestoneFrom: 6250,
-        lodestoneChance: 0.015,
+        lodestoneChance: 0,
         lodestoneCap: 1,
+
+        // Roughly how many merges at your current level fill the meter. The
+        // need scales with what a merge is worth, so a star costs the same
+        // effort at dirt as it does at diamond — score just arrives faster.
+        // starLeast is the floor, and it is what paces the opening, where a
+        // merge is worth almost nothing.
+        starPace: 24,
+        starLeast: 900,
+
+        // pieces out of the sky before a stick of dynamite is owed:
+        // the bomb is paid for by being buried, not by scoring
+        bombPace: 14,
 
         rubbleFrom: 8,
         rubbleRise: 0.05,

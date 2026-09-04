@@ -182,16 +182,16 @@
 
     /* the same ground the game is dug out of, lit from the top */
     background:
-        radial-gradient(110% 44% at 50% -4%, #fffdf8 0%, rgba(255, 253, 248, 0) 66%),
-        radial-gradient(70% 34% at 14% 104%, rgba(207, 156, 51, 0.16) 0%, rgba(207, 156, 51, 0) 72%),
-        radial-gradient(70% 34% at 86% 100%, rgba(126, 138, 166, 0.15) 0%, rgba(126, 138, 166, 0) 72%),
+        radial-gradient(110% 44% at 50% -4%, #ffffff 0%, rgba(255, 255, 255, 0) 66%),
+        radial-gradient(70% 34% at 14% 104%, rgba(207, 156, 51, 0.13) 0%, rgba(207, 156, 51, 0) 72%),
+        radial-gradient(70% 34% at 86% 100%, rgba(112, 128, 156, 0.14) 0%, rgba(112, 128, 156, 0) 72%),
         linear-gradient(
             180deg,
-            #fbf7ef 0%,
-            #f4eddf 30%,
-            #e9dcc6 56%,
-            #ddd6c6 78%,
-            #cdcbc7 100%
+            #ffffff 0%,
+            #f4f6f8 30%,
+            #e7eaef 56%,
+            #dce0e6 78%,
+            #cdd2d9 100%
         );
 }
 
@@ -377,39 +377,14 @@
 }
 
 .menu__mark {
-    display: grid;
-    justify-items: center;
-    gap: 0;
-    margin-bottom: 2px;
-}
-
-.menu__grid,
-.menu__fortune {
+    margin: 0;
+    font-size: 2.6rem;
     font-weight: 800;
-    line-height: 0.94;
-    letter-spacing: -0.035em;
+    line-height: 1.02;
+    letter-spacing: -0.03em;
     color: var(--ink);
-}
-
-.menu__grid {
-    font-size: 3.1rem;
-}
-
-/* the small word does the work: it sets the two big ones apart and gives the
-   mark somewhere to breathe, which one long line never had */
-.menu__of {
-    margin: 2px 0 1px;
-    font-size: 0.68rem;
-    font-weight: 800;
-    letter-spacing: 0.42em;
-    text-indent: 0.42em;
-    text-transform: uppercase;
-    color: var(--i-gold, #cf9c33);
-}
-
-.menu__fortune {
-    font-size: 2.35rem;
-    letter-spacing: 0.01em;
+    text-align: center;
+    text-wrap: balance;
 }
 
 /* a seam of the ladder: where a run starts, what it passes, what it is for */
@@ -452,6 +427,59 @@
     border-radius: 2px;
     background: currentColor;
     opacity: 0.16;
+}
+
+/* Four ways in, each in a hairline ring. The ring is the only chrome they get
+   — no fill, no shadow — so the icon inside is what the eye lands on. */
+.keys {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 26px;
+}
+
+.key {
+    display: grid;
+    place-items: center;
+    width: 66px;
+    height: 66px;
+    padding: 0;
+    border: 1px solid var(--line-strong);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+    transition: color 0.18s ease, border-color 0.18s ease,
+        background 0.18s ease, transform 0.14s ease;
+}
+
+.key svg.icon {
+    width: 30px;
+    height: 30px;
+    stroke-width: 1.4;
+}
+
+.key:hover {
+    border-color: var(--accent-deep);
+    background: var(--panel);
+    transform: translateY(-2px);
+}
+
+.key:active { transform: translateY(0); }
+
+.key[disabled] {
+    opacity: 0.3;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.key[disabled]:hover {
+    border-color: var(--line-strong);
+    background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .key, .key:hover { transition: none; transform: none; }
 }
 
 .menu__best {
@@ -620,12 +648,20 @@
 
 .board {
     --cols: 6;
+    --rows: 6;
     --gap: 7px;
+
+    /* A tile has to fit twice over: across the screen, which the columns
+       decide, and down it, which the rows do. Taking the smaller of the two is
+       what lets the board be taller than it is wide. */
     --tile: clamp(
         34px,
         min(
             12.5vmin,
-            calc((var(--stage) - var(--board-reserve)) / var(--cols))
+            calc(
+                (var(--stage) - var(--board-reserve) - var(--rows) * var(--gap))
+                / var(--rows)
+            )
         ),
         94px
     );
@@ -1048,7 +1084,7 @@
     width: 50px;
     height: 50px;
     opacity: 1;
-    box-shadow: 0 0 0 2px var(--accent-deep);
+    box-shadow: 0 0 0 var(--ring) var(--accent-deep);
 }
 
 .slot--quiet {
@@ -1163,7 +1199,8 @@
     }
 
     .board {
-        /* Width-driven, but never taller than the visible screen allows. */
+        /* Whichever runs out first, the width across the columns or the
+           height down the rows. */
         --tile: clamp(
             26px,
             min(
@@ -1171,7 +1208,10 @@
                     (100vw - var(--safe-left) - var(--safe-right) - 40px)
                     / var(--cols) - 6px
                 ),
-                calc((var(--stage) - var(--board-reserve)) / var(--cols))
+                calc(
+                    (var(--stage) - var(--board-reserve) - var(--rows) * var(--gap))
+                    / var(--rows)
+                )
             ),
             94px
         );

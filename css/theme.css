@@ -36,17 +36,17 @@
 }
 
 :root {
-    --bg: #f5efe3;
-    --bg-deep: #efe7d8;
-    --panel: #fffdf8;
-    --panel-soft: #faf4e9;
+    --bg: #eef0f3;
+    --bg-deep: #e3e7ec;
+    --panel: #ffffff;
+    --panel-soft: #f6f8fa;
 
-    --line: #e8ddc9;
-    --line-strong: #dbcdb3;
+    --line: #dde2e8;
+    --line-strong: #c5ccd6;
 
-    --ink: #59513f;
-    --ink-soft: #8f866f;
-    --ink-faint: #b6ad96;
+    --ink: #3d444e;
+    --ink-soft: #69727e;
+    --ink-faint: #a2aab6;
 
     --accent: #a8c6a0;
     --accent-deep: #7ea875;
@@ -205,15 +205,19 @@
 
     --i-shine: rgba(255, 255, 255, 0.55);
 
+    /* the ring around the hand and the two dials — one value, so the three
+       of them always read as the same weight of line */
+    --ring: 2.5px;
+
     --radius-sm: 10px;
     --radius: 14px;
     --radius-lg: 20px;
     --radius-pill: 999px;
 
-    --shadow-1: 0 1px 2px rgba(112, 98, 72, 0.06),
-        0 4px 12px rgba(112, 98, 72, 0.07);
-    --shadow-2: 0 2px 4px rgba(112, 98, 72, 0.07),
-        0 12px 28px rgba(112, 98, 72, 0.1);
+    --shadow-1: 0 1px 2px rgba(58, 66, 78, 0.06),
+        0 4px 12px rgba(58, 66, 78, 0.07);
+    --shadow-2: 0 2px 4px rgba(58, 66, 78, 0.07),
+        0 12px 28px rgba(58, 66, 78, 0.1);
 
     --font: "Nunito", "Quicksand", "Segoe UI Variable Text", "Segoe UI",
         system-ui, -apple-system, sans-serif;

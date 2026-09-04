@@ -145,53 +145,34 @@ window.Game = window.Game || {};
         var save = Game.Round.peek();
         var going = Game.Round.saved();
 
-        // A strip of the ladder itself, dug from the bottom up: what the run
-        // starts on, a couple of rungs it passes through, and the thing at the
-        // top it is aiming at. Struck through once, it says the whole game
-        // without a line of explanation.
-        var ladder = Game.Pieces.list;
-        var seam = [0, 6, 13, 22, ladder.length - 1]
-            .map(function (i) { return ladder[i]; })
-            .filter(Boolean)
-            .map(function (piece) {
-                var found = Game.Round.found(piece.id);
-                return '<span class="seam__bit' + (found ? " is-found" : "") +
-                       '" title="' + piece.name + '">' +
-                       Game.Icons.svg(piece.icon) + "</span>";
-            })
-            .join('<span class="seam__gap"></span>');
-
+        // The title and four ways in. Nothing else: the menu is a door, not a
+        // dashboard, and everything it used to explain the game now says is
+        // said better by the first thirty seconds of playing it.
         menuHost.innerHTML =
             '<div class="menu__inner">' +
-            '<div class="menu__mark">' +
-            '<span class="menu__grid">Grid</span>' +
-            '<span class="menu__of">of</span>' +
-            '<span class="menu__fortune">Fortune</span>' +
-            "</div>" +
-            '<div class="seam">' + seam + "</div>" +
-            (save.best
-                ? '<span class="menu__best">Best ' + save.best + "</span>"
-                : '<span class="menu__best">Three of a kind, touching</span>') +
-            '<nav class="menu__list">' +
-            (going
-                ? '<button type="button" class="word" id="goOn">Continue</button>'
-                : "") +
-            '<button type="button" class="word' +
-            (going ? " word--fresh" : "") +
-            '" id="playNew">' +
-            (going ? "New game" : "Play") +
-            "</button>" +
-            '<button type="button" class="word word--quiet" data-sound' +
-            ' aria-label="Sound"></button>' +
+            '<h1 class="menu__mark">Grid of Fortune</h1>' +
+            (save.best ? '<span class="menu__best">Best ' + save.best + "</span>" : "") +
+            '<nav class="keys">' +
+            key("playNew", "play", "New game", false) +
+            key("goOn", "resume", "Continue", !going) +
+            // Game.Sound paints this one itself — it swaps between the
+            // speaker and the crossed-out speaker as it is pressed
+            '<button type="button" class="key" data-sound aria-label="Sound"></button>' +
+            key("howBtn", "help", "How to play", false) +
             "</nav>" +
-            '<button type="button" class="how__ask" id="howBtn"' +
-            ' aria-label="How to play">!</button>' +
             "</div>";
 
         menuHost.classList.add("is-open");
+        Game.Icons.hydrate(menuHost);
 
         if (Game.Sound && Game.Sound.button) Game.Sound.button();
         if (backBtn) backBtn.classList.remove("is-on");
+    }
+
+    function key(id, icon, label, off) {
+        return '<button type="button" class="key" id="' + id + '"' +
+               ' data-icon="' + icon + '" aria-label="' + label + '"' +
+               (off ? " disabled" : "") + "></button>";
     }
 
     function hideMenu() {

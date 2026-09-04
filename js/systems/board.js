@@ -53,6 +53,16 @@ window.Game = window.Game || {};
         return moves;
     }
 
+    /* Which way two pieces count as touching. Corners make a group far easier
+       to close, so it is a switch rather than a constant. Rubble, dynamite and
+       the lodestone keep to the four sides — this is about merging only. */
+    var SIDES = [[0, -1], [-1, 0], [1, 0], [0, 1]];
+    var CORNERS = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
+
+    function touching() {
+        return Game.Config.game.mergeDiagonals ? SIDES.concat(CORNERS) : SIDES;
+    }
+
     function reach(start, need) {
         var found = [start];
         var seen = {};
@@ -62,12 +72,9 @@ window.Game = window.Game || {};
         while (queue.length) {
             var cell = queue.shift();
 
-            var around = [
-                at(cell.x, cell.y - 1),
-                at(cell.x - 1, cell.y),
-                at(cell.x + 1, cell.y),
-                at(cell.x, cell.y + 1)
-            ];
+            var around = touching().map(function (step) {
+                return at(cell.x + step[0], cell.y + step[1]);
+            });
 
             for (var i = 0; i < around.length; i++) {
                 var other = around[i];
@@ -84,7 +91,7 @@ window.Game = window.Game || {};
     }
 
     function nextGroup() {
-        var need = Game.Config.game.mergeAt || 2;
+        var need = Game.Config.game.mergeAt || 3;
 
         for (var y = rows - 1; y >= 0; y--) {
             for (var x = 0; x < cols; x++) {
@@ -307,7 +314,7 @@ window.Game = window.Game || {};
 
                 var makes = 1;
                 if (over.surplusStays) {
-                    var need = over.mergeAt || 2;
+                    var need = over.mergeAt || 3;
                     makes = Math.max(1, pair.eat.length - (need - 1));
                     if (over.surplusMost > 0) {
                         makes = Math.min(makes, over.surplusMost);
@@ -498,6 +505,12 @@ window.Game = window.Game || {};
             return owed;
         },
 
+        // a sweep granted from outside the grid — the star dial spends one
+        owe: function (many) {
+            owed += many || 1;
+            return owed;
+        },
+
         sweep: function (pieceId) {
             if (owed <= 0) return null;
             owed -= 1;
@@ -599,7 +612,7 @@ window.Game = window.Game || {};
 
             var was = spot.piece;
             spot.piece = pieceId;
-            var joined = reach(spot, Game.Config.game.mergeAt || 2);
+            var joined = reach(spot, Game.Config.game.mergeAt || 3);
             spot.piece = was;
 
             return !!joined;
