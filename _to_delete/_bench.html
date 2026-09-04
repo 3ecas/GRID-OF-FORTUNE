@@ -2481,21 +2481,23 @@ svg.icon--art {
       <span class="group__name">Falling</span>
       <div class="knob">
         <span class="knob__label">Pieces off each fall</span>
-        <div class="stepper" data-knob="fallFewer" data-min="0" data-max="3">
-          <button type="button" data-step="-1" aria-label="Fewer removed">&minus;</button>
+        <div class="stepper" data-knob="fallFewer" data-min="-2" data-max="3">
+          <button type="button" data-step="-1" aria-label="Heavier falls">&minus;</button>
           <output>1</output>
           <button type="button" data-step="1" aria-label="More removed">+</button>
         </div>
       </div>
       <div class="knob">
         <span class="knob__label">Extra plays between falls</span>
-        <div class="stepper" data-knob="fallSlower" data-min="0" data-max="4">
+        <div class="stepper" data-knob="fallSlower" data-min="-2" data-max="4">
           <button type="button" data-step="-1" aria-label="Less spacing">&minus;</button>
-          <output>1</output>
+          <output>0</output>
           <button type="button" data-step="1" aria-label="More spacing">+</button>
         </div>
-        <p class="knob__note">Together these ran <b>17% longer games</b> with the
-          score intact. Past +1 spacing it stops paying.</p>
+        <p class="knob__note">Negative pushes the other way: <b>&minus;1 adds a
+          piece to every fall</b>. The table was written before the star and the
+          bomb existed &mdash; between them they clear enough that the old rate
+          left the board empty.</p>
       </div>
     </div>
 
@@ -2527,6 +2529,17 @@ svg.icon--art {
           sooner you are handed the thing that digs you out. Press it, then tap
           a column: a stick drops in and burns down there. <b>Free</b> &mdash;
           it would be a poor gift if the sky got a fall out of it too.</p>
+      </div>
+      <div class="knob">
+        <span class="knob__label">Blast reach each way</span>
+        <div class="stepper" data-knob="blastReach" data-min="1" data-max="4">
+          <button type="button" data-step="-1" aria-label="Shorter">&minus;</button>
+          <output>2</output>
+          <button type="button" data-step="1" aria-label="Longer">+</button>
+        </div>
+        <p class="knob__note">How far the cross runs along each side. At 2 it
+          takes <b>nine cells</b> &mdash; what the old 3&times;3 square took
+          &mdash; without touching a diagonal.</p>
       </div>
       <div class="knob">
         <span class="knob__label">Turns before a stick blows</span>
@@ -2602,8 +2615,12 @@ Game.Config = {
 
         // Two knobs over the table above, both keeping its shape: fallFewer
         // takes pieces off every count, fallSlower puts plays between falls.
+        // Negative numbers push the other way — fallFewer: -1 adds a piece to
+        // every fall. One less piece per fall, at the table's own spacing: the
+        // extra play between falls is gone, which is where the pressure the
+        // star and the bomb take off the board is paid back.
         fallFewer: 1,
-        fallSlower: 1,
+        fallSlower: 0,
 
         fallRoom: 0.25,
         fallLeast: 1,
@@ -2629,6 +2646,11 @@ Game.Config = {
 
         // turns a stick sits before it goes off, if nothing lights it first
         dynamiteFuse: 5,
+
+        // how far the blast runs along each of the four sides. At 2 the cross
+        // takes nine cells, the same as the old square did, without ever
+        // touching a diagonal.
+        blastReach: 2,
 
         blastSpacing: 2,
 
@@ -3065,12 +3087,17 @@ window.Game = window.Game || {};
             fired[stick.id] = true;
             gone[stick.id] = stick;
 
-            for (var dx = -1; dx <= 1; dx++) {
-                for (var dy = -1; dy <= 1; dy++) {
-                    if (!dx && !dy) continue;
+            // A cross, not a square: the four sides only, run out `blastReach`
+            // cells each way. The corners are left standing, which is the whole
+            // point, and the longer arms give back the reach the square had.
+            var far = Math.max(1, Game.Config.game.blastReach || 1);
 
-                    var near = at(stick.x + dx, stick.y + dy);
-                    if (!near || !near.piece) continue;
+            for (var i = 0; i < SIDES.length; i++) {
+                for (var step = 1; step <= far; step++) {
+                    var near = at(stick.x + SIDES[i][0] * step,
+                                  stick.y + SIDES[i][1] * step);
+                    if (!near) break;                 // off the board: arm ends
+                    if (!near.piece) continue;        // a gap does not stop it
 
                     gone[near.id] = near;
                     if (near.piece === Game.Pieces.dynamite.id && !fired[near.id]) {
@@ -7275,7 +7302,7 @@ document.addEventListener("DOMContentLoaded", function () {
     /* the shipped numbers, captured before anything on the bench moves them */
     var SHIPPED = {};
     var KNOBS = ["cols", "rows", "mergeAt", "mergeDiagonals", "dealBehind",
-                 "fallFewer", "fallSlower", "starPace", "bombPace", "dynamiteFuse"];
+                 "fallFewer", "fallSlower", "starPace", "bombPace", "dynamiteFuse", "blastReach"];
 
     /* what the bench opens on: the tall board, so the shape under discussion is
        the first thing you see */

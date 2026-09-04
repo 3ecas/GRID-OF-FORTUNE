@@ -41,8 +41,12 @@ Game.Config = {
 
         // Two knobs over the table above, both keeping its shape: fallFewer
         // takes pieces off every count, fallSlower puts plays between falls.
+        // Negative numbers push the other way — fallFewer: -1 adds a piece to
+        // every fall. One less piece per fall, at the table's own spacing: the
+        // extra play between falls is gone, which is where the pressure the
+        // star and the bomb take off the board is paid back.
         fallFewer: 1,
-        fallSlower: 1,
+        fallSlower: 0,
 
         fallRoom: 0.25,
         fallLeast: 1,
@@ -68,6 +72,11 @@ Game.Config = {
 
         // turns a stick sits before it goes off, if nothing lights it first
         dynamiteFuse: 5,
+
+        // how far the blast runs along each of the four sides. At 2 the cross
+        // takes nine cells, the same as the old square did, without ever
+        // touching a diagonal.
+        blastReach: 2,
 
         blastSpacing: 2,
 
