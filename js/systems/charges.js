@@ -6,7 +6,7 @@ window.Game = window.Game || {};
    Two dials either side of the hand. Both fill, both are spent by pressing
    them, and that is where the similarity ends — what feeds them is the point.
 
-     star   fills on score.   Playing well earns it. Spending one owes the board
+     star   fills on merges.  Playing well earns it. Spending one owes the board
                               a sweep: pick a piece and every one of them goes.
      bomb   fills on falls.   Being buried earns it. Spending one puts a stick
                               of dynamite in your hand to place where you like.
@@ -16,10 +16,13 @@ window.Game = window.Game || {};
    going well is handed the tool for pressing an advantage. Feeding them both
    from score would have made them the same dial twice.
 
-   What the star costs scales with the level being played: a merge at diamond is
-   worth thousands of times a merge at dirt, so a flat price would mean one star
-   an hour early and one a move late. The bomb counts pieces instead, which does
-   not inflate, so it needs no scaling.
+   Both count things rather than points, and that is the whole trick. Points
+   inflate — a merge at diamond is worth thousands of times a merge at dirt, and
+   worse, a placement late in a run sets off cascades that score several merges
+   at once. Pricing a star in points meant it arrived every 22 moves early on
+   and every 6 moves late, which is the opposite of a cost. Priced in merges, a
+   star is the same amount of play wherever you are on the ladder, and it still
+   fills faster when you are playing well — because you are merging more.
    ============================================================================= */
 
 (function () {
@@ -81,14 +84,11 @@ window.Game = window.Game || {};
 
     /* ---- what each one asks for -------------------------------------------- */
     function starCost() {
-        var state = Game.Round.get();
-        var top = state ? Game.Pieces.list[state.highest - 1] : null;
-        var worth = (top && top.points) || 1;
-        return Math.max(settings().starLeast || 900, worth * (settings().starPace || 24));
+        return Math.max(1, settings().starPace || 20);
     }
 
     function bombCost() {
-        return Math.max(1, settings().bombPace || 14);
+        return Math.max(1, settings().bombPace || 10);
     }
 
     /* ---- what each one does to the square you pick -------------------------- */
@@ -101,7 +101,8 @@ window.Game = window.Game || {};
     function drop(cell) {
         if (!cell) return false;
         // the stick is placed, not detonated: it falls down the column you
-        // picked and burns its fuse there like any other stick
+        // picked and burns its fuse there, going off on its own after
+        // dynamiteFuse turns if a merge next to it has not lit it first
         return !!Game.Round.place(cell.x, Game.Pieces.dynamite.id);
     }
 
@@ -109,7 +110,7 @@ window.Game = window.Game || {};
     var bomb = dial("bomb", bombCost, drop);
 
     var armed = null;                 // the dial waiting for a square
-    var seen = 0;   // score at the last reading, so only the gain is counted
+
 
     Game.Charges = {
         star: star,
@@ -168,19 +169,20 @@ window.Game = window.Game || {};
 
         init: function () {
             Game.Events.on("game:started", function () {
-                seen = Game.Round.get() ? Game.Round.get().score : 0;
                 armed = null;
                 star.reset();
                 bomb.reset();
             });
 
-            // score feeds the star
-            Game.Events.on("board:steps", function () {
-                var state = Game.Round.get();
-                if (!state) return;
-                var gained = state.score - seen;
-                seen = state.score;
-                star.feed(gained);
+            // every merge feeds the star, wherever it came from — a placement,
+            // a cascade, a blast. A chain therefore pays several at once.
+            Game.Events.on("board:steps", function (detail) {
+                var steps = (detail && detail.steps) || [];
+                var merges = 0;
+                for (var i = 0; i < steps.length; i++) {
+                    if (steps[i].type === "merge") merges++;
+                }
+                star.feed(merges);
             });
 
             // what the sky drops feeds the bomb

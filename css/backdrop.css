@@ -1,9 +1,12 @@
 /* Pieces blown up and faded out, behind everything. See js/ui/backdrop.js. */
 
+/* Behind the page rather than in front of the background: giving the table a
+   stacking context instead put it over the fixed buttons, and the back arrow
+   stopped taking clicks. */
 .backdrop {
     position: fixed;
     inset: 0;
-    z-index: 0;
+    z-index: -1;
     overflow: hidden;
     pointer-events: none;
 }
@@ -26,19 +29,6 @@
 @keyframes shard-drift {
     0%, 100% { transform: rotate(var(--spin, 0deg)) translate3d(0, 0, 0); }
     50% { transform: rotate(var(--spin, 0deg)) translate3d(0, -2.2%, 0); }
-}
-
-/* the game itself rides above it */
-.table,
-.back,
-.rungs {
-    position: relative;
-    z-index: 1;
-}
-
-.back,
-.rungs {
-    position: fixed;
 }
 
 @media (prefers-reduced-motion: reduce) {

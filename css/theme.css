@@ -14,24 +14,27 @@
     /* Breathing room inside the safe area. Overridden per breakpoint; every
        rule reads these rather than repeating numbers, so a screen size is
        described in one place only. */
-    --frame-top: 30px;
-    --frame-bottom: 78px;
-    --frame-side: 20px;
-    --stack-gap: 16px;
+    --frame-top: 14px;
+
+    /* The ladder button is fixed 20px off the bottom and is 54px tall, so the
+       frame has to be at least that or the tray lands on top of it — which is
+       exactly what happened on a 667pt screen. */
+    --frame-bottom: 82px;
+    --frame-side: 8px;
+    --stack-gap: 10px;
 
     /* Height the player can actually see. */
     --stage: calc(100vh - var(--safe-top) - var(--safe-bottom));
 
-    /* Vertical space the grid is NOT allowed to take: the frame, the score,
-       the hand, the gaps between them, and enough slack that the grid never
-       touches either. Derived from the tokens above, so changing a frame
-       value re-sizes the grid to match instead of drifting out of step. */
+    /* Vertical space the grid is NOT allowed to take: the frame top and
+       bottom, the scoreboard, the tray of hand and dials, and the gaps between
+       them. Measured rather than padded out — every pixel left here is a pixel
+       the grid cannot use, and the grid is the game. */
     --board-reserve: calc(
         var(--frame-top) + var(--frame-bottom)
-        + 58px
+        + 64px                      /* scoreboard, and the space under it */
+        + 96px                      /* tray: hand, the two dials, its padding */
         + 2 * var(--stack-gap)
-        + 76px
-        + 56px
     );
 }
 
@@ -209,6 +212,10 @@
        of them always read as the same weight of line */
     --ring: 2.5px;
 
+    /* Cells and the hand slot: a share of their own size rather than a fixed
+       number, so the curve looks the same on a 38px tile and a 60px one. */
+    --radius-cell: 27%;
+
     --radius-sm: 10px;
     --radius: 14px;
     --radius-lg: 20px;
@@ -256,15 +263,15 @@ body {
        it, then clay, then the rock the good things come out of. It is the
        ladder stood on end - you are looking at where the run is going.
 
-       Kept pale and soft on purpose. Hard-edged seam lines read as banding
-       rather than geology, and a cold grey floor leaves the hand sitting in
-       mud, so the layers are feathered over several percent and the bottom
-       stays warm. */
+       Kept pale and soft on purpose: hard-edged seam lines read as banding
+       rather than geology, so the layers are feathered over several percent.
+       The strata are neutral and the only colour in them comes from the
+       mineral flecks, which are the pieces' own hues. */
     background: var(--bg);
     background-image:
         /* light coming in at the surface */
         radial-gradient(120% 44% at 50% -8%, rgba(255, 255, 255, 0.9), transparent 72%),
-        radial-gradient(62% 26% at 88% 0%, rgba(232, 240, 222, 0.6), transparent 74%),
+        radial-gradient(62% 26% at 88% 0%, rgba(255, 255, 255, 0.75), transparent 74%),
         /* mineral flecks caught in the deeper layers */
         radial-gradient(circle at 15% 64%, rgba(176, 138, 99, 0.1), transparent 11%),
         radial-gradient(circle at 84% 73%, rgba(140, 146, 157, 0.09), transparent 10%),
@@ -274,7 +281,7 @@ body {
         linear-gradient(
             180deg,
             transparent 30%,
-            rgba(150, 121, 88, 0.07) 35%,
+            rgba(120, 128, 140, 0.06) 35%,
             transparent 40%,
             transparent 55%,
             rgba(126, 130, 138, 0.06) 60%,
@@ -286,13 +293,13 @@ body {
         /* the strata themselves */
         linear-gradient(
             180deg,
-            #fdfaf4 0%,
-            #f8f2e6 24%,
-            #f1e7d6 42%,
-            #eadfcb 60%,
-            #e4dac6 76%,
-            #ded5c4 90%,
-            #d8d1c3 100%
+            #ffffff 0%,
+            #f8fafc 24%,
+            #f0f3f7 42%,
+            #e8ecf2 60%,
+            #e1e6ed 76%,
+            #dae0e8 90%,
+            #d4dae3 100%
         );
     background-attachment: fixed;
     -webkit-font-smoothing: antialiased;

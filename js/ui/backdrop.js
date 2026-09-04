@@ -13,22 +13,20 @@ window.Game = window.Game || {};
    are; and it can never drift out of step with the art, since redrawing a piece
    redraws its shadow on the wall behind the board too.
 
-   The middle of the screen is left alone. Everything is placed out at the
-   edges, where the board and the hand are not.
+   The middle of the screen is left alone, and it is kept very faint: the board
+   is not a white card any more, so nothing covers this up — anything stronger
+   than a whisper tints the whole game.
    ============================================================================= */
 
 (function () {
     /* pieces with a silhouette worth reading at size, and where each one sits:
        x and y as percentages, kept clear of the middle band */
     var CAST = [
-        { art: "diamond",  x: -8,  y: 6,   size: 46, spin: -14, fade: 0.09 },
-        { art: "lodestone", x: 78, y: -6,  size: 52, spin: 12,  fade: 0.08 },
-        { art: "zinc",     x: 82,  y: 34,  size: 34, spin: -8,  fade: 0.07 },
-        { art: "amethyst", x: -12, y: 44,  size: 40, spin: 16,  fade: 0.07 },
-        { art: "crown",    x: 58,  y: 82,  size: 44, spin: -10, fade: 0.08 },
-        { art: "rock",     x: -6,  y: 76,  size: 38, spin: 8,   fade: 0.09 },
-        { art: "emerald",  x: 30,  y: -12, size: 30, spin: -18, fade: 0.06 },
-        { art: "quartz",   x: 24,  y: 88,  size: 28, spin: 14,  fade: 0.06 }
+        { art: "diamond",  x: -10, y: 4,   size: 44, spin: -14, fade: 0.045 },
+        { art: "lodestone", x: 80, y: -8,  size: 48, spin: 12,  fade: 0.04 },
+        { art: "amethyst", x: -14, y: 46,  size: 38, spin: 16,  fade: 0.035 },
+        { art: "crown",    x: 62,  y: 84,  size: 42, spin: -10, fade: 0.04 },
+        { art: "zinc",     x: 84,  y: 40,  size: 32, spin: -8,  fade: 0.035 }
     ];
 
     Game.Backdrop = {

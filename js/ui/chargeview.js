@@ -20,12 +20,56 @@ window.Game = window.Game || {};
     var still = false;
     var last = 0;
 
+    /* ---- the pieces themselves, small enough to be dust ---------------------
+       A dial throws off what it is: four-pointed stars from the star, little
+       sticks from the bomb. Both are drawn rather than scaled down from the
+       art, because at four pixels the real drawings are a smudge — what
+       survives at this size is the silhouette and nothing else. */
+    function star(ctx, x, y, r, turn) {
+        var waist = r * 0.34;
+        ctx.beginPath();
+        for (var i = 0; i < 8; i++) {
+            var reach = i % 2 ? waist : r;
+            var a = turn + i * Math.PI / 4;
+            var px = x + Math.cos(a) * reach;
+            var py = y + Math.sin(a) * reach;
+            if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
+        }
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    function stick(ctx, x, y, r, turn) {
+        var w = r * 1.5;
+        var h = r * 0.95;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(turn);
+        ctx.beginPath();
+        // a rounded body, and a nub for the fuse
+        ctx.moveTo(-w / 2 + h / 3, -h / 2);
+        ctx.lineTo(w / 2 - h / 3, -h / 2);
+        ctx.quadraticCurveTo(w / 2, -h / 2, w / 2, 0);
+        ctx.quadraticCurveTo(w / 2, h / 2, w / 2 - h / 3, h / 2);
+        ctx.lineTo(-w / 2 + h / 3, h / 2);
+        ctx.quadraticCurveTo(-w / 2, h / 2, -w / 2, 0);
+        ctx.quadraticCurveTo(-w / 2, -h / 2, -w / 2 + h / 3, -h / 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(w / 2 + r * 0.22, -h * 0.55, r * 0.26, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+
     function mote() {
         return {
             x: 0.15 + Math.random() * 0.7,
             y: Math.random(),
-            size: 0.5 + Math.random() * 1.1,
+            size: 1.6 + Math.random() * 1.5,
             rise: 0.06 + Math.random() * 0.14,
+            turn: Math.random() * Math.PI,
+            twist: (Math.random() < 0.5 ? -1 : 1) * (0.3 + Math.random()),
             glow: 0.3 + Math.random() * 0.7
         };
     }
@@ -37,7 +81,9 @@ window.Game = window.Game || {};
             angle: Math.random() * Math.PI * 2,
             spin: (Math.random() < 0.5 ? -1 : 1) * (0.25 + Math.random() * 0.5),
             out: 0.02 + Math.random() * 0.85,      // 0 at the rim, 1 at the edge
-            size: 0.6 + Math.random() * 1.3,
+            size: 1.8 + Math.random() * 1.6,
+            turn: Math.random() * Math.PI,
+            twist: (Math.random() < 0.5 ? -1 : 1) * (0.4 + Math.random()),
             life: Math.random()
         };
     }
@@ -48,6 +94,7 @@ window.Game = window.Game || {};
 
         var one = {
             name: host.getAttribute("data-charge"),
+            shape: host.getAttribute("data-charge") === "bomb" ? stick : star,
             host: host,
             canvas: canvas,
             ctx: canvas.getContext("2d"),
@@ -108,6 +155,7 @@ window.Game = window.Game || {};
             var m = one.motes[i];
             if (!still) {
                 m.y -= m.rise * gap * (one.ready ? 1.9 : 1);
+                m.turn += m.twist * gap;
                 if (m.y < 0) { one.motes[i] = mote(); one.motes[i].y = 1; continue; }
             }
             var y = top + span * m.y;
@@ -115,9 +163,8 @@ window.Game = window.Game || {};
 
             ctx.globalAlpha = (one.ready ? 0.85 : 0.5) * m.glow;
             ctx.fillStyle = one.ready ? "#fffdf0" : "#ffffff";
-            ctx.beginPath();
-            ctx.arc(cx - r + span * m.x, y, m.size * (one.ready ? 1.25 : 1), 0, Math.PI * 2);
-            ctx.fill();
+            one.shape(ctx, cx - r + span * m.x, y,
+                      m.size * (one.ready ? 1.2 : 1), m.turn);
         }
 
         ctx.restore();
@@ -128,18 +175,17 @@ window.Game = window.Game || {};
                 var s = one.sparks[k];
                 if (!still) {
                     s.angle += s.spin * gap;
+                    s.turn += s.twist * gap;
                     s.life += gap * 0.55;
                     if (s.life > 1) { one.sparks[k] = spark(); one.sparks[k].life = 0; continue; }
                 }
-                var reach = r + 2 + s.out * (PAD - 3);
+                var reach = r + 3 + s.out * (PAD - 4);
                 var fade = Math.sin(Math.min(1, s.life) * Math.PI);
 
-                ctx.globalAlpha = 0.8 * fade;
+                ctx.globalAlpha = 0.85 * fade;
                 ctx.fillStyle = one.lit;
-                ctx.beginPath();
-                ctx.arc(cx + Math.cos(s.angle) * reach,
-                        cy + Math.sin(s.angle) * reach, s.size, 0, Math.PI * 2);
-                ctx.fill();
+                one.shape(ctx, cx + Math.cos(s.angle) * reach,
+                          cy + Math.sin(s.angle) * reach, s.size, s.turn);
             }
         }
 

@@ -145,7 +145,7 @@
     display: none;
     place-items: center;
     padding: 24px 20px;
-    background: rgba(245, 239, 227, 0.88);
+    background: rgba(238, 240, 243, 0.9);
     backdrop-filter: blur(3px);
 }
 
@@ -444,7 +444,7 @@
     width: 66px;
     height: 66px;
     padding: 0;
-    border: 1px solid var(--line-strong);
+    border: var(--ring) solid var(--line-strong);
     border-radius: 50%;
     background: transparent;
     color: var(--ink);
@@ -650,31 +650,41 @@
     --cols: 6;
     --rows: 6;
     --gap: 7px;
+    --pad: 6px;
 
-    /* A tile has to fit twice over: across the screen, which the columns
-       decide, and down it, which the rows do. Taking the smaller of the two is
-       what lets the board be taller than it is wide. */
-    --tile: clamp(
-        34px,
-        min(
-            12.5vmin,
-            calc(
-                (var(--stage) - var(--board-reserve) - var(--rows) * var(--gap))
-                / var(--rows)
-            )
-        ),
-        94px
+    /* What is actually left for tiles once the frame, the board's own padding
+       and the gaps between cells are taken out — across, and down. */
+    --room-across: calc(
+        100vw - var(--safe-left) - var(--safe-right)
+        - 2 * var(--frame-side) - 2 * var(--pad)
+        - (var(--cols) - 1) * var(--gap)
     );
+
+    --room-down: calc(
+        var(--stage) - var(--board-reserve)
+        - 2 * var(--pad) - (var(--rows) - 1) * var(--gap)
+        - 8px          /* the board's own border, plus rounding on each row */
+    );
+
+    /* Whichever runs out first. Width wins on most phones, which is the point:
+       the grid should reach the edges of the screen it is played on. */
+    --tile: max(20px, min(
+        calc(var(--room-across) / var(--cols)),
+        calc(var(--room-down) / var(--rows))
+    ));
 
     position: relative;
     display: grid;
     grid-template-columns: repeat(var(--cols), var(--tile));
     gap: var(--gap);
-    padding: 14px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    background: var(--panel);
-    box-shadow: var(--shadow-1);
+    padding: var(--pad);
+
+    /* No card. The board used to be a white panel floating on the page, which
+       made it the only object in the game that was not simply sitting on the
+       ground — score, hand and dials all are. The tiles carry the surface
+       instead, so the whole screen reads as one material. */
+    border: none;
+    background: none;
 }
 
 .tile {
@@ -685,8 +695,9 @@
     height: var(--tile);
     padding: 0;
     border: none;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-cell);
     background: var(--panel-soft);
+    box-shadow: var(--shadow-1);
     cursor: default;
     transition: transform 0.13s ease, background 0.2s ease,
         box-shadow 0.18s ease;
@@ -1066,7 +1077,7 @@
     height: 58px;
     padding: 0;
     border: none;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-cell);
     opacity: 0.55;
     transition: transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
 }
@@ -1105,7 +1116,7 @@
     place-items: center;
     padding: 20px;
 
-    background: rgba(245, 239, 227, 0.55);
+    background: rgba(238, 240, 243, 0.62);
     backdrop-filter: blur(2.5px);
 }
 
@@ -1198,24 +1209,6 @@
         padding: 7px 8px;
     }
 
-    .board {
-        /* Whichever runs out first, the width across the columns or the
-           height down the rows. */
-        --tile: clamp(
-            26px,
-            min(
-                calc(
-                    (100vw - var(--safe-left) - var(--safe-right) - 40px)
-                    / var(--cols) - 6px
-                ),
-                calc(
-                    (var(--stage) - var(--board-reserve) - var(--rows) * var(--gap))
-                    / var(--rows)
-                )
-            ),
-            94px
-        );
-    }
 }
 
 .hand.is-waiting {

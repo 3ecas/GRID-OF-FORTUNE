@@ -5,7 +5,7 @@ Game.Config = {
         saveKey: "gridoffortune.save",
 
         cols: 6,
-        rows: 9,
+        rows: 6,
         seedPieces: 6,
         handSize: 1,
 
@@ -66,13 +66,16 @@ Game.Config = {
 
         blastPays: 1,
 
-        dynamiteFuse: 12,
+        // turns a stick sits before it goes off, if nothing lights it first
+        dynamiteFuse: 5,
 
         blastSpacing: 2,
 
+        // Dynamite is never dealt or dropped any more — the only sticks on the
+        // board are the ones the player placed off the bomb dial. These are
+        // kept at zero rather than deleted so the sky can be given it back.
         dynamiteFrom: 1250,
-
-        dynamiteChance: 0.07,
+        dynamiteChance: 0,
         dynamiteCap: 1,
 
         // The star is no longer dealt into the grid — it is charged on the
@@ -81,17 +84,16 @@ Game.Config = {
         lodestoneChance: 0,
         lodestoneCap: 1,
 
-        // Roughly how many merges at your current level fill the meter. The
-        // need scales with what a merge is worth, so a star costs the same
-        // effort at dirt as it does at diamond — score just arrives faster.
-        // starLeast is the floor, and it is what paces the opening, where a
-        // merge is worth almost nothing.
-        starPace: 24,
-        starLeast: 900,
+        // Merges that fill the star. Merges, not points: points inflate up the
+        // ladder and cascades pay several at once, which had stars arriving
+        // every 22 moves early and every 6 late. Counted this way a star is the
+        // same amount of play at dirt as at diamond.
+        starPace: 60,
 
         // pieces out of the sky before a stick of dynamite is owed:
         // the bomb is paid for by being buried, not by scoring
-        bombPace: 14,
+        bombPace: 10,
+
 
         rubbleFrom: 8,
         rubbleRise: 0.05,

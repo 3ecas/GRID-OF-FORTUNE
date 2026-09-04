@@ -19,24 +19,27 @@
     /* Breathing room inside the safe area. Overridden per breakpoint; every
        rule reads these rather than repeating numbers, so a screen size is
        described in one place only. */
-    --frame-top: 30px;
-    --frame-bottom: 78px;
-    --frame-side: 20px;
-    --stack-gap: 16px;
+    --frame-top: 14px;
+
+    /* The ladder button is fixed 20px off the bottom and is 54px tall, so the
+       frame has to be at least that or the tray lands on top of it — which is
+       exactly what happened on a 667pt screen. */
+    --frame-bottom: 82px;
+    --frame-side: 8px;
+    --stack-gap: 10px;
 
     /* Height the player can actually see. */
     --stage: calc(100vh - var(--safe-top) - var(--safe-bottom));
 
-    /* Vertical space the grid is NOT allowed to take: the frame, the score,
-       the hand, the gaps between them, and enough slack that the grid never
-       touches either. Derived from the tokens above, so changing a frame
-       value re-sizes the grid to match instead of drifting out of step. */
+    /* Vertical space the grid is NOT allowed to take: the frame top and
+       bottom, the scoreboard, the tray of hand and dials, and the gaps between
+       them. Measured rather than padded out — every pixel left here is a pixel
+       the grid cannot use, and the grid is the game. */
     --board-reserve: calc(
         var(--frame-top) + var(--frame-bottom)
-        + 58px
+        + 64px                      /* scoreboard, and the space under it */
+        + 96px                      /* tray: hand, the two dials, its padding */
         + 2 * var(--stack-gap)
-        + 76px
-        + 56px
     );
 }
 
@@ -214,6 +217,10 @@
        of them always read as the same weight of line */
     --ring: 2.5px;
 
+    /* Cells and the hand slot: a share of their own size rather than a fixed
+       number, so the curve looks the same on a 38px tile and a 60px one. */
+    --radius-cell: 27%;
+
     --radius-sm: 10px;
     --radius: 14px;
     --radius-lg: 20px;
@@ -261,15 +268,15 @@ body {
        it, then clay, then the rock the good things come out of. It is the
        ladder stood on end - you are looking at where the run is going.
 
-       Kept pale and soft on purpose. Hard-edged seam lines read as banding
-       rather than geology, and a cold grey floor leaves the hand sitting in
-       mud, so the layers are feathered over several percent and the bottom
-       stays warm. */
+       Kept pale and soft on purpose: hard-edged seam lines read as banding
+       rather than geology, so the layers are feathered over several percent.
+       The strata are neutral and the only colour in them comes from the
+       mineral flecks, which are the pieces' own hues. */
     background: var(--bg);
     background-image:
         /* light coming in at the surface */
         radial-gradient(120% 44% at 50% -8%, rgba(255, 255, 255, 0.9), transparent 72%),
-        radial-gradient(62% 26% at 88% 0%, rgba(232, 240, 222, 0.6), transparent 74%),
+        radial-gradient(62% 26% at 88% 0%, rgba(255, 255, 255, 0.75), transparent 74%),
         /* mineral flecks caught in the deeper layers */
         radial-gradient(circle at 15% 64%, rgba(176, 138, 99, 0.1), transparent 11%),
         radial-gradient(circle at 84% 73%, rgba(140, 146, 157, 0.09), transparent 10%),
@@ -279,7 +286,7 @@ body {
         linear-gradient(
             180deg,
             transparent 30%,
-            rgba(150, 121, 88, 0.07) 35%,
+            rgba(120, 128, 140, 0.06) 35%,
             transparent 40%,
             transparent 55%,
             rgba(126, 130, 138, 0.06) 60%,
@@ -291,13 +298,13 @@ body {
         /* the strata themselves */
         linear-gradient(
             180deg,
-            #fdfaf4 0%,
-            #f8f2e6 24%,
-            #f1e7d6 42%,
-            #eadfcb 60%,
-            #e4dac6 76%,
-            #ded5c4 90%,
-            #d8d1c3 100%
+            #ffffff 0%,
+            #f8fafc 24%,
+            #f0f3f7 42%,
+            #e8ecf2 60%,
+            #e1e6ed 76%,
+            #dae0e8 90%,
+            #d4dae3 100%
         );
     background-attachment: fixed;
     -webkit-font-smoothing: antialiased;
@@ -833,7 +840,7 @@ svg.icon--art {
     display: none;
     place-items: center;
     padding: 24px 20px;
-    background: rgba(245, 239, 227, 0.88);
+    background: rgba(238, 240, 243, 0.9);
     backdrop-filter: blur(3px);
 }
 
@@ -1132,7 +1139,7 @@ svg.icon--art {
     width: 66px;
     height: 66px;
     padding: 0;
-    border: 1px solid var(--line-strong);
+    border: var(--ring) solid var(--line-strong);
     border-radius: 50%;
     background: transparent;
     color: var(--ink);
@@ -1338,31 +1345,41 @@ svg.icon--art {
     --cols: 6;
     --rows: 6;
     --gap: 7px;
+    --pad: 6px;
 
-    /* A tile has to fit twice over: across the screen, which the columns
-       decide, and down it, which the rows do. Taking the smaller of the two is
-       what lets the board be taller than it is wide. */
-    --tile: clamp(
-        34px,
-        min(
-            12.5vmin,
-            calc(
-                (var(--stage) - var(--board-reserve) - var(--rows) * var(--gap))
-                / var(--rows)
-            )
-        ),
-        94px
+    /* What is actually left for tiles once the frame, the board's own padding
+       and the gaps between cells are taken out — across, and down. */
+    --room-across: calc(
+        100vw - var(--safe-left) - var(--safe-right)
+        - 2 * var(--frame-side) - 2 * var(--pad)
+        - (var(--cols) - 1) * var(--gap)
     );
+
+    --room-down: calc(
+        var(--stage) - var(--board-reserve)
+        - 2 * var(--pad) - (var(--rows) - 1) * var(--gap)
+        - 8px          /* the board's own border, plus rounding on each row */
+    );
+
+    /* Whichever runs out first. Width wins on most phones, which is the point:
+       the grid should reach the edges of the screen it is played on. */
+    --tile: max(20px, min(
+        calc(var(--room-across) / var(--cols)),
+        calc(var(--room-down) / var(--rows))
+    ));
 
     position: relative;
     display: grid;
     grid-template-columns: repeat(var(--cols), var(--tile));
     gap: var(--gap);
-    padding: 14px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    background: var(--panel);
-    box-shadow: var(--shadow-1);
+    padding: var(--pad);
+
+    /* No card. The board used to be a white panel floating on the page, which
+       made it the only object in the game that was not simply sitting on the
+       ground — score, hand and dials all are. The tiles carry the surface
+       instead, so the whole screen reads as one material. */
+    border: none;
+    background: none;
 }
 
 .tile {
@@ -1373,8 +1390,9 @@ svg.icon--art {
     height: var(--tile);
     padding: 0;
     border: none;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-cell);
     background: var(--panel-soft);
+    box-shadow: var(--shadow-1);
     cursor: default;
     transition: transform 0.13s ease, background 0.2s ease,
         box-shadow 0.18s ease;
@@ -1754,7 +1772,7 @@ svg.icon--art {
     height: 58px;
     padding: 0;
     border: none;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-cell);
     opacity: 0.55;
     transition: transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
 }
@@ -1793,7 +1811,7 @@ svg.icon--art {
     place-items: center;
     padding: 20px;
 
-    background: rgba(245, 239, 227, 0.55);
+    background: rgba(238, 240, 243, 0.62);
     backdrop-filter: blur(2.5px);
 }
 
@@ -1886,24 +1904,6 @@ svg.icon--art {
         padding: 7px 8px;
     }
 
-    .board {
-        /* Whichever runs out first, the width across the columns or the
-           height down the rows. */
-        --tile: clamp(
-            26px,
-            min(
-                calc(
-                    (100vw - var(--safe-left) - var(--safe-right) - 40px)
-                    / var(--cols) - 6px
-                ),
-                calc(
-                    (var(--stage) - var(--board-reserve) - var(--rows) * var(--gap))
-                    / var(--rows)
-                )
-            ),
-            94px
-        );
-    }
 }
 
 .hand.is-waiting {
@@ -2049,10 +2049,13 @@ svg.icon--art {
 
 /* Pieces blown up and faded out, behind everything. See js/ui/backdrop.js. */
 
+/* Behind the page rather than in front of the background: giving the table a
+   stacking context instead put it over the fixed buttons, and the back arrow
+   stopped taking clicks. */
 .backdrop {
     position: fixed;
     inset: 0;
-    z-index: 0;
+    z-index: -1;
     overflow: hidden;
     pointer-events: none;
 }
@@ -2075,19 +2078,6 @@ svg.icon--art {
 @keyframes shard-drift {
     0%, 100% { transform: rotate(var(--spin, 0deg)) translate3d(0, 0, 0); }
     50% { transform: rotate(var(--spin, 0deg)) translate3d(0, -2.2%, 0); }
-}
-
-/* the game itself rides above it */
-.table,
-.back,
-.rungs {
-    position: relative;
-    z-index: 1;
-}
-
-.back,
-.rungs {
-    position: fixed;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2138,10 +2128,12 @@ svg.icon--art {
     --frame-bottom: 74px;
 }
 .phone .board {
-    --tile: max(20px, min(
-        calc((400px - 44px) / var(--cols) - var(--gap)),
-        calc((840px - var(--board-reserve) - var(--rows) * var(--gap)) / var(--rows))
-    ));
+    /* the frame stands in for the viewport, so the game's own width and height
+       fits are recomputed against it rather than against the browser window */
+    --room-across: calc(400px - 2 * var(--frame-side) - 2 * var(--pad)
+                        - (var(--cols) - 1) * var(--gap));
+    --room-down: calc(840px - var(--board-reserve) - 2 * var(--pad)
+                      - (var(--rows) - 1) * var(--gap) - 8px);
 }
 
 .panel { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
@@ -2339,7 +2331,7 @@ svg.icon--art {
         <span class="knob__label">Rows</span>
         <div class="stepper" data-knob="rows" data-min="5" data-max="16">
           <button type="button" data-step="-1" aria-label="Fewer rows">&minus;</button>
-          <output>9</output>
+          <output>6</output>
           <button type="button" data-step="1" aria-label="More rows">+</button>
         </div>
         <p class="knob__note">Twelve rows collides with the hand on a 375px phone.
@@ -2409,29 +2401,42 @@ svg.icon--art {
       <span class="group__name">Dials</span>
       <div class="knob">
         <span class="knob__label">Merges to fill the star</span>
-        <div class="stepper" data-knob="starPace" data-min="4" data-max="60">
-          <button type="button" data-step="-4" aria-label="Fill sooner">&minus;</button>
-          <output>24</output>
-          <button type="button" data-step="4" aria-label="Fill later">+</button>
+        <div class="stepper" data-knob="starPace" data-min="10" data-max="200">
+          <button type="button" data-step="-10" aria-label="Fill sooner">&minus;</button>
+          <output>60</output>
+          <button type="button" data-step="10" aria-label="Fill later">+</button>
         </div>
-        <p class="knob__note">Left of the hand. Fills on <b>score</b>, asking for
-          this many merges at whatever level you are playing, so a star costs the
-          same work at dirt as at diamond. Early on the 900-point floor paces it.
-          Press it, then tap a piece: every one of that kind leaves. <b>A sweep
-          costs a turn</b> &mdash; it is the move, so the falls close in.</p>
+        <p class="knob__note">Left of the hand. Counted in <b>merges, not
+          points</b>: points inflate up the ladder and a late cascade pays
+          several at once, which had stars arriving every 22 moves early and
+          every 6 late. Counted this way it lands every ~40 moves wherever you
+          are. Press it, then tap a piece: every one of that kind leaves.
+          <b>A sweep costs a turn.</b></p>
       </div>
       <div class="knob">
         <span class="knob__label">Fallen pieces per bomb</span>
         <div class="stepper" data-knob="bombPace" data-min="4" data-max="40">
           <button type="button" data-step="-2" aria-label="Fill sooner">&minus;</button>
-          <output>14</output>
+          <output>10</output>
           <button type="button" data-step="2" aria-label="Fill later">+</button>
         </div>
         <p class="knob__note">Right of the hand. Fills on what the <b>sky drops
           on you</b>, not on scoring &mdash; so the worse a run is going, the
           sooner you are handed the thing that digs you out. Press it, then tap
-          a column: a stick drops in and burns its fuse there. <b>Free</b> &mdash;
+          a column: a stick drops in and burns down there. <b>Free</b> &mdash;
           it would be a poor gift if the sky got a fall out of it too.</p>
+      </div>
+      <div class="knob">
+        <span class="knob__label">Turns before a stick blows</span>
+        <div class="stepper" data-knob="dynamiteFuse" data-min="1" data-max="12">
+          <button type="button" data-step="-1" aria-label="Sooner">&minus;</button>
+          <output>5</output>
+          <button type="button" data-step="1" aria-label="Later">+</button>
+        </div>
+        <p class="knob__note">A stick goes off on its own after this many turns,
+          or sooner if a merge beside it lights it. <b>Dynamite never falls from
+          the sky now</b> &mdash; the only sticks on the board are the ones you
+          placed.</p>
       </div>
     </div>
 
@@ -2459,7 +2464,7 @@ Game.Config = {
         saveKey: "gridoffortune.save",
 
         cols: 6,
-        rows: 9,
+        rows: 6,
         seedPieces: 6,
         handSize: 1,
 
@@ -2520,13 +2525,16 @@ Game.Config = {
 
         blastPays: 1,
 
-        dynamiteFuse: 12,
+        // turns a stick sits before it goes off, if nothing lights it first
+        dynamiteFuse: 5,
 
         blastSpacing: 2,
 
+        // Dynamite is never dealt or dropped any more — the only sticks on the
+        // board are the ones the player placed off the bomb dial. These are
+        // kept at zero rather than deleted so the sky can be given it back.
         dynamiteFrom: 1250,
-
-        dynamiteChance: 0.07,
+        dynamiteChance: 0,
         dynamiteCap: 1,
 
         // The star is no longer dealt into the grid — it is charged on the
@@ -2535,17 +2543,16 @@ Game.Config = {
         lodestoneChance: 0,
         lodestoneCap: 1,
 
-        // Roughly how many merges at your current level fill the meter. The
-        // need scales with what a merge is worth, so a star costs the same
-        // effort at dirt as it does at diamond — score just arrives faster.
-        // starLeast is the floor, and it is what paces the opening, where a
-        // merge is worth almost nothing.
-        starPace: 24,
-        starLeast: 900,
+        // Merges that fill the star. Merges, not points: points inflate up the
+        // ladder and cascades pay several at once, which had stars arriving
+        // every 22 moves early and every 6 late. Counted this way a star is the
+        // same amount of play at dirt as at diamond.
+        starPace: 60,
 
         // pieces out of the sky before a stick of dynamite is owed:
         // the bomb is paid for by being buried, not by scoring
-        bombPace: 14,
+        bombPace: 10,
+
 
         rubbleFrom: 8,
         rubbleRise: 0.05,
@@ -4017,7 +4024,7 @@ window.Game = window.Game || {};
    Two dials either side of the hand. Both fill, both are spent by pressing
    them, and that is where the similarity ends — what feeds them is the point.
 
-     star   fills on score.   Playing well earns it. Spending one owes the board
+     star   fills on merges.  Playing well earns it. Spending one owes the board
                               a sweep: pick a piece and every one of them goes.
      bomb   fills on falls.   Being buried earns it. Spending one puts a stick
                               of dynamite in your hand to place where you like.
@@ -4027,10 +4034,13 @@ window.Game = window.Game || {};
    going well is handed the tool for pressing an advantage. Feeding them both
    from score would have made them the same dial twice.
 
-   What the star costs scales with the level being played: a merge at diamond is
-   worth thousands of times a merge at dirt, so a flat price would mean one star
-   an hour early and one a move late. The bomb counts pieces instead, which does
-   not inflate, so it needs no scaling.
+   Both count things rather than points, and that is the whole trick. Points
+   inflate — a merge at diamond is worth thousands of times a merge at dirt, and
+   worse, a placement late in a run sets off cascades that score several merges
+   at once. Pricing a star in points meant it arrived every 22 moves early on
+   and every 6 moves late, which is the opposite of a cost. Priced in merges, a
+   star is the same amount of play wherever you are on the ladder, and it still
+   fills faster when you are playing well — because you are merging more.
    ============================================================================= */
 
 (function () {
@@ -4092,14 +4102,11 @@ window.Game = window.Game || {};
 
     /* ---- what each one asks for -------------------------------------------- */
     function starCost() {
-        var state = Game.Round.get();
-        var top = state ? Game.Pieces.list[state.highest - 1] : null;
-        var worth = (top && top.points) || 1;
-        return Math.max(settings().starLeast || 900, worth * (settings().starPace || 24));
+        return Math.max(1, settings().starPace || 20);
     }
 
     function bombCost() {
-        return Math.max(1, settings().bombPace || 14);
+        return Math.max(1, settings().bombPace || 10);
     }
 
     /* ---- what each one does to the square you pick -------------------------- */
@@ -4112,7 +4119,8 @@ window.Game = window.Game || {};
     function drop(cell) {
         if (!cell) return false;
         // the stick is placed, not detonated: it falls down the column you
-        // picked and burns its fuse there like any other stick
+        // picked and burns its fuse there, going off on its own after
+        // dynamiteFuse turns if a merge next to it has not lit it first
         return !!Game.Round.place(cell.x, Game.Pieces.dynamite.id);
     }
 
@@ -4120,7 +4128,7 @@ window.Game = window.Game || {};
     var bomb = dial("bomb", bombCost, drop);
 
     var armed = null;                 // the dial waiting for a square
-    var seen = 0;   // score at the last reading, so only the gain is counted
+
 
     Game.Charges = {
         star: star,
@@ -4179,19 +4187,20 @@ window.Game = window.Game || {};
 
         init: function () {
             Game.Events.on("game:started", function () {
-                seen = Game.Round.get() ? Game.Round.get().score : 0;
                 armed = null;
                 star.reset();
                 bomb.reset();
             });
 
-            // score feeds the star
-            Game.Events.on("board:steps", function () {
-                var state = Game.Round.get();
-                if (!state) return;
-                var gained = state.score - seen;
-                seen = state.score;
-                star.feed(gained);
+            // every merge feeds the star, wherever it came from — a placement,
+            // a cascade, a blast. A chain therefore pays several at once.
+            Game.Events.on("board:steps", function (detail) {
+                var steps = (detail && detail.steps) || [];
+                var merges = 0;
+                for (var i = 0; i < steps.length; i++) {
+                    if (steps[i].type === "merge") merges++;
+                }
+                star.feed(merges);
             });
 
             // what the sky drops feeds the bomb
@@ -6743,12 +6752,56 @@ window.Game = window.Game || {};
     var still = false;
     var last = 0;
 
+    /* ---- the pieces themselves, small enough to be dust ---------------------
+       A dial throws off what it is: four-pointed stars from the star, little
+       sticks from the bomb. Both are drawn rather than scaled down from the
+       art, because at four pixels the real drawings are a smudge — what
+       survives at this size is the silhouette and nothing else. */
+    function star(ctx, x, y, r, turn) {
+        var waist = r * 0.34;
+        ctx.beginPath();
+        for (var i = 0; i < 8; i++) {
+            var reach = i % 2 ? waist : r;
+            var a = turn + i * Math.PI / 4;
+            var px = x + Math.cos(a) * reach;
+            var py = y + Math.sin(a) * reach;
+            if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
+        }
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    function stick(ctx, x, y, r, turn) {
+        var w = r * 1.5;
+        var h = r * 0.95;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(turn);
+        ctx.beginPath();
+        // a rounded body, and a nub for the fuse
+        ctx.moveTo(-w / 2 + h / 3, -h / 2);
+        ctx.lineTo(w / 2 - h / 3, -h / 2);
+        ctx.quadraticCurveTo(w / 2, -h / 2, w / 2, 0);
+        ctx.quadraticCurveTo(w / 2, h / 2, w / 2 - h / 3, h / 2);
+        ctx.lineTo(-w / 2 + h / 3, h / 2);
+        ctx.quadraticCurveTo(-w / 2, h / 2, -w / 2, 0);
+        ctx.quadraticCurveTo(-w / 2, -h / 2, -w / 2 + h / 3, -h / 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(w / 2 + r * 0.22, -h * 0.55, r * 0.26, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+
     function mote() {
         return {
             x: 0.15 + Math.random() * 0.7,
             y: Math.random(),
-            size: 0.5 + Math.random() * 1.1,
+            size: 1.6 + Math.random() * 1.5,
             rise: 0.06 + Math.random() * 0.14,
+            turn: Math.random() * Math.PI,
+            twist: (Math.random() < 0.5 ? -1 : 1) * (0.3 + Math.random()),
             glow: 0.3 + Math.random() * 0.7
         };
     }
@@ -6760,7 +6813,9 @@ window.Game = window.Game || {};
             angle: Math.random() * Math.PI * 2,
             spin: (Math.random() < 0.5 ? -1 : 1) * (0.25 + Math.random() * 0.5),
             out: 0.02 + Math.random() * 0.85,      // 0 at the rim, 1 at the edge
-            size: 0.6 + Math.random() * 1.3,
+            size: 1.8 + Math.random() * 1.6,
+            turn: Math.random() * Math.PI,
+            twist: (Math.random() < 0.5 ? -1 : 1) * (0.4 + Math.random()),
             life: Math.random()
         };
     }
@@ -6771,6 +6826,7 @@ window.Game = window.Game || {};
 
         var one = {
             name: host.getAttribute("data-charge"),
+            shape: host.getAttribute("data-charge") === "bomb" ? stick : star,
             host: host,
             canvas: canvas,
             ctx: canvas.getContext("2d"),
@@ -6831,6 +6887,7 @@ window.Game = window.Game || {};
             var m = one.motes[i];
             if (!still) {
                 m.y -= m.rise * gap * (one.ready ? 1.9 : 1);
+                m.turn += m.twist * gap;
                 if (m.y < 0) { one.motes[i] = mote(); one.motes[i].y = 1; continue; }
             }
             var y = top + span * m.y;
@@ -6838,9 +6895,8 @@ window.Game = window.Game || {};
 
             ctx.globalAlpha = (one.ready ? 0.85 : 0.5) * m.glow;
             ctx.fillStyle = one.ready ? "#fffdf0" : "#ffffff";
-            ctx.beginPath();
-            ctx.arc(cx - r + span * m.x, y, m.size * (one.ready ? 1.25 : 1), 0, Math.PI * 2);
-            ctx.fill();
+            one.shape(ctx, cx - r + span * m.x, y,
+                      m.size * (one.ready ? 1.2 : 1), m.turn);
         }
 
         ctx.restore();
@@ -6851,18 +6907,17 @@ window.Game = window.Game || {};
                 var s = one.sparks[k];
                 if (!still) {
                     s.angle += s.spin * gap;
+                    s.turn += s.twist * gap;
                     s.life += gap * 0.55;
                     if (s.life > 1) { one.sparks[k] = spark(); one.sparks[k].life = 0; continue; }
                 }
-                var reach = r + 2 + s.out * (PAD - 3);
+                var reach = r + 3 + s.out * (PAD - 4);
                 var fade = Math.sin(Math.min(1, s.life) * Math.PI);
 
-                ctx.globalAlpha = 0.8 * fade;
+                ctx.globalAlpha = 0.85 * fade;
                 ctx.fillStyle = one.lit;
-                ctx.beginPath();
-                ctx.arc(cx + Math.cos(s.angle) * reach,
-                        cy + Math.sin(s.angle) * reach, s.size, 0, Math.PI * 2);
-                ctx.fill();
+                one.shape(ctx, cx + Math.cos(s.angle) * reach,
+                          cy + Math.sin(s.angle) * reach, s.size, s.turn);
             }
         }
 
@@ -6965,22 +7020,20 @@ window.Game = window.Game || {};
    are; and it can never drift out of step with the art, since redrawing a piece
    redraws its shadow on the wall behind the board too.
 
-   The middle of the screen is left alone. Everything is placed out at the
-   edges, where the board and the hand are not.
+   The middle of the screen is left alone, and it is kept very faint: the board
+   is not a white card any more, so nothing covers this up — anything stronger
+   than a whisper tints the whole game.
    ============================================================================= */
 
 (function () {
     /* pieces with a silhouette worth reading at size, and where each one sits:
        x and y as percentages, kept clear of the middle band */
     var CAST = [
-        { art: "diamond",  x: -8,  y: 6,   size: 46, spin: -14, fade: 0.09 },
-        { art: "lodestone", x: 78, y: -6,  size: 52, spin: 12,  fade: 0.08 },
-        { art: "zinc",     x: 82,  y: 34,  size: 34, spin: -8,  fade: 0.07 },
-        { art: "amethyst", x: -12, y: 44,  size: 40, spin: 16,  fade: 0.07 },
-        { art: "crown",    x: 58,  y: 82,  size: 44, spin: -10, fade: 0.08 },
-        { art: "rock",     x: -6,  y: 76,  size: 38, spin: 8,   fade: 0.09 },
-        { art: "emerald",  x: 30,  y: -12, size: 30, spin: -18, fade: 0.06 },
-        { art: "quartz",   x: 24,  y: 88,  size: 28, spin: 14,  fade: 0.06 }
+        { art: "diamond",  x: -10, y: 4,   size: 44, spin: -14, fade: 0.045 },
+        { art: "lodestone", x: 80, y: -8,  size: 48, spin: 12,  fade: 0.04 },
+        { art: "amethyst", x: -14, y: 46,  size: 38, spin: 16,  fade: 0.035 },
+        { art: "crown",    x: 62,  y: 84,  size: 42, spin: -10, fade: 0.04 },
+        { art: "zinc",     x: 84,  y: 40,  size: 32, spin: -8,  fade: 0.035 }
     ];
 
     Game.Backdrop = {
@@ -7046,11 +7099,11 @@ document.addEventListener("DOMContentLoaded", function () {
     /* the shipped numbers, captured before anything on the bench moves them */
     var SHIPPED = {};
     var KNOBS = ["cols", "rows", "mergeAt", "mergeDiagonals", "dealBehind",
-                 "fallFewer", "fallSlower", "starPace", "bombPace"];
+                 "fallFewer", "fallSlower", "starPace", "bombPace", "dynamiteFuse"];
 
     /* what the bench opens on: the tall board, so the shape under discussion is
        the first thing you see */
-    var OPENING = { cols: 6, rows: 9, mergeAt: 3 };
+    var OPENING = { cols: 6, rows: 6, mergeAt: 3 };
 
     var wanted = {};
 
