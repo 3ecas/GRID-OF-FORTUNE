@@ -84,15 +84,13 @@ Game.Config = {
         lodestoneChance: 0,
         lodestoneCap: 1,
 
-        // Merges that fill the star. Merges, not points: points inflate up the
-        // ladder and cascades pay several at once, which had stars arriving
-        // every 22 moves early and every 6 late. Counted this way a star is the
-        // same amount of play at dirt as at diamond.
-        starPace: 60,
+        // Chain multiplier, over and above 1, that fills the star. A plain
+        // merge scores nothing here; a three-deep cascade pays 1 + 2. Counted
+        // rather than scored, so it costs the same at dirt as at diamond.
+        starPace: 24,
 
-        // pieces out of the sky before a stick of dynamite is owed:
-        // the bomb is paid for by being buried, not by scoring
-        bombPace: 10,
+        // merges that fill the bomb — any merge, one for one
+        bombPace: 24,
 
 
         rubbleFrom: 8,

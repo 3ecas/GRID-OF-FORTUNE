@@ -2060,6 +2060,57 @@ svg.icon--art {
     pointer-events: none;
 }
 
+/* The colour of the current stage, laid over the page as soft pools. The
+   gradients are painted in currentColor so that transitioning `color` moves the
+   whole wash — a custom property inside a gradient would jump instead.
+
+   Two elements, because one cannot animate two transforms: the outer breathes
+   its opacity, the inner wanders. Their periods are deliberately awkward
+   numbers so the pair never lines up twice, which is what makes the drift read
+   as random rather than as a loop. */
+.wash {
+    position: absolute;
+    inset: -25%;
+    color: var(--vibe, #b08a63);
+    opacity: 0.3;
+    transition: color 1.6s ease;
+    animation: wash-breathe 29s ease-in-out infinite;
+}
+
+.wash__pool {
+    position: absolute;
+    inset: 0;
+    background:
+        /* the floor you are digging in, and light from the seam above it */
+        radial-gradient(66% 40% at 50% 92%, currentColor, transparent 74%),
+        radial-gradient(42% 26% at 14% 8%, currentColor, transparent 76%),
+        radial-gradient(38% 24% at 88% 26%, currentColor, transparent 78%),
+        linear-gradient(180deg, transparent 34%, currentColor 128%);
+    filter: blur(30px);
+    animation: wash-wander 63s ease-in-out infinite;
+    will-change: transform;
+}
+
+@keyframes wash-wander {
+    0%   { transform: translate3d(0, 0, 0) scale(1) rotate(0deg); }
+    17%  { transform: translate3d(-3.5%, 2.4%, 0) scale(1.08) rotate(-2.4deg); }
+    35%  { transform: translate3d(2.8%, -1.6%, 0) scale(1.03) rotate(1.8deg); }
+    52%  { transform: translate3d(4.2%, 3.1%, 0) scale(1.11) rotate(3.1deg); }
+    71%  { transform: translate3d(-2.1%, -2.8%, 0) scale(1.05) rotate(-1.2deg); }
+    88%  { transform: translate3d(1.4%, 1.9%, 0) scale(1.07) rotate(2.2deg); }
+    100% { transform: translate3d(0, 0, 0) scale(1) rotate(0deg); }
+}
+
+@keyframes wash-breathe {
+    0%, 100% { opacity: 0.26; }
+    50%      { opacity: 0.34; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wash { transition: none; animation: none; }
+    .wash__pool { animation: none; }
+}
+
 .shard {
     position: absolute;
     display: block;
@@ -2081,7 +2132,58 @@ svg.icon--art {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .shard { animation: none; }
+    /* The colour of the current stage, laid over the page as soft pools. The
+   gradients are painted in currentColor so that transitioning `color` moves the
+   whole wash — a custom property inside a gradient would jump instead.
+
+   Two elements, because one cannot animate two transforms: the outer breathes
+   its opacity, the inner wanders. Their periods are deliberately awkward
+   numbers so the pair never lines up twice, which is what makes the drift read
+   as random rather than as a loop. */
+.wash {
+    position: absolute;
+    inset: -25%;
+    color: var(--vibe, #b08a63);
+    opacity: 0.3;
+    transition: color 1.6s ease;
+    animation: wash-breathe 29s ease-in-out infinite;
+}
+
+.wash__pool {
+    position: absolute;
+    inset: 0;
+    background:
+        /* the floor you are digging in, and light from the seam above it */
+        radial-gradient(66% 40% at 50% 92%, currentColor, transparent 74%),
+        radial-gradient(42% 26% at 14% 8%, currentColor, transparent 76%),
+        radial-gradient(38% 24% at 88% 26%, currentColor, transparent 78%),
+        linear-gradient(180deg, transparent 34%, currentColor 128%);
+    filter: blur(30px);
+    animation: wash-wander 63s ease-in-out infinite;
+    will-change: transform;
+}
+
+@keyframes wash-wander {
+    0%   { transform: translate3d(0, 0, 0) scale(1) rotate(0deg); }
+    17%  { transform: translate3d(-3.5%, 2.4%, 0) scale(1.08) rotate(-2.4deg); }
+    35%  { transform: translate3d(2.8%, -1.6%, 0) scale(1.03) rotate(1.8deg); }
+    52%  { transform: translate3d(4.2%, 3.1%, 0) scale(1.11) rotate(3.1deg); }
+    71%  { transform: translate3d(-2.1%, -2.8%, 0) scale(1.05) rotate(-1.2deg); }
+    88%  { transform: translate3d(1.4%, 1.9%, 0) scale(1.07) rotate(2.2deg); }
+    100% { transform: translate3d(0, 0, 0) scale(1) rotate(0deg); }
+}
+
+@keyframes wash-breathe {
+    0%, 100% { opacity: 0.26; }
+    50%      { opacity: 0.34; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wash { transition: none; animation: none; }
+    .wash__pool { animation: none; }
+}
+
+.shard { animation: none; }
 }
 
 
@@ -2543,15 +2645,13 @@ Game.Config = {
         lodestoneChance: 0,
         lodestoneCap: 1,
 
-        // Merges that fill the star. Merges, not points: points inflate up the
-        // ladder and cascades pay several at once, which had stars arriving
-        // every 22 moves early and every 6 late. Counted this way a star is the
-        // same amount of play at dirt as at diamond.
-        starPace: 60,
+        // Chain multiplier, over and above 1, that fills the star. A plain
+        // merge scores nothing here; a three-deep cascade pays 1 + 2. Counted
+        // rather than scored, so it costs the same at dirt as at diamond.
+        starPace: 24,
 
-        // pieces out of the sky before a stick of dynamite is owed:
-        // the bomb is paid for by being buried, not by scoring
-        bombPace: 10,
+        // merges that fill the bomb — any merge, one for one
+        bombPace: 24,
 
 
         rubbleFrom: 8,
@@ -4024,23 +4124,24 @@ window.Game = window.Game || {};
    Two dials either side of the hand. Both fill, both are spent by pressing
    them, and that is where the similarity ends — what feeds them is the point.
 
-     star   fills on merges.  Playing well earns it. Spending one owes the board
-                              a sweep: pick a piece and every one of them goes.
-     bomb   fills on falls.   Being buried earns it. Spending one puts a stick
-                              of dynamite in your hand to place where you like.
+     star   fills on chains.  Only a merge that sets off another one pays, and
+                              the deeper the chain the more it pays. Spending
+                              one owes the board a sweep: pick a piece and every
+                              one of them goes.
+     bomb   fills on merges.  Any merge at all, one for one. Spending one puts a
+                              stick of dynamite in your hand to place.
 
-   So the star is a reward and the bomb is a relief valve, and a run that is
-   going badly is quietly handed the tool for digging out while a run that is
-   going well is handed the tool for pressing an advantage. Feeding them both
-   from score would have made them the same dial twice.
+   So the bomb is the wage for showing up and the star is the bonus for playing
+   well. A run of ordinary merges keeps the bomb coming; only a chain moves the
+   star, which makes the star something you set up rather than something that
+   accumulates.
 
    Both count things rather than points, and that is the whole trick. Points
    inflate — a merge at diamond is worth thousands of times a merge at dirt, and
    worse, a placement late in a run sets off cascades that score several merges
-   at once. Pricing a star in points meant it arrived every 22 moves early on
-   and every 6 moves late, which is the opposite of a cost. Priced in merges, a
-   star is the same amount of play wherever you are on the ladder, and it still
-   fills faster when you are playing well — because you are merging more.
+   at once. Pricing a dial in points meant it arrived every 22 moves early on
+   and every 6 moves late, which is the opposite of a cost. Counted this way,
+   both dials cost the same amount of play wherever you are on the ladder.
    ============================================================================= */
 
 (function () {
@@ -4192,20 +4293,26 @@ window.Game = window.Game || {};
                 bomb.reset();
             });
 
-            // every merge feeds the star, wherever it came from — a placement,
-            // a cascade, a blast. A chain therefore pays several at once.
             Game.Events.on("board:steps", function (detail) {
                 var steps = (detail && detail.steps) || [];
                 var merges = 0;
-                for (var i = 0; i < steps.length; i++) {
-                    if (steps[i].type === "merge") merges++;
-                }
-                star.feed(merges);
-            });
+                var over = 0;
 
-            // what the sky drops feeds the bomb
-            Game.Events.on("game:rain", function (detail) {
-                bomb.feed((detail && detail.count) || 1);
+                for (var i = 0; i < steps.length; i++) {
+                    var step = steps[i];
+                    if (step.type !== "merge" && step.type !== "cash") continue;
+
+                    if (step.type === "merge") merges++;
+
+                    // `times` is the chain multiplier the board worked out: 1
+                    // for a merge that stands on its own, more for one that
+                    // fell out of the merge before it. Only the part above 1
+                    // counts, so an unchained merge does nothing for the star.
+                    over += Math.max(0, (step.times || 1) - 1);
+                }
+
+                bomb.feed(merges);
+                star.feed(over);
             });
         }
     };
@@ -7041,7 +7148,10 @@ window.Game = window.Game || {};
             var host = document.getElementById("backdrop");
             if (!host || !Game.Icons) return;
 
-            host.innerHTML = CAST.map(function (one, i) {
+            var wash = '<span class="wash" aria-hidden="true">' +
+                       '<span class="wash__pool"></span></span>';
+
+            host.innerHTML = wash + CAST.map(function (one, i) {
                 if (!Game.Icons.has(one.art)) return "";
                 return '<span class="shard" style="' +
                     "left:" + one.x + "%;" +
@@ -7059,12 +7169,78 @@ window.Game = window.Game || {};
 })();
 
 ;
+/* ---- js/ui/vibe.js ---- */
+window.Game = window.Game || {};
+
+/* =============================================================================
+   VIBE
+   -----------------------------------------------------------------------------
+   The ground takes its colour from what you are digging out of it. Early on the
+   page is earthy, because dirt and rock are earthy; by the time you are making
+   amethyst it has gone violet, and gold turns it warm.
+
+   The colour is read straight off the piece's own --i-* tokens, so this needs no
+   palette of its own and cannot fall out of step with the art — redraw a piece
+   in a new colour and the room it is played in changes with it.
+
+   It moves on the deal window rather than on the single best piece you have
+   ever made: the window is what you are actually handling move to move, so the
+   room changes when the run changes, not when you get one lucky merge.
+   ============================================================================= */
+
+(function () {
+    var root = document.documentElement;
+    var showing = null;
+
+    function tone(name, fallback) {
+        var found = getComputedStyle(root).getPropertyValue(name).trim();
+        return found || fallback;
+    }
+
+    function wear(icon) {
+        if (!icon || icon === showing) return;
+        showing = icon;
+
+        var base = tone("--i-" + icon, tone("--ink-faint", "#a2aab6"));
+        root.style.setProperty("--vibe", base);
+        root.style.setProperty("--vibe-deep", tone("--i-" + icon + "-deep", base));
+        root.style.setProperty("--vibe-light", tone("--i-" + icon + "-light", base));
+    }
+
+    /* the middle of what is being dealt — the piece the run is about right now */
+    function current() {
+        var state = Game.Round.get();
+        if (!state || !Game.Pieces) return null;
+
+        var dealing = Game.Pieces.dealing(state.highest);
+        var piece = dealing[dealing.length - 1] || Game.Pieces.list[0];
+        return piece && piece.icon;
+    }
+
+    Game.Vibe = {
+        init: function () {
+            var look = function () { wear(current()); };
+
+            Game.Events.on("game:started", function () {
+                showing = null;
+                look();
+            });
+            Game.Events.on("game:dealing", look);
+            Game.Events.on("game:found", look);
+
+            wear("dirt");
+        }
+    };
+})();
+
+;
 /* ---- js/pages/game.js ---- */
 window.Game = window.Game || {};
 
 document.addEventListener("DOMContentLoaded", function () {
     function boot() {
         Game.Backdrop.init();
+        Game.Vibe.init();
         Game.Icons.hydrate(document);
         Game.Sound.start();
 

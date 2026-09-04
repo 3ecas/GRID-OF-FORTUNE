@@ -3,6 +3,7 @@ window.Game = window.Game || {};
 document.addEventListener("DOMContentLoaded", function () {
     function boot() {
         Game.Backdrop.init();
+        Game.Vibe.init();
         Game.Icons.hydrate(document);
         Game.Sound.start();
 

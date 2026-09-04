@@ -34,7 +34,10 @@ window.Game = window.Game || {};
             var host = document.getElementById("backdrop");
             if (!host || !Game.Icons) return;
 
-            host.innerHTML = CAST.map(function (one, i) {
+            var wash = '<span class="wash" aria-hidden="true">' +
+                       '<span class="wash__pool"></span></span>';
+
+            host.innerHTML = wash + CAST.map(function (one, i) {
                 if (!Game.Icons.has(one.art)) return "";
                 return '<span class="shard" style="' +
                     "left:" + one.x + "%;" +

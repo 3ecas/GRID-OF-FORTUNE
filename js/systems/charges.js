@@ -6,23 +6,24 @@ window.Game = window.Game || {};
    Two dials either side of the hand. Both fill, both are spent by pressing
    them, and that is where the similarity ends — what feeds them is the point.
 
-     star   fills on merges.  Playing well earns it. Spending one owes the board
-                              a sweep: pick a piece and every one of them goes.
-     bomb   fills on falls.   Being buried earns it. Spending one puts a stick
-                              of dynamite in your hand to place where you like.
+     star   fills on chains.  Only a merge that sets off another one pays, and
+                              the deeper the chain the more it pays. Spending
+                              one owes the board a sweep: pick a piece and every
+                              one of them goes.
+     bomb   fills on merges.  Any merge at all, one for one. Spending one puts a
+                              stick of dynamite in your hand to place.
 
-   So the star is a reward and the bomb is a relief valve, and a run that is
-   going badly is quietly handed the tool for digging out while a run that is
-   going well is handed the tool for pressing an advantage. Feeding them both
-   from score would have made them the same dial twice.
+   So the bomb is the wage for showing up and the star is the bonus for playing
+   well. A run of ordinary merges keeps the bomb coming; only a chain moves the
+   star, which makes the star something you set up rather than something that
+   accumulates.
 
    Both count things rather than points, and that is the whole trick. Points
    inflate — a merge at diamond is worth thousands of times a merge at dirt, and
    worse, a placement late in a run sets off cascades that score several merges
-   at once. Pricing a star in points meant it arrived every 22 moves early on
-   and every 6 moves late, which is the opposite of a cost. Priced in merges, a
-   star is the same amount of play wherever you are on the ladder, and it still
-   fills faster when you are playing well — because you are merging more.
+   at once. Pricing a dial in points meant it arrived every 22 moves early on
+   and every 6 moves late, which is the opposite of a cost. Counted this way,
+   both dials cost the same amount of play wherever you are on the ladder.
    ============================================================================= */
 
 (function () {
@@ -174,20 +175,26 @@ window.Game = window.Game || {};
                 bomb.reset();
             });
 
-            // every merge feeds the star, wherever it came from — a placement,
-            // a cascade, a blast. A chain therefore pays several at once.
             Game.Events.on("board:steps", function (detail) {
                 var steps = (detail && detail.steps) || [];
                 var merges = 0;
-                for (var i = 0; i < steps.length; i++) {
-                    if (steps[i].type === "merge") merges++;
-                }
-                star.feed(merges);
-            });
+                var over = 0;
 
-            // what the sky drops feeds the bomb
-            Game.Events.on("game:rain", function (detail) {
-                bomb.feed((detail && detail.count) || 1);
+                for (var i = 0; i < steps.length; i++) {
+                    var step = steps[i];
+                    if (step.type !== "merge" && step.type !== "cash") continue;
+
+                    if (step.type === "merge") merges++;
+
+                    // `times` is the chain multiplier the board worked out: 1
+                    // for a merge that stands on its own, more for one that
+                    // fell out of the merge before it. Only the part above 1
+                    // counts, so an unchained merge does nothing for the star.
+                    over += Math.max(0, (step.times || 1) - 1);
+                }
+
+                bomb.feed(merges);
+                star.feed(over);
             });
         }
     };
