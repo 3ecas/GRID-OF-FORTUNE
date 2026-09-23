@@ -147,20 +147,36 @@ window.Game = window.Game || {};
     }
 
     function blast(sticks) {
-        var gone = {};
+        var wave = {};
         var fired = {};
-        var queue = sticks.slice();
+        var far = Math.max(1, Game.Config.game.blastReach || 1);
+        var queue = sticks.map(function (stick) {
+            return { cell: stick, wave: 0 };
+        });
+
+        function reached(cell, distance) {
+            if (!(cell.id in wave) || distance < wave[cell.id]) wave[cell.id] = distance;
+        }
 
         while (queue.length) {
-            var stick = queue.shift();
+            // nearest first, so a stick caught by two blasts goes with the earlier
+            queue.sort(function (a, b) {
+                return a.wave - b.wave;
+            });
+            var next = queue.shift();
+            var stick = next.cell;
             if (fired[stick.id]) continue;
             fired[stick.id] = true;
+<<<<<<< Updated upstream
             gone[stick.id] = stick;
 
             // A square, not a cross: every cell within `blastReach` of the
             // stick, corners included. At 1 that is the eight squares around
             // it and nothing further out.
             var far = Math.max(1, Game.Config.game.blastReach || 1);
+=======
+            reached(stick, next.wave);
+>>>>>>> Stashed changes
 
             for (var dy = -far; dy <= far; dy++) {
                 for (var dx = -far; dx <= far; dx++) {
@@ -169,17 +185,46 @@ window.Game = window.Game || {};
                     var near = at(stick.x + dx, stick.y + dy);
                     if (!near || !near.piece) continue;
 
-                    gone[near.id] = near;
+                    reached(near, next.wave + step);
                     if (near.piece === Game.Pieces.dynamite.id && !fired[near.id]) {
-                        queue.push(near);
+                        queue.push({ cell: near, wave: next.wave + step });
                     }
                 }
             }
         }
 
-        return Object.keys(gone).map(function (id) {
-            return gone[id];
+        return Object.keys(wave)
+            .map(function (id) {
+                return { cell: cells[id], wave: wave[id] };
+            })
+            .sort(function (a, b) {
+                return a.wave - b.wave;
+            });
+    }
+
+    function detonate(sticks) {
+        var hits = blast(sticks);
+        var lit = snapshot();
+        var salvage = 0;
+
+        var ids = hits.map(function (hit) {
+            var was = Game.Pieces.byId(hit.cell.piece);
+            salvage += (was && was.points) || 0;
+            hit.cell.piece = null;
+            hit.cell.fuse = 0;
+            return hit.cell.id;
         });
+
+        return {
+            type: "blast",
+            cells: ids,
+            waves: hits.map(function (hit) {
+                return hit.wave;
+            }),
+            lit: lit,
+            points: Math.round(salvage * (Game.Config.game.blastPays || 0)),
+            board: snapshot()
+        };
     }
 
     /* A blast as a step: everything in reach goes, paid at its worth, and
@@ -372,7 +417,11 @@ window.Game = window.Game || {};
                 }
 
                 var lit = fuseLit(pair.eat);
+<<<<<<< Updated upstream
                 if (lit.length) steps.push(wreck(lit));
+=======
+                if (lit.length) steps.push(detonate(lit));
+>>>>>>> Stashed changes
             } else {
                 var line = fullLine();
                 if (!line) break;
@@ -539,6 +588,7 @@ window.Game = window.Game || {};
             return lit.length ? setOff(lit) : null;
         },
 
+<<<<<<< Updated upstream
         // Every stick on the board at once, fuse or no fuse. A full board
         // does this before it ends the run.
         detonate: function () {
@@ -548,6 +598,9 @@ window.Game = window.Game || {};
             });
 
             return lit.length ? setOff(lit) : null;
+=======
+            return report(resolve([detonate(lit)]));
+>>>>>>> Stashed changes
         },
 
         fuseAt: function (id) {
