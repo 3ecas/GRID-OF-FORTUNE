@@ -687,7 +687,6 @@
     background: none;
 
     --board-frame-out: 4px;    /* how far the frame sits outside the board box */
-    --board-frame-line: 6px;   /* drawn width of its edge: raise for a heavier frame */
 }
 
 /* The border around the grid is ICONS/GridFrame.png as a nine-slice: the four
@@ -703,17 +702,17 @@
     inset: calc(-1 * var(--board-frame-out));
     pointer-events: none;
 
-    /* The slice is a percentage, not a pixel count, so it follows the art
-       rather than the file: 10% is where the corner's curve gives way to the
-       straight edge, and that holds whether GridFrame.png is exported at 32px,
-       200px or 800px. Only the corner's share of the image has to stay put.
+    /* The whole PNG is drawn over the whole frame, not sliced into corners and
+       stretched sides. The board is square and so is the art, so it scales
+       evenly: the corner keeps the radius it was drawn with and the line keeps
+       its share of the width, and the frame reads as the file does.
 
-       The edge is then drawn at --board-frame-line, so the art is scaled by
-       line ÷ slice. The frame is smaller on screen than in the file, which is
-       what keeps it sharp on a 3x phone screen — and why it is left to scale
-       smoothly rather than being snapped to hard pixels. */
-    border: var(--board-frame-line) solid transparent;
-    border-image: url("../ICONS/GridFrame.png") 10% stretch;
+       That makes the file's own resolution the limit — it is scaled up to the
+       grid, so it wants to be at least as many pixels as the grid has on the
+       densest screen it will be played on. */
+    background-image: url("../ICONS/GridFrame.png");
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
 }
 
 .tile {
