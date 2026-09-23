@@ -687,7 +687,7 @@
     background: none;
 
     --board-frame-out: 4px;    /* how far the frame sits outside the board box */
-    --board-frame-line: 4px;   /* drawn width of its edge — matches the slice */
+    --board-frame-line: 6px;   /* drawn width of its edge: raise for a heavier frame */
 }
 
 /* The border around the grid is ICONS/GridFrame.png as a nine-slice: the four
@@ -703,12 +703,17 @@
     inset: calc(-1 * var(--board-frame-out));
     pointer-events: none;
 
-    border: var(--board-frame-line) solid transparent;
-    border-image: url("../ICONS/GridFrame.png") 4 stretch;
+    /* The slice is a percentage, not a pixel count, so it follows the art
+       rather than the file: 10% is where the corner's curve gives way to the
+       straight edge, and that holds whether GridFrame.png is exported at 32px,
+       200px or 800px. Only the corner's share of the image has to stay put.
 
-    /* 32px of pixel art, drawn one to one: keep the edges hard rather than
-       letting the browser smooth its 1px line into a grey blur */
-    image-rendering: pixelated;
+       The edge is then drawn at --board-frame-line, so the art is scaled by
+       line ÷ slice. The frame is smaller on screen than in the file, which is
+       what keeps it sharp on a 3x phone screen — and why it is left to scale
+       smoothly rather than being snapped to hard pixels. */
+    border: var(--board-frame-line) solid transparent;
+    border-image: url("../ICONS/GridFrame.png") 10% stretch;
 }
 
 .tile {
