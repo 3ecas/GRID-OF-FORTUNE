@@ -92,19 +92,18 @@ window.Game = window.Game || {};
         },
         {
             title: "Dynamite is the way out",
-            line: "It joins nothing. A merge landing beside it sets it off, and its whole row and column go with it.",
+            line: "It joins nothing. A merge landing beside it sets it off, and the eight squares around it go with it.",
             hold: 560,
             frames: [
-                board({ 8: "coal", 13: "rock", 14: "rock", 15: "dirt", 16: "dirt", 18: "dynamite", 19: "coal" }),
-                board({ 2: "dirt", 8: "coal", 13: "rock", 14: "rock", 15: "dirt", 16: "dirt", 18: "dynamite", 19: "coal" }, [], [2]),
-                board({ 12: "dirt", 8: "coal", 13: "rock", 14: "rock", 15: "dirt", 16: "dirt", 18: "dynamite", 19: "coal" }, [], [12]),
-                board({ 8: "coal", 13: "rock", 14: "rock", 15: "dirt", 16: "dirt", 17: "dirt", 18: "dynamite", 19: "coal" }),
-                board({ 8: "coal", 13: "rock", 14: "rock", 15: "dirt", 16: "dirt", 17: "dirt", 18: "dynamite", 19: "coal" }, [15, 16, 17], [18]),
-                board({ 8: "coal", 13: "rock", 14: "rock", 16: "rock", 18: "dynamite", 19: "coal" }, [], [18]),
-                board({ 8: "coal", 13: "rock", 14: "rock", 16: "rock", 18: "dynamite", 19: "coal" }, [8, 13, 16, 18, 19]),
-                board({ 14: "rock" }),
-                board({ 19: "rock" }, [], [19]),
-                board({ 19: "rock" })
+                board({ 13: "rock", 14: "rock", 15: "dirt", 16: "dirt", 18: "dynamite", 19: "coal" }),
+                board({ 2: "dirt", 13: "rock", 14: "rock", 15: "dirt", 16: "dirt", 18: "dynamite", 19: "coal" }, [], [2]),
+                board({ 12: "dirt", 13: "rock", 14: "rock", 15: "dirt", 16: "dirt", 18: "dynamite", 19: "coal" }, [], [12]),
+                board({ 13: "rock", 14: "rock", 15: "dirt", 16: "dirt", 17: "dirt", 18: "dynamite", 19: "coal" }),
+                board({ 13: "rock", 14: "rock", 15: "dirt", 16: "dirt", 17: "dirt", 18: "dynamite", 19: "coal" }, [15, 16, 17], [18]),
+                board({ 13: "rock", 14: "rock", 16: "rock", 18: "dynamite", 19: "coal" }, [], [18]),
+                board({ 13: "rock", 14: "rock", 16: "rock", 18: "dynamite", 19: "coal" }, [13, 14, 18, 19]),
+                board({ 16: "rock" }),
+                board({ 16: "rock" })
             ]
         },
         {

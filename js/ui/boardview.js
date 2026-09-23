@@ -17,7 +17,6 @@ window.Game = window.Game || {};
     var MERGE_MS = 125;
     var CLEAR_MS = 240;
     var FUSE_MS = 58;
-    var WAVE_MS = 50;
 
     function build() {
         var size = Game.Board.size();
@@ -278,44 +277,6 @@ window.Game = window.Game || {};
         }
     }
 
-    // the blast runs out from the stick along its row and column, knocking each
-    // piece off as it arrives rather than emptying the lines all at once
-    function playBlast(step, done) {
-        var last = 0;
-        var stick = tiles[step.cells[0]];
-
-        paintBoard(step.lit);
-        Game.Effects.shake(host, 11, 1);
-        Game.Effects.flash(10);
-        if (stick && step.points) {
-            Game.Toast.toScore(stick, "+" + step.points, null, "tint-gold");
-        }
-
-        step.cells.forEach(function (id, i) {
-            var wait = step.waves[i] * WAVE_MS;
-            last = Math.max(last, wait);
-
-            window.setTimeout(function () {
-                var tile = tiles[id];
-                if (!tile) return;
-
-                paintContents(id, null);
-                paintState(id);
-                tile.style.setProperty("--wait", "0ms");
-                void tile.offsetWidth;
-                tile.classList.add("is-cleared");
-
-                var box = tile.getBoundingClientRect();
-                Game.Sparks.burst(box.left + box.width / 2, box.top + box.height / 2, 5);
-            }, wait);
-        });
-
-        window.setTimeout(function () {
-            paintBoard(step.board);
-            done();
-        }, last + CLEAR_MS);
-    }
-
     function playSteps(steps, index, chain) {
         if (index >= steps.length) {
             advance();
@@ -333,17 +294,14 @@ window.Game = window.Game || {};
             return;
         }
 
-        if (step.type === "blast" && step.lit && step.waves) {
-            Game.Events.emit("board:merged", { step: step, chain: chain });
-            playBlast(step, function () {
-                playSteps(steps, index + 1, chain);
-            });
-            return;
-        }
-
-        if (step.type === "clear" || step.type === "cash") {
+        if (step.type === "clear" || step.type === "cash" || step.type === "blast") {
             paintBoard(step.board);
             playClear(step);
+
+            if (step.type === "blast") {
+                Game.Effects.shake(host, 11, 1);
+                Game.Effects.flash(10);
+            }
 
             Game.Events.emit("board:merged", { step: step, chain: chain });
             window.setTimeout(function () {

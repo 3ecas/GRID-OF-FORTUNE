@@ -147,70 +147,49 @@ window.Game = window.Game || {};
     }
 
     function blast(sticks) {
-        var wave = {};
+        var gone = {};
         var fired = {};
-        var far = Math.max(1, Game.Config.game.blastReach || 1);
-        var queue = sticks.map(function (stick) {
-            return { cell: stick, wave: 0 };
-        });
-
-        function reached(cell, distance) {
-            if (!(cell.id in wave) || distance < wave[cell.id]) wave[cell.id] = distance;
-        }
+        var queue = sticks.slice();
 
         while (queue.length) {
-            // nearest first, so a stick caught by two blasts goes with the earlier
-            queue.sort(function (a, b) {
-                return a.wave - b.wave;
-            });
-            var next = queue.shift();
-            var stick = next.cell;
+            var stick = queue.shift();
             if (fired[stick.id]) continue;
             fired[stick.id] = true;
-            reached(stick, next.wave);
+            gone[stick.id] = stick;
 
-            // A cross, not a square: the blast runs out along the stick's row
-            // and its column. A gap does not stop an arm, the edge does.
-            for (var i = 0; i < SIDES.length; i++) {
-                for (var step = 1; step <= far; step++) {
-                    var near = at(stick.x + SIDES[i][0] * step,
-                                  stick.y + SIDES[i][1] * step);
-                    if (!near) break;
-                    if (!near.piece) continue;
+            // A square, not a cross: every cell within `blastReach` of the
+            // stick, corners included. At 1 that is the eight squares around
+            // it and nothing further out.
+            var far = Math.max(1, Game.Config.game.blastReach || 1);
 
-                    reached(near, next.wave + step);
+            for (var dy = -far; dy <= far; dy++) {
+                for (var dx = -far; dx <= far; dx++) {
+                    if (!dx && !dy) continue;
+
+                    var near = at(stick.x + dx, stick.y + dy);
+                    if (!near || !near.piece) continue;
+
+                    gone[near.id] = near;
                     if (near.piece === Game.Pieces.dynamite.id && !fired[near.id]) {
-                        queue.push({ cell: near, wave: next.wave + step });
+                        queue.push(near);
                     }
                 }
             }
         }
 
-        return Object.keys(wave)
-            .map(function (id) {
-                return { cell: cells[id], wave: wave[id] };
-            })
-            .sort(function (a, b) {
-                return a.wave - b.wave;
-            });
+        return Object.keys(gone).map(function (id) {
+            return gone[id];
+        });
     }
 
     /* A blast as a step: everything in reach goes, paid at its worth, and
        every star caught in it owes the board a sweep — the player names a
        piece and every one of them goes. A blast is the only thing that sets
-       a star off.
-
-       `waves` carries how far out along the arms each cell was, and `lit` the
-       board as it stood, so the view can run the blast out from the stick
-       rather than emptying the whole row and column at once. */
+       a star off. */
     function wreck(lit) {
         var star = Game.Pieces.lodestone.id;
-        var before = snapshot();
         var salvage = 0;
-        var hits = blast(lit);
-
-        var gone = hits.map(function (hit) {
-            var cell = hit.cell;
+        var gone = blast(lit).map(function (cell) {
             var was = Game.Pieces.byId(cell.piece);
             salvage += (was && was.points) || 0;
             if (cell.piece === star) owed += 1;
@@ -222,10 +201,6 @@ window.Game = window.Game || {};
         return {
             type: "blast",
             cells: gone,
-            waves: hits.map(function (hit) {
-                return hit.wave;
-            }),
-            lit: before,
             points: Math.round(salvage * (Game.Config.game.blastPays || 0)),
             board: snapshot()
         };
