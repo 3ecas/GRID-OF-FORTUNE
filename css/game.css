@@ -685,6 +685,30 @@
        instead, so the whole screen reads as one material. */
     border: none;
     background: none;
+
+    --board-frame-out: 4px;    /* how far the frame sits outside the board box */
+    --board-frame-line: 4px;   /* drawn width of its edge — matches the slice */
+}
+
+/* The border around the grid is ICONS/GridFrame.png as a nine-slice: the four
+   corners come from the file's own corners and the sides stretch between them,
+   so redrawing that file redraws the border and nothing here has to change.
+
+   It is drawn on a layer of its own rather than on the board's own box, which
+   keeps it out of the --tile budget above — the grid is sized to the screen it
+   is played on, and a real border would take that space off the tiles. */
+.board::before {
+    content: "";
+    position: absolute;
+    inset: calc(-1 * var(--board-frame-out));
+    pointer-events: none;
+
+    border: var(--board-frame-line) solid transparent;
+    border-image: url("../ICONS/GridFrame.png") 4 stretch;
+
+    /* 32px of pixel art, drawn one to one: keep the edges hard rather than
+       letting the browser smooth its 1px line into a grey blur */
+    image-rendering: pixelated;
 }
 
 .tile {

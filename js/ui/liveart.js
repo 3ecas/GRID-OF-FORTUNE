@@ -17,6 +17,10 @@ window.Game = window.Game || {};
     var FIT = 0.9;
     var PIXEL_ART = 64;
 
+    // Art in the folder that is not a piece: the stylesheet reaches for these
+    // by name, so they are not misspelled pieces and are not worth a warning.
+    var NOT_PIECES = { gridframe: true };
+
     // the iOS build stamps this script's URL; the art carries the same stamp so
     // a redrawn PNG is not served from the webview's cache of the last build
     var STAMP = (function () {
@@ -90,7 +94,9 @@ window.Game = window.Game || {};
             var key = map[plain(file)];
 
             if (!key) {
-                if (window.console) console.warn("art: " + FOLDER + file + " is not named after a piece");
+                if (window.console && !NOT_PIECES[plain(file)]) {
+                    console.warn("art: " + FOLDER + file + " is not named after a piece");
+                }
             } else if (!taken[key]) {
                 taken[key] = true;
                 found.push({ key: key, file: file });
