@@ -333,25 +333,6 @@ window.Game = window.Game || {};
             return;
         }
 
-<<<<<<< Updated upstream
-        if (step.type === "clear" || step.type === "cash" || step.type === "blast") {
-=======
-        if (step.type === "wake") {
-            paintBoard(step.board);
-            step.cells.forEach(function (id) {
-                var tile = tiles[id];
-                if (!tile) return;
-                tile.classList.remove("is-cleared");
-                void tile.offsetWidth;
-                tile.classList.add("is-cleared");
-            });
-            Game.Effects.flash(7);
-            window.setTimeout(function () {
-                playSteps(steps, index + 1, chain);
-            }, CLEAR_MS);
-            return;
-        }
-
         if (step.type === "blast" && step.lit && step.waves) {
             Game.Events.emit("board:merged", { step: step, chain: chain });
             playBlast(step, function () {
@@ -361,7 +342,6 @@ window.Game = window.Game || {};
         }
 
         if (step.type === "clear" || step.type === "cash") {
->>>>>>> Stashed changes
             paintBoard(step.board);
             playClear(step);
 

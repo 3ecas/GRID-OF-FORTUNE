@@ -167,23 +167,16 @@ window.Game = window.Game || {};
             var stick = next.cell;
             if (fired[stick.id]) continue;
             fired[stick.id] = true;
-<<<<<<< Updated upstream
-            gone[stick.id] = stick;
-
-            // A square, not a cross: every cell within `blastReach` of the
-            // stick, corners included. At 1 that is the eight squares around
-            // it and nothing further out.
-            var far = Math.max(1, Game.Config.game.blastReach || 1);
-=======
             reached(stick, next.wave);
->>>>>>> Stashed changes
 
-            for (var dy = -far; dy <= far; dy++) {
-                for (var dx = -far; dx <= far; dx++) {
-                    if (!dx && !dy) continue;
-
-                    var near = at(stick.x + dx, stick.y + dy);
-                    if (!near || !near.piece) continue;
+            // A cross, not a square: the blast runs out along the stick's row
+            // and its column. A gap does not stop an arm, the edge does.
+            for (var i = 0; i < SIDES.length; i++) {
+                for (var step = 1; step <= far; step++) {
+                    var near = at(stick.x + SIDES[i][0] * step,
+                                  stick.y + SIDES[i][1] * step);
+                    if (!near) break;
+                    if (!near.piece) continue;
 
                     reached(near, next.wave + step);
                     if (near.piece === Game.Pieces.dynamite.id && !fired[near.id]) {
@@ -202,39 +195,22 @@ window.Game = window.Game || {};
             });
     }
 
-    function detonate(sticks) {
-        var hits = blast(sticks);
-        var lit = snapshot();
-        var salvage = 0;
-
-        var ids = hits.map(function (hit) {
-            var was = Game.Pieces.byId(hit.cell.piece);
-            salvage += (was && was.points) || 0;
-            hit.cell.piece = null;
-            hit.cell.fuse = 0;
-            return hit.cell.id;
-        });
-
-        return {
-            type: "blast",
-            cells: ids,
-            waves: hits.map(function (hit) {
-                return hit.wave;
-            }),
-            lit: lit,
-            points: Math.round(salvage * (Game.Config.game.blastPays || 0)),
-            board: snapshot()
-        };
-    }
-
     /* A blast as a step: everything in reach goes, paid at its worth, and
        every star caught in it owes the board a sweep — the player names a
        piece and every one of them goes. A blast is the only thing that sets
-       a star off. */
+       a star off.
+
+       `waves` carries how far out along the arms each cell was, and `lit` the
+       board as it stood, so the view can run the blast out from the stick
+       rather than emptying the whole row and column at once. */
     function wreck(lit) {
         var star = Game.Pieces.lodestone.id;
+        var before = snapshot();
         var salvage = 0;
-        var gone = blast(lit).map(function (cell) {
+        var hits = blast(lit);
+
+        var gone = hits.map(function (hit) {
+            var cell = hit.cell;
             var was = Game.Pieces.byId(cell.piece);
             salvage += (was && was.points) || 0;
             if (cell.piece === star) owed += 1;
@@ -246,6 +222,10 @@ window.Game = window.Game || {};
         return {
             type: "blast",
             cells: gone,
+            waves: hits.map(function (hit) {
+                return hit.wave;
+            }),
+            lit: before,
             points: Math.round(salvage * (Game.Config.game.blastPays || 0)),
             board: snapshot()
         };
@@ -417,11 +397,7 @@ window.Game = window.Game || {};
                 }
 
                 var lit = fuseLit(pair.eat);
-<<<<<<< Updated upstream
                 if (lit.length) steps.push(wreck(lit));
-=======
-                if (lit.length) steps.push(detonate(lit));
->>>>>>> Stashed changes
             } else {
                 var line = fullLine();
                 if (!line) break;
@@ -588,7 +564,6 @@ window.Game = window.Game || {};
             return lit.length ? setOff(lit) : null;
         },
 
-<<<<<<< Updated upstream
         // Every stick on the board at once, fuse or no fuse. A full board
         // does this before it ends the run.
         detonate: function () {
@@ -598,9 +573,6 @@ window.Game = window.Game || {};
             });
 
             return lit.length ? setOff(lit) : null;
-=======
-            return report(resolve([detonate(lit)]));
->>>>>>> Stashed changes
         },
 
         fuseAt: function (id) {

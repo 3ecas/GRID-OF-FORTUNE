@@ -73,15 +73,9 @@ Game.Config = {
         // turns a stick sits before it goes off, if nothing lights it first
         dynamiteFuse: 5,
 
-<<<<<<< Updated upstream
-        // how far the blast reaches from the stick, corners included. At 1 it
-        // takes the eight squares around it and nothing further out.
-        blastReach: 1,
-=======
         // how far the blast runs along each of the four sides: Infinity takes
         // the stick's whole row and column, a number stops each arm that far out
         blastReach: Infinity,
->>>>>>> Stashed changes
 
         blastSpacing: 2,
 
